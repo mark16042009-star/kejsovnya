@@ -737,6 +737,7 @@ button,a,input,select,label{-webkit-tap-highlight-color:transparent;touch-action
 <script>
 (() => {
 "use strict";
+const LOCAL_ONLY = !!(window.APP_CONFIG && window.APP_CONFIG.localOnly); // версия без сервера: только прогресс на устройстве
 
 /* ---------- Справочники ---------- */
 const RAR = [
@@ -2043,7 +2044,9 @@ function drawSync(){
   const M = {
     ok:["ok","Профиль привязан к вашему аккаунту: прогресс сохраняется на всех устройствах, и вы участвуете в рейтинге."],
     sync:["warn","Загружаем профиль из аккаунта…"],
-    local:["warn","Профиль хранится только в этом браузере. Чтобы сохранять прогресс в аккаунте и попасть в рейтинг, откройте страницу на claude.ai, войдя в аккаунт."],
+    local: LOCAL_ONLY
+      ? ["warn","Прогресс хранится только на этом устройстве. Если очистить данные Telegram или зайти с другого телефона, игра начнётся заново."]
+      : ["warn","Профиль хранится только в этом браузере. Чтобы сохранять прогресс в аккаунте и попасть в рейтинг, откройте страницу на claude.ai, войдя в аккаунт."],
     readonly:["warn","У вас доступ только на просмотр, поэтому профиль хранится в этом браузере и не попадает в рейтинг. Попросите владельца страницы дать вам доступ Contributor."],
     quota:["err","Хранилище страницы переполнено, профиль сейчас не сохраняется в аккаунте. Прогресс остаётся в этом браузере."],
     error:["err","Не удалось связаться с хранилищем. Прогресс сохраняется в этом браузере, повторим попытку автоматически."]
@@ -2436,6 +2439,7 @@ function route(){
   document.getElementById("nav-admin").classList.toggle("on", h==="admin");
   if(h==="admin") return viewAdmin();
   if(h==="profile") return viewProfile();
+  if(h==="top" && LOCAL_ONLY){ location.replace("#cases"); return; }
   if(h==="top") return viewTop();
   if(h==="runner"){ if(document.getElementById("rc")) return; return viewRunner(); }
   if(h==="upgrade"){ if(upSpinning && document.getElementById("needle")) return; return viewUpgrade(); }
@@ -2457,9 +2461,10 @@ const editable = t => t && t.closest && t.closest("input,textarea");
 document.addEventListener("contextmenu", e=>{ if(!editable(e.target)) e.preventDefault(); });
 document.addEventListener("dragstart", e=>{ if(!editable(e.target)) e.preventDefault(); });
 document.addEventListener("selectstart", e=>{ if(!editable(e.target)) e.preventDefault(); });
+if(LOCAL_ONLY){ const nt = document.getElementById("nav-top"); if(nt) nt.hidden = true; }
 renderHeader();
 route();
-initCloud();
+if(!LOCAL_ONLY) initCloud();
 })();
 </script>
 </body>
