@@ -161,7 +161,7 @@ async function updateFeed(st, pid, prof) {
       mine.push({
         pid, nick: String(prof.nick || "").slice(0, 20),
         av: { g: (prof.av && prof.av.g) | 0, c: (prof.av && prof.av.c) | 0 },
-        d: { c: String(d.c || "").slice(0, 20), s: d.s | 0, w: d.w | 0, st: !!d.st, price: Number(d.price) || 0, fl: Number(d.fl) || 0, id: String(d.id || "").slice(0, 24), t: Number(d.t) || 0 }
+        d: { c: String(d.c || "").slice(0, 20), s: d.s | 0, w: d.w | 0, st: !!d.st, price: Number(d.price) || 0, fl: Number(d.fl) || 0, id: String(d.id || "").slice(0, 24), t: Number(d.t) || 0, src: ["case", "up", "ct", "bt", "tr"].includes(d.src) ? d.src : "" }
       });
     }
   }

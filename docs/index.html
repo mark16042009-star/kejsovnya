@@ -368,6 +368,12 @@ html,*{scrollbar-width:none}
 .d-who{position:absolute;left:10px;right:8px;bottom:5px;display:flex;align-items:center;gap:5px;font-style:normal;font-size:10px;color:var(--muted);overflow:hidden}
 .d-who .ava{border-radius:4px;width:14px;height:14px}
 .d-who span{position:static;left:auto;right:auto;bottom:auto;font-size:10px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.d-src{position:absolute;inset:0;z-index:2;display:grid;place-content:center;justify-items:center;gap:3px;padding:6px;text-align:center;font-style:normal;background:color-mix(in srgb, var(--rc) 20%, #121214);border:1px solid var(--rc);opacity:0;pointer-events:none;transition:opacity .12s}
+.d-src small{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.d-src b{font-family:var(--display);font-weight:400;font-size:13px;color:var(--text);line-height:1.2}
+.d-src small + b{color:var(--accent)}
+.drop{cursor:default;outline:none}
+.drop:hover .d-src,.drop:focus .d-src{opacity:1}
 .drop.enter{animation:dropIn .55s cubic-bezier(.2,.9,.3,1.2) both}
 @keyframes dropIn{from{max-height:0;opacity:0;transform:translateY(-14px) scale(.96);margin-bottom:-6px}to{max-height:100px;opacity:1;transform:none;margin-bottom:0}}
 @media (max-width:900px){.feed-in{overflow-x:auto}.drop{height:100px}@keyframes dropIn{from{opacity:0;transform:translateX(-14px)}to{opacity:1;transform:none}}}
@@ -1165,10 +1171,10 @@ body.wide-case main{max-width:none}
 #adm-rtp{min-width:0;overflow:hidden}
 .rtp-table{max-width:100%}
 </style>
-<script>window.APP_BUILD="03.11 20:09";</script>
+<script>window.APP_BUILD="03.11 21:50";</script>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
-<script src="config.js?v=202611031809"></script>
-<script src="adapter.js?v=202611031809"></script>
+<script src="config.js?v=202611031950"></script>
+<script src="adapter.js?v=202611031950"></script>
 <link rel="icon" href="icon.png">
 </head>
 <body>
@@ -2666,13 +2672,13 @@ function pickSkin(c, fair){
   const rar=pickRarity(fair ? c : null); const list=c.skins.filter(s=>s.rar===rar); return list[Math.floor(Math.random()*list.length)]; }
 function roll(c){
   const sk = pickSkin(c, true);
-  if(c.fixed) return {id:Date.now().toString(36)+Math.random().toString(36).slice(2,7), c:c.id, s:sk.i, w:0, fl:+(Math.random()*0.07).toFixed(4), st:false, price:sk.basePrice, t:Date.now()};
+  if(c.fixed) return {id:Date.now().toString(36)+Math.random().toString(36).slice(2,7), c:c.id, s:sk.i, w:0, fl:+(Math.random()*0.07).toFixed(4), st:false, price:sk.basePrice, t:Date.now(), src:"case"};
   let x=Math.random(), acc=0, w=2;
   for(let i=0;i<WEAR.length;i++){ acc+=WEAR[i].p; if(x<acc){w=i;break;} }
   const fl = WEAR[w].min + Math.random()*(WEAR[w].max-WEAR[w].min);
   const st = Math.random()<ST_P;
   const price = Math.max(2, Math.round(sk.basePrice*WEAR[w].m*(st?ST_M:1)));
-  return {id:Date.now().toString(36)+Math.random().toString(36).slice(2,7), c:c.id, s:sk.i, w, fl:+fl.toFixed(4), st, price, t:Date.now()};
+  return {id:Date.now().toString(36)+Math.random().toString(36).slice(2,7), c:c.id, s:sk.i, w, fl:+fl.toFixed(4), st, price, t:Date.now(), src:"case"};
 }
 
 /* ---------- Случайный выбор сценария без повторов ---------- */
@@ -3441,7 +3447,7 @@ async function doUpgrade(){
   if(win){
     const w = WEAR[t.w];
     got = {id:Date.now().toString(36)+Math.random().toString(36).slice(2,7), c:t.c, s:t.s, w:t.w,
-      fl:+(w.min+Math.random()*(w.max-w.min)).toFixed(4), st:false, price:t.price, t:Date.now()};
+      fl:+(w.min+Math.random()*(w.max-w.min)).toFixed(4), st:false, price:t.price, t:Date.now(), src:"up"};
     S.inv.unshift(got);
     if(!S.stats.best || got.price > S.stats.best.price) S.stats.best = got;
     S.stats.upgWin++;
@@ -3748,7 +3754,9 @@ function draw(ctx, now){
 /* ---------- Облако: профиль привязан к аккаунту ---------- */
 const CL = {db:null, id:null, status:"local", list:[], loaded:false, slow:false, err:false};
 let lastGame = "", lastPub = "", wBusy = false, wDirty = false, wTimer = 0;
-function pubItem(it){ return it ? {c:it.c, s:it.s, w:it.w, st:!!it.st, price:it.price, fl:it.fl} : null; }
+const SRCS = ["case","up","ct","bt","tr"];
+const srcOf = v => SRCS.includes(v) ? v : "";
+function pubItem(it){ return it ? Object.assign({c:it.c, s:it.s, w:it.w, st:!!it.st, price:it.price, fl:it.fl}, it.src ? {src:srcOf(it.src)} : {}) : null; }
 function pubDrop(it){ return Object.assign(pubItem(it), {id:String(it.id||"").slice(0,24), t:+it.t||0}); }
 function showcase(st){ return st.inv.slice().sort((a,b)=>b.price-a.price).slice(0,3).map(pubItem); }
 function worthOf(st){ return Math.round(st.bal + st.inv.reduce((a,i)=>a+i.price,0)); }
@@ -3764,7 +3772,7 @@ function publicProfile(){
 function cleanProfile(id, d){
   if(!d || typeof d!=="object") return null;
   const n = v => { v = Number(v); return isFinite(v) && v>=0 ? v : 0; };
-  const item = it => (it && validItem({...it, price:n(it.price), fl:n(it.fl)})) ? {c:it.c, s:it.s|0, w:it.w|0, st:!!it.st, price:n(it.price), fl:n(it.fl)} : null;
+  const item = it => (it && validItem({...it, price:n(it.price), fl:n(it.fl)})) ? {c:it.c, s:it.s|0, w:it.w|0, st:!!it.st, price:n(it.price), fl:n(it.fl), src:srcOf(it.src)} : null;
   return {id, nick:String(d.nick||"Игрок").slice(0,20), av:{g:(d.av&&d.av.g)|0, c:(d.av&&d.av.c)|0}, img:validImg(d.img)?d.img:"", xp:n(d.xp), lvl:Math.max(1,n(d.lvl)|0),
     worth:n(d.worth), bal:n(d.bal), opened:n(d.opened), upg:n(d.upg), upgWin:n(d.upgWin), runs:n(d.runs), runBest:n(d.runBest), runEarned:n(d.runEarned), deco:cleanDeco(d.deco), admin:d.admin===true,
     rtp:(()=>{ const r = d.rtp && typeof d.rtp==="object" ? d.rtp : {}; const c = {};
@@ -3848,7 +3856,7 @@ function subscribeFeed(){
     const d = snap.data(), n = v => { v = Number(v); return isFinite(v) && v>=0 ? v : 0; };
     CL.feed = (Array.isArray(d.items) ? d.items : []).slice(0, 40).map(x=>{
       if(!x || !x.d) return null;
-      const it = {c:String(x.d.c||""), s:x.d.s|0, w:x.d.w|0, st:!!x.d.st, price:n(x.d.price), fl:n(x.d.fl), t:n(x.d.t), id:String(x.d.id||"").replace(/[^a-z0-9]/gi,"").slice(0,24) || Math.random().toString(36).slice(2,8)};
+      const it = {c:String(x.d.c||""), s:x.d.s|0, w:x.d.w|0, st:!!x.d.st, price:n(x.d.price), fl:n(x.d.fl), t:n(x.d.t), src:srcOf(x.d.src), id:String(x.d.id||"").replace(/[^a-z0-9]/gi,"").slice(0,24) || Math.random().toString(36).slice(2,8)};
       return validItem(it) ? {pid:String(x.pid||""), nick:String(x.nick||"Игрок").slice(0,20), av:{g:(x.av&&x.av.g)|0, c:(x.av&&x.av.c)|0}, d:it} : null;
     }).filter(Boolean);
     renderFeed();
@@ -4055,6 +4063,16 @@ function feedItems(){
   all.sort((a,b)=>(b.it.t||0)-(a.it.t||0));
   return all.slice(0, FEED_MAX);
 }
+function srcLabel(it){
+  const c = CASE_BY_ID[it.c], cn = c ? `кейс «${esc(c.name)}»` : "кейс";
+  switch(it.src){
+    case "up": return ["Апгрейд", ""];
+    case "ct": return ["Контракт", ""];
+    case "bt": return ["Батл", cn];
+    case "tr": return ["Обмен", "между игроками"];
+    default:   return [c ? `Кейс «${esc(c.name)}»` : "Кейс", ""];
+  }
+}
 function renderFeed(){
   const feed = document.getElementById("feed"); if(!feed) return;
   const items = feedItems();
@@ -4068,7 +4086,9 @@ function renderFeed(){
   feed.innerHTML = `<span class="feed-label">${live?'<i class="live-dot" aria-hidden="true"></i>Последние дропы':'Ваши дропы'}</span>` + (items.length
     ? items.map((x,i)=>{
         const it = x.it, sk = skinOf(it), k = keys[i], fresh = !first && !seen.has(k);
-        return `<div class="drop${fresh?' enter':''}" style="--rc:${RAR[sk.rar].color}" title="${esc(title(sk)+' | '+sk.name)} — ${money(it.price)}">
+        const [sa, sb] = srcLabel(it);
+        return `<div class="drop${fresh?' enter':''}" tabindex="0" style="--rc:${RAR[sk.rar].color}" aria-label="${esc(title(sk)+' | '+sk.name)} — ${money(it.price)}. Откуда: ${sa}${sb?' · '+sb:''}">
+          <i class="d-src" aria-hidden="true"><small>Откуда</small><b>${sa}</b>${sb?`<small>${sb}</small>`:''}</i>
           ${art(sk)}<em class="d-price">${money(it.price)}</em>
           <span><b>${esc(sk.name)}</b>${it.st?'ST ':''}${esc(title(sk))}</span>
           <i class="d-who">${avatarOf(x.who,14)}<span>${esc(x.who.nick)}</span></i></div>`;
@@ -4626,7 +4646,7 @@ function btSettle(d){
   m.done = true;
   if(d.players[w].pid===CL.id){
     const now = Date.now(); let sum = 0;
-    res.flat().filter(Boolean).forEach((it,i)=>{ const o = Object.assign({}, it, {id:now.toString(36)+i.toString(36)+Math.random().toString(36).slice(2,6), t:now}); S.inv.unshift(o); sum += o.price; if(!S.stats.best || o.price > S.stats.best.price) S.stats.best = o; });
+    res.flat().filter(Boolean).forEach((it,i)=>{ const o = Object.assign({}, it, {id:now.toString(36)+i.toString(36)+Math.random().toString(36).slice(2,6), t:now, src:"bt"}); S.inv.unshift(o); sum += o.price; if(!S.stats.best || o.price > S.stats.best.price) S.stats.best = o; });
     st.win++; st.got = Math.round(st.got + sum); m.won = sum;
   }
   return true;
@@ -5150,7 +5170,7 @@ async function ctSign(){
   const sum = sel.reduce((a,i)=>a+i.price,0);
   const m = CT_LO*Math.pow(CT_HI/CT_LO, Math.random()) * ctK();   // лог-равномерный множитель
   const t = ctPick(sum*m), w = WEAR[t.w];
-  const got = {id:Date.now().toString(36)+Math.random().toString(36).slice(2,7), c:t.c, s:t.s, w:t.w, fl:+(w.min+Math.random()*(w.max-w.min)).toFixed(4), st:false, price:t.price, t:Date.now()};
+  const got = {id:Date.now().toString(36)+Math.random().toString(36).slice(2,7), c:t.c, s:t.s, w:t.w, fl:+(w.min+Math.random()*(w.max-w.min)).toFixed(4), st:false, price:t.price, t:Date.now(), src:"ct"};
   // сразу записываем результат, чтобы ничего не потерялось при уходе со страницы
   S.inv = S.inv.filter(i=>!CT.sel.has(i.id)); S.inv.unshift(got);
   if(!S.stats.best || got.price > S.stats.best.price) S.stats.best = got;
@@ -5314,7 +5334,7 @@ const trOn = () => !LOCAL_ONLY && !!CL.id && !!CL.db && typeof CL.db.action==="f
 function trMine(){ if(!S.trd || typeof S.trd!=="object" || Array.isArray(S.trd)) S.trd = {}; return S.trd; }
 const trNewId = () => Date.now().toString(36)+Math.random().toString(36).slice(2,7);
 const trSum = a => a.reduce((x,i)=>x+(Number(i.price)||0),0);
-function trAdd(items){ items.forEach(it=>{ const o = {id:trNewId(), c:String(it.c), s:it.s|0, w:it.w|0, fl:Number(it.fl)||0, st:!!it.st, price:Math.max(0,Number(it.price)||0), t:Date.now()}; if(validItem(o)) S.inv.unshift(o); }); }
+function trAdd(items){ items.forEach(it=>{ const o = {id:trNewId(), c:String(it.c), s:it.s|0, w:it.w|0, fl:Number(it.fl)||0, st:!!it.st, price:Math.max(0,Number(it.price)||0), t:Date.now(), src:"tr"}; if(validItem(o)) S.inv.unshift(o); }); }
 async function trAct(body){ return await CL.db.action("trade", body) || {}; }
 const trIncoming = () => TR.list.filter(t=>t.to===CL.id && t.state==="pending");
 function trBadge(){
