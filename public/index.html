@@ -757,6 +757,28 @@ input.dnc-rainbow{-webkit-text-fill-color:#ff7ac8;color:#ff7ac8!important;backgr
 .pa-item .btn{padding:5px 10px;font-size:12px}
 .pa-item .btn:first-of-type{margin-left:auto}
 .pa-item.dead{opacity:.5}
+.ct-panel{gap:14px}
+.ct-slots{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
+.ct-slot{position:relative;display:grid;place-items:center;align-content:center;gap:2px;min-height:86px;background:var(--panel2);border:0;border-bottom:3px solid var(--rc,var(--line));color:var(--text);font:inherit;cursor:pointer;padding:6px;clip-path:var(--notch2)}
+.ct-slot .art{width:100%;height:40px}
+.ct-slot b{font-size:12px;color:var(--accent)}
+.ct-slot.empty{cursor:default;border:2px dashed #333;background:transparent}
+.ct-slot.empty span{color:#444;font-size:18px}
+.ct-slot.burn{animation:ctburn .9s ease-in forwards}
+@keyframes ctburn{0%{transform:none;filter:none}40%{filter:brightness(2) saturate(2)}100%{transform:scale(.2) translateY(30px);opacity:0;filter:brightness(3)}}
+.ct-info{display:flex;flex-wrap:wrap;gap:6px 22px;font-size:15px}
+.ct-info b{color:var(--accent)}
+.ct-actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.ct-actions #ct-go{padding:12px 20px;min-width:240px}
+.ct-res{display:grid;grid-template-columns:200px minmax(0,1fr) auto;gap:16px;align-items:center;padding:12px 16px;background:radial-gradient(ellipse at 15% 50%,color-mix(in srgb,var(--rc) 30%,transparent),transparent 60%),var(--panel2);border-left:4px solid var(--rc);clip-path:var(--notch2)}
+.ct-res .art{width:100%;height:80px}
+.ct-res-t{display:grid;gap:2px}
+.ct-res-t small{color:var(--muted);font-size:12px} .ct-res-t b{font-size:18px}
+.ct-res-t .num{font-size:20px;color:var(--accent)}
+.ct-res-t i{font-style:normal;font-size:14px;margin-left:6px} .ct-res-t i.pos{color:var(--good)} .ct-res-t i.neg{color:var(--bad)}
+.ct-res.pop{animation:epicpop .6s cubic-bezier(.2,1.6,.4,1) both}
+@media (max-width:760px){ .ct-slots{grid-template-columns:repeat(5,minmax(0,1fr));gap:4px} .ct-slot{min-height:64px;padding:3px} .ct-slot .art{height:26px} .ct-slot b{font-size:9px}
+  .ct-res{grid-template-columns:1fr;text-align:center;justify-items:center} .ct-actions #ct-go{width:100%} }
 .rtp-chip{background:color-mix(in srgb, var(--accent) 14%, var(--panel));border-color:color-mix(in srgb, var(--accent) 40%, var(--line))}
 .adm-case{grid-template-columns:10px minmax(0,1fr) 80px 64px auto auto}
 .adm-case input[data-f=rtp]{grid-row:1/span 2;grid-column:4}
@@ -1067,7 +1089,7 @@ body.wide-case main{max-width:none}
 #adm-rtp{min-width:0;overflow:hidden}
 .rtp-table{max-width:100%}
 </style>
-<script>window.APP_BUILD="03.11 16:32";</script>
+<script>window.APP_BUILD="03.11 16:39";</script>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="adapter.js"></script>
 <link rel="icon" href="icon.png">
@@ -1084,6 +1106,7 @@ body.wide-case main{max-width:none}
       <a href="#upgrade" id="nav-upg"><svg class="ni" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4l7 8h-4v8H9v-8H5z"/></svg><span class="nl">Апгрейд</span></a>
       <a href="#battles" id="nav-bt"><svg class="ni" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4l9 9M4 4h4M4 4v4M20 4l-9 9M20 4h-4M20 4v4M7 14l3 3-3 3-3-3zM17 14l-3 3 3 3 3-3z"/></svg><span class="nl">Батлы</span></a>
       <a href="#crash" id="nav-crash"><svg class="ni" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 20h18M4 18c6 0 10-4 15-13"/><path d="M15 5h4v4"/></svg><span class="nl">Краш</span></a>
+      <a href="#contract" id="nav-ct" class="nav-x"><svg class="ni" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h9l4 4v14H6z"/><path d="M15 3v4h4M9 11h7M9 15h7M9 19h4"/></svg><span class="nl">Контракты</span></a>
       <a href="#runner" id="nav-run" class="nav-x"><svg class="ni" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 7v10M9.5 9.5h4a1.5 1.5 0 010 3h-3a1.5 1.5 0 000 3h4"/></svg><span class="nl">Заработать</span></a>
       <a href="#top" id="nav-top" class="nav-x"><svg class="ni" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 20V11M12 20V5M17 20v-6"/></svg><span class="nl">Рейтинг</span></a>
       <a href="#admin" id="nav-admin" class="nav-x" hidden><svg class="ni" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1"/></svg><span class="nl">Админ</span></a>
@@ -2883,7 +2906,7 @@ function topups(){ return S.top||0; }
 
 
 /* ---------- Вид: апгрейд ---------- */
-let UP_EDGE = 0.95, UP_MAX = 0.90, CRASH_RTP = 0.95, DAILY_BASE = 50000, VAULT_RATE = 100; const UP_SEL = 6;
+let UP_EDGE = 0.95, UP_MAX = 0.90, CRASH_RTP = 0.95, CONTRACT_RTP = 0.95, DAILY_BASE = 50000, VAULT_RATE = 100; const UP_SEL = 6;
 const CATALOG = [];
 function buildCatalog(){
 CATALOG.length = 0;
@@ -3397,7 +3420,7 @@ function publicProfile(){
   return {nick:S.profile.nick, av:{g:S.profile.av.g|0, c:S.profile.av.c|0}, img:validImg(S.profile.img)?S.profile.img:"", xp, lvl:levelOf(xp).lvl, worth:worthOf(S), bal:Math.round(S.bal),
     opened:t.opened, upg:t.upg, upgWin:t.upgWin, runs:t.runs, runBest:Math.floor(t.runBest), runEarned:t.runEarned,
     deco:cleanDeco(myDeco()), admin:!!CL.owner,
-    rtp:{c:t.byCase, us:t.upgStake||0, ug:t.upgGot||0, cs:(t.crash&&t.crash.bet)||0, cg:(t.crash&&t.crash.got)||0},
+    rtp:{c:t.byCase, us:t.upgStake||0, ug:t.upgGot||0, cs:(t.crash&&t.crash.bet)||0, cg:(t.crash&&t.crash.got)||0, ks:(t.contract&&t.contract.put)||0, kg:(t.contract&&t.contract.got)||0},
     best:pubItem(t.best), show:showcase(S), drops:S.recent.slice(0,10).map(pubDrop)};
 }
 function cleanProfile(id, d){
@@ -3408,7 +3431,7 @@ function cleanProfile(id, d){
     worth:n(d.worth), bal:n(d.bal), opened:n(d.opened), upg:n(d.upg), upgWin:n(d.upgWin), runs:n(d.runs), runBest:n(d.runBest), runEarned:n(d.runEarned), deco:cleanDeco(d.deco), admin:d.admin===true,
     rtp:(()=>{ const r = d.rtp && typeof d.rtp==="object" ? d.rtp : {}; const c = {};
       if(r.c && typeof r.c==="object") Object.entries(r.c).forEach(([k,v])=>{ if(CASE_BY_ID[k] && Array.isArray(v)) c[k] = [n(v[0]), n(v[1]), n(v[2])]; });
-      return {c, us:n(r.us), ug:n(r.ug), cs:n(r.cs), cg:n(r.cg)}; })(),
+      return {c, us:n(r.us), ug:n(r.ug), cs:n(r.cs), cg:n(r.cg), ks:n(r.ks), kg:n(r.kg)}; })(),
     best:item(d.best), show:Array.isArray(d.show) ? d.show.map(item).filter(Boolean).slice(0,3) : [],
     drops:Array.isArray(d.drops) ? d.drops.slice(0,10).map(x=>{ const it=item(x); if(!it) return null; it.id=String(x.id||"").replace(/[^a-z0-9]/gi,"").slice(0,24)||Math.random().toString(36).slice(2,8); it.t=n(x.t); return it; }).filter(Boolean) : []};
 }
@@ -3715,17 +3738,17 @@ function renderFeed(){
 
 
 /* ---------- Общие настройки (их меняет владелец) ---------- */
-let CFG = {rtp:0.95, runRate:0.5, upMax:0.90, upEdge:0.95, crashRtp:0.95, dailyBase:50000, vaultRate:100, start:4000, cases:{}, luck:{}, announce:{text:"", on:false, ts:0}, hidden:{}};
+let CFG = {rtp:0.95, runRate:0.5, upMax:0.90, upEdge:0.95, crashRtp:0.95, contractRtp:0.95, dailyBase:50000, vaultRate:100, start:4000, cases:{}, luck:{}, announce:{text:"", on:false, ts:0}, hidden:{}};
 function applyConfig(raw){
   const c = raw || {};
   const n = (v,lo,hi,d)=>{ v = Number(v); return isFinite(v) ? Math.min(hi, Math.max(lo, v)) : d; };
   const obj = v => v && typeof v==="object" && !Array.isArray(v) ? v : {};
   const an = obj(c.announce);
-  CFG = {rtp:n(c.rtp,.3,.99,.95), runRate:n(c.runRate,.05,10,.5), upMax:n(c.upMax,.05,.95,.90), upEdge:n(c.upEdge,.3,1,.95), crashRtp:n(c.crashRtp,.3,.99,.95), dailyBase:Math.round(n(c.dailyBase,0,1e7,50000)), vaultRate:n(c.vaultRate,1,1e6,100),
+  CFG = {rtp:n(c.rtp,.3,.99,.95), runRate:n(c.runRate,.05,10,.5), upMax:n(c.upMax,.05,.95,.90), upEdge:n(c.upEdge,.3,1,.95), crashRtp:n(c.crashRtp,.3,.99,.95), contractRtp:n(c.contractRtp,.3,.99,.95), dailyBase:Math.round(n(c.dailyBase,0,1e7,50000)), vaultRate:n(c.vaultRate,1,1e6,100),
     start:Math.round(n(c.start,0,1e7,4000)), cases:obj(c.cases), hidden:obj(c.hidden),
     luck:Object.fromEntries(Object.entries(obj(c.luck)).filter(([k,v])=>typeof k==="string" && isFinite(Number(v)) && Number(v)>0 && Number(v)!==1).map(([k,v])=>[k, Math.min(5, Math.max(0.1, Number(v)))])),
     announce:{text:String(an.text||"").slice(0,300), on:!!an.on, ts:Number(an.ts)||0}};
-  RTP = CFG.rtp; RUB_PER_POINT = CFG.runRate; UP_MAX = CFG.upMax; UP_EDGE = CFG.upEdge; CRASH_RTP = CFG.crashRtp; DAILY_BASE = CFG.dailyBase; VAULT_RATE = CFG.vaultRate; START = CFG.start;
+  RTP = CFG.rtp; RUB_PER_POINT = CFG.runRate; UP_MAX = CFG.upMax; UP_EDGE = CFG.upEdge; CRASH_RTP = CFG.crashRtp; CONTRACT_RTP = CFG.contractRtp; DAILY_BASE = CFG.dailyBase; VAULT_RATE = CFG.vaultRate; START = CFG.start;
   CASES.forEach(cs=>{ const o = obj(CFG.cases[cs.id]); cs.price = Math.round(n(o.price,1,1e7,cs.defPrice)); cs.off = !!o.off; cs.isNew = o.isNew===undefined ? cs.defNew : !!o.isNew; const r = Number(o.rtp); cs.rtp = isFinite(r) && r>=0.3 && r<=0.99 ? r : null; });
   recomputeCases(); buildCatalog();
 }
@@ -3827,6 +3850,7 @@ function viewAdmin(){
           <label for="e-upmax">Макс. шанс апгрейда, %</label><input id="e-upmax" type="number" min="5" max="95" step="1" value="${pctv(CFG.upMax)}">
           <label for="e-upedge">RTP апгрейда, %<small>шанс = ставка × отдача ÷ цена цели</small></label><input id="e-upedge" type="number" min="30" max="100" step="1" value="${pctv(CFG.upEdge)}">
           <label for="e-crash">RTP краша, %<small>шанс дожить до ×x = RTP ÷ x</small></label><input id="e-crash" type="number" min="30" max="99" step="1" value="${pctv(CFG.crashRtp)}">
+          <label for="e-ct">RTP контрактов, %<small>средняя отдача от суммы вложенных предметов</small></label><input id="e-ct" type="number" min="30" max="99" step="1" value="${pctv(CFG.contractRtp)}">
           <label for="e-daily">Ежедневный подарок, ₽<small>за 1-й день серии; к 7-му дню ×10. 0 — выключить</small></label><input id="e-daily" type="number" min="0" step="1000" value="${CFG.dailyBase}">
           <label for="e-start">Стартовый баланс, ₽<small>для новых игроков и при сбросе</small></label><input id="e-start" type="number" min="0" step="100" value="${CFG.start}">
         </div>
@@ -3863,13 +3887,13 @@ function viewAdmin(){
   // экономика
   document.getElementById("e-save").addEventListener("click", async ()=>{
     const v = id => Number(document.getElementById(id).value), m = document.getElementById("e-msg");
-    const patch = {rtp:v("e-rtp")/100, runRate:v("e-run"), upMax:v("e-upmax")/100, upEdge:v("e-upedge")/100, crashRtp:v("e-crash")/100, dailyBase:Math.round(v("e-daily")), start:Math.round(v("e-start"))};
+    const patch = {rtp:v("e-rtp")/100, runRate:v("e-run"), upMax:v("e-upmax")/100, upEdge:v("e-upedge")/100, crashRtp:v("e-crash")/100, contractRtp:v("e-ct")/100, dailyBase:Math.round(v("e-daily")), start:Math.round(v("e-start"))};
     if(Object.values(patch).some(x=>!isFinite(x) || x<0)){ flash(m, false, "Проверьте числа: нужны положительные значения."); return; }
     try{ await saveConfig(patch); drawAdminRtp(); flash(m, true, "Сохранено, уже действует у всех"); }catch(e){ flash(m, false, "Не сохранилось. Попробуйте ещё раз."); }
   });
   document.getElementById("e-def").addEventListener("click", ()=>{
     document.getElementById("e-rtp").value = 95; document.getElementById("e-run").value = 0.5; document.getElementById("e-upmax").value = 90;
-    document.getElementById("e-upedge").value = 95; document.getElementById("e-crash").value = 95; document.getElementById("e-daily").value = 50000; document.getElementById("e-start").value = 4000;
+    document.getElementById("e-upedge").value = 95; document.getElementById("e-crash").value = 95; document.getElementById("e-ct").value = 95; document.getElementById("e-daily").value = 50000; document.getElementById("e-start").value = 4000;
     flash(document.getElementById("e-msg"), true, "Значения по умолчанию подставлены, нажмите «Сохранить»");
   });
   // кейсы
@@ -3905,18 +3929,19 @@ function viewAdmin(){
 }
 function drawAdminRtp(){
   const box = document.getElementById("adm-rtp"); if(!box) return;
-  const agg = {}; let us = 0, ug = 0, cs = 0, cg = 0;
-  CL.list.forEach(p=>{ const r = p.rtp || {c:{}}; Object.entries(r.c||{}).forEach(([k,v])=>{ const a = agg[k] = agg[k] || [0,0,0]; a[0]+=v[0]; a[1]+=v[1]; a[2]+=v[2]; }); us += r.us||0; ug += r.ug||0; cs += r.cs||0; cg += r.cg||0; });
+  const agg = {}; let us = 0, ug = 0, cs = 0, cg = 0, ks = 0, kg = 0;
+  CL.list.forEach(p=>{ const r = p.rtp || {c:{}}; Object.entries(r.c||{}).forEach(([k,v])=>{ const a = agg[k] = agg[k] || [0,0,0]; a[0]+=v[0]; a[1]+=v[1]; a[2]+=v[2]; }); us += r.us||0; ug += r.ug||0; cs += r.cs||0; cg += r.cg||0; ks += r.ks||0; kg += r.kg||0; });
   const tot = Object.values(agg).reduce((a,v)=>[a[0]+v[0],a[1]+v[1],a[2]+v[2]],[0,0,0]);
   const pc = (w,sp)=> sp ? Math.round(w/sp*1000)/10 : null;
   const tgtCases = tot[1] ? Object.entries(agg).reduce((a,[k,v])=>a + (CASE_BY_ID[k].rtp||RTP)*v[1], 0)/tot[1] : RTP;
   const cell = (act, tgt, n) => act===null ? `<span class="hint">нет данных</span>`
     : `<b class="${act>=tgt*100?'pos':'neg'}">${String(act).replace(".",",")}%</b>${n<50?' <span class="hint">мало данных</span>':''}`;
-  const allSpent = tot[1] + us + cs, allGot = tot[2] + ug + cg;
+  const allSpent = tot[1] + us + cs + ks, allGot = tot[2] + ug + cg + kg;
   box.innerHTML = `
     <div class="stats" style="margin:0 0 12px">
       <div class="stat"><small>Кейсы: цель / факт</small><b>${Math.round(tgtCases*100)}% / ${pc(tot[2],tot[1])===null?'—':String(pc(tot[2],tot[1])).replace(".",",")+'%'}</b></div>
       <div class="stat"><small>Апгрейд: цель / факт</small><b>≤${Math.round(UP_EDGE*100)}% / ${pc(ug,us)===null?'—':String(pc(ug,us)).replace(".",",")+'%'}</b></div>
+      <div class="stat"><small>Контракты: цель / факт</small><b>${Math.round(CONTRACT_RTP*100)}% / ${pc(kg,ks)===null?'—':String(pc(kg,ks)).replace(".",",")+'%'}</b></div>
       <div class="stat"><small>Краш: цель / факт</small><b>${Math.round(CRASH_RTP*100)}% / ${pc(cg,cs)===null?'—':String(pc(cg,cs)).replace(".",",")+'%'}</b></div>
       <div class="stat"><small>Всего: поставлено → вернулось</small><b>${money(allSpent)} → ${money(allGot)}</b></div>
       <div class="stat"><small>Общий RTP сайта</small><b>${allSpent ? String(pc(allGot,allSpent)).replace(".",",")+'%' : '—'}</b></div>
@@ -4712,6 +4737,116 @@ function bindPromoAdmin(){
   drawPromoAdmin();
 }
 
+/* ---------- Контракты ----------
+ * Игрок отдаёт от 3 до 10 предметов и получает один случайный.
+ * Множитель к сумме вложенного: лог-равномерный, средний — RTP контрактов (× удача игрока). */
+const CT = {sel:new Set(), busy:false, last:null};
+const CT_MIN = 3, CT_MAX = 10, CT_LO = 0.25, CT_HI = 4;
+const CT_MEAN = (CT_HI-CT_LO)/Math.log(CT_HI/CT_LO); // среднее лог-равномерного распределения
+const ctK = () => Math.min(5, CONTRACT_RTP*myLuck()) / CT_MEAN;
+const ctRange = sum => [sum*CT_LO*ctK(), sum*CT_HI*ctK()];
+function ctStats(){ S.stats.contract = Object.assign({n:0, put:0, got:0, best:0}, S.stats.contract||{}); return S.stats.contract; }
+function ctPick(target){
+  // ближайший по цене предмет из всех кейсов
+  let lo = 0, hi = CATALOG.length-1;
+  while(lo < hi){ const mid = (lo+hi)>>1; if(CATALOG[mid].price < target) lo = mid+1; else hi = mid; }
+  const cand = [CATALOG[lo], CATALOG[Math.max(0,lo-1)]].filter(Boolean);
+  let best = cand.sort((a,b)=>Math.abs(a.price-target)-Math.abs(b.price-target))[0];
+  // среди предметов с почти той же ценой берём случайный, чтобы результат был разнообразнее
+  const near = CATALOG.filter(t=>Math.abs(t.price-best.price) <= Math.max(2, best.price*0.03));
+  return near[Math.floor(Math.random()*near.length)] || best;
+}
+function viewContract(){
+  const app = document.getElementById("app"), st = ctStats();
+  [...CT.sel].forEach(id=>{ if(!S.inv.some(i=>i.id===id)) CT.sel.delete(id); });
+  app.innerHTML = `
+    <div class="view-head"><div><h1>Контракты</h1><p class="sub">Обменяйте от ${CT_MIN} до ${CT_MAX} предметов на один случайный. Он может выйти дешевле — или в несколько раз дороже вложенного.</p></div>
+      <div class="run-stats">
+        <div class="stat"><small>Контрактов</small><b class="num" id="ct-n">${st.n}</b></div>
+        <div class="stat"><small>Лучший итог</small><b class="num" id="ct-best">${st.best ? "×" + st.best.toFixed(2).replace(".",",") : "—"}</b></div>
+      </div></div>
+    <section class="panel ct-panel">
+      <div class="ct-slots" id="ct-slots"></div>
+      <div class="ct-info" id="ct-info"></div>
+      <div class="ct-actions"><button class="btn primary" id="ct-go"></button><button class="btn" id="ct-auto">Добавить дешёвые</button><button class="btn" id="ct-clear">Очистить</button><span class="hint" id="ct-msg"></span></div>
+      <div class="ct-result" id="ct-result" hidden></div>
+    </section>
+    <section class="panel" style="margin-top:14px"><div class="ph"><h2>Инвентарь</h2><span class="hint" id="ct-sel"></span></div><div class="minis" id="ct-inv"></div></section>`;
+  document.getElementById("ct-go").addEventListener("click", ctSign);
+  document.getElementById("ct-clear").addEventListener("click", ()=>{ if(CT.busy) return; CT.sel.clear(); ctDraw(); });
+  document.getElementById("ct-auto").addEventListener("click", ()=>{ if(CT.busy) return;
+    S.inv.slice().sort((a,b)=>a.price-b.price).forEach(it=>{ if(CT.sel.size < CT_MAX) CT.sel.add(it.id); }); ctDraw(); });
+  ctDraw();
+  if(CT.last) ctShowResult(CT.last, false);
+}
+function ctDraw(){
+  const slots = document.getElementById("ct-slots"); if(!slots) return;
+  const sel = S.inv.filter(i=>CT.sel.has(i.id)), sum = sel.reduce((a,i)=>a+i.price,0);
+  slots.innerHTML = Array.from({length:CT_MAX}, (_,k)=>{ const it = sel[k]; if(!it) return `<div class="ct-slot empty"><span>${k+1}</span></div>`;
+    const sk = skinOf(it); return `<button type="button" class="ct-slot" data-rm="${it.id}" style="--rc:${RAR[sk.rar].color}" title="Убрать">${art(sk)}<b class="num">${money(it.price)}</b></button>`; }).join("");
+  slots.querySelectorAll("[data-rm]").forEach(b=>b.addEventListener("click",()=>{ if(CT.busy) return; CT.sel.delete(b.dataset.rm); ctDraw(); }));
+  const [lo, hi] = ctRange(sum);
+  document.getElementById("ct-info").innerHTML = sel.length
+    ? `<span>Вложено: <b class="num">${money(sum)}</b></span><span>Можно получить: <b class="num">${money(lo)}</b> — <b class="num" style="color:var(--good)">${money(hi)}</b></span>`
+    : `<span class="hint">Выберите предметы из инвентаря ниже — от ${CT_MIN} до ${CT_MAX} штук.</span>`;
+  const go = document.getElementById("ct-go");
+  go.disabled = CT.busy || sel.length < CT_MIN;
+  go.textContent = sel.length < CT_MIN ? `Нужно ещё ${CT_MIN - sel.length}` : `Подписать контракт · ${sel.length} шт.`;
+  document.getElementById("ct-sel").textContent = `${sel.length} / ${CT_MAX}`;
+  const inv = document.getElementById("ct-inv"), items = S.inv.slice().sort((a,b)=>b.price-a.price);
+  inv.innerHTML = items.length ? items.map(it=>mini(it, `data-id="${it.id}"${CT.busy?' disabled':''}`, CT.sel.has(it.id))).join("")
+    : `<p class="empty-note">Инвентарь пуст. <a href="#cases">Откройте кейс</a></p>`;
+  inv.querySelectorAll("[data-id]").forEach(b=>b.addEventListener("click",()=>{ if(CT.busy) return; const id = b.dataset.id;
+    if(CT.sel.has(id)) CT.sel.delete(id); else if(CT.sel.size < CT_MAX) CT.sel.add(id); else return; ctDraw(); }));
+}
+async function ctSign(){
+  if(CT.busy) return;
+  const sel = S.inv.filter(i=>CT.sel.has(i.id)); if(sel.length < CT_MIN) return;
+  CT.busy = true; audio();
+  const sum = sel.reduce((a,i)=>a+i.price,0);
+  const m = CT_LO*Math.pow(CT_HI/CT_LO, Math.random()) * ctK();   // лог-равномерный множитель
+  const t = ctPick(sum*m), w = WEAR[t.w];
+  const got = {id:Date.now().toString(36)+Math.random().toString(36).slice(2,7), c:t.c, s:t.s, w:t.w, fl:+(w.min+Math.random()*(w.max-w.min)).toFixed(4), st:false, price:t.price, t:Date.now()};
+  // сразу записываем результат, чтобы ничего не потерялось при уходе со страницы
+  S.inv = S.inv.filter(i=>!CT.sel.has(i.id)); S.inv.unshift(got);
+  if(!S.stats.best || got.price > S.stats.best.price) S.stats.best = got;
+  if(skinOf(got).rar===4) S.stats.knives = (S.stats.knives||0) + 1;
+  const st = ctStats(); st.n++; st.put = Math.round(st.put + sum); st.got = Math.round(st.got + got.price); const x = got.price/sum; if(x > st.best) st.best = x;
+  S.recent = [got].concat(S.recent).slice(0,14);
+  CT.sel.clear(); CT.last = {got, sum};
+  save(); renderHeader();
+  // анимация: предметы «сжигаются» в слотах, контракт штампуется
+  const slots = document.getElementById("ct-slots");
+  if(slots && motionOK()){
+    slots.querySelectorAll(".ct-slot:not(.empty)").forEach((el,i)=>{ el.style.animationDelay = (i*60)+"ms"; el.classList.add("burn"); });
+    if(S.sound) [0,1,2].forEach(k=>setTimeout(()=>beep(300+k*120,.08,.04,"square"), k*180));
+    await new Promise(r=>setTimeout(r, 1300));
+  }
+  CT.busy = false;
+  if(!document.getElementById("ct-slots")) return;
+  ctDraw(); ctShowResult(CT.last, true);
+  const sn = document.getElementById("ct-n"), sb = document.getElementById("ct-best"), st2 = ctStats();
+  if(sn) sn.textContent = st2.n; if(sb) sb.textContent = "×" + st2.best.toFixed(2).replace(".",",");
+  const rb = document.getElementById("ct-result"); if(rb && rb.scrollIntoView) rb.scrollIntoView({block:"nearest", behavior:"smooth"});
+}
+function ctShowResult(r, fresh){
+  const box = document.getElementById("ct-result"); if(!box) return;
+  const it = r.got, sk = skinOf(it), x = it.price/r.sum, have = S.inv.some(i=>i.id===it.id);
+  box.hidden = false;
+  box.innerHTML = `<div class="ct-res${fresh?' pop':''}" style="--rc:${RAR[sk.rar].color}">${art(sk)}
+    <div class="ct-res-t"><small>${esc(title(sk))} · ${WEAR[it.w].s}</small><b></b>
+      <span class="num">${money(it.price)} <i class="${x>=1?'pos':'neg'}">×${x.toFixed(2).replace(".",",")}</i></span></div>
+    ${have ? `<button class="btn" id="ct-sell">Продать · ${money(it.price)}</button>` : `<span class="hint">Продано</span>`}</div>`;
+  box.querySelector(".ct-res-t b").textContent = sk.name;
+  const sb = document.getElementById("ct-sell"); if(sb) sb.addEventListener("click", ()=>{ sell([it.id], {quiet:true}); ctDraw(); ctShowResult(r, false); });
+  if(fresh){
+    const c = CASE_BY_ID[it.c];
+    if(x >= 3 || sk.rar===4) epicDrop(it, {price: r.sum});
+    else winSound(sk.rar);
+    void c;
+  }
+}
+
 /* ---------- Маршрутизация ---------- */
 function route(){
   const h = location.hash.slice(1);
@@ -4721,6 +4856,7 @@ function route(){
   document.getElementById("nav-upg").classList.toggle("on", h==="upgrade");
   document.getElementById("nav-run").classList.toggle("on", h==="runner");
   document.getElementById("nav-crash").classList.toggle("on", h==="crash");
+  document.getElementById("nav-ct").classList.toggle("on", h==="contract");
   document.getElementById("nav-bt").classList.toggle("on", h==="battles" || h.startsWith("battle-"));
   document.getElementById("nav-top").classList.toggle("on", h==="top");
   document.getElementById("nav-admin").classList.toggle("on", h==="admin");
@@ -4732,6 +4868,7 @@ function route(){
   if(h==="runner"){ if(document.getElementById("rc")) return; return viewRunner(); }
   if(h==="crash"){ if(document.getElementById("crc")) return; return viewCrash(); }
   if(h==="battles") return viewBattles();
+  if(h==="contract"){ if(CT.busy && document.getElementById("ct-slots")) return; return viewContract(); }
   if(h.startsWith("battle-")){ if(BT.view && BT.view.id===h.slice(7) && document.getElementById("bv")) return; return viewBattle(h.slice(7)); }
   if(h==="upgrade"){ if(upSpinning && document.getElementById("needle")) return; return viewUpgrade(); }
   if(h==="inventory") return viewInventory();
