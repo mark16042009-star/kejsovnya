@@ -514,6 +514,8 @@ img,svg,canvas{-webkit-user-drag:none;user-drag:none}
 .up-go.skip{background:var(--panel2);color:var(--text);border-color:var(--line);box-shadow:none}
 .up-go.skip:hover{background:#2a2a2a}
 
+.m-ch{position:absolute;right:6px;top:28px;font-size:11px;padding:1px 5px;border-radius:5px;background:rgba(0,0,0,.6);color:var(--muted)}
+.m-ch.mid{color:#facc15}.m-ch.hi{color:var(--good)}
 .rtp-chip{background:color-mix(in srgb, var(--accent) 14%, var(--panel));border-color:color-mix(in srgb, var(--accent) 40%, var(--line))}
 .adm-case{grid-template-columns:10px minmax(0,1fr) 80px 64px auto auto}
 .adm-case input[data-f=rtp]{grid-row:1/span 2;grid-column:4}
@@ -691,8 +693,8 @@ button,a,input,select,label{-webkit-tap-highlight-color:transparent;touch-action
 .rtp-table{max-width:100%}
 </style>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
-<script src="config.js?v=202611030936"></script>
-<script src="adapter.js?v=202611030936"></script>
+<script src="config.js?v=202611030945"></script>
+<script src="adapter.js?v=202611030945"></script>
 <link rel="icon" href="icon.png">
 </head>
 <body>
@@ -743,20 +745,21 @@ const LOCAL_ONLY = !!(window.APP_CONFIG && window.APP_CONFIG.localOnly); // ве
 
 /* ---------- Справочники ---------- */
 const RAR = [
-  {name:"Армейское",      color:"#4b69ff", p:0.62, base:0.20},
-  {name:"Запрещённое",    color:"#8847ff", p:0.26, base:2.60},
-  {name:"Засекреченное",  color:"#d32ce6", p:0.08, base:5.50},
-  {name:"Тайное",         color:"#eb4b4b", p:0.03, base:13.0},
-  {name:"Редкий предмет ★", color:"#e4ae39", p:0.01, base:45}
+  // base — ценность относительно других редкостей; итоговые цены масштабируются под RTP кейса
+  {name:"Армейское",      color:"#4b69ff", p:0.45, base:0.45},
+  {name:"Запрещённое",    color:"#8847ff", p:0.30, base:0.85},
+  {name:"Засекреченное",  color:"#d32ce6", p:0.15, base:1.70},
+  {name:"Тайное",         color:"#eb4b4b", p:0.07, base:3.80},
+  {name:"Редкий предмет ★", color:"#e4ae39", p:0.03, base:10}
 ];
 const WEAR = [
-  {s:"FN", n:"Прямо с завода",          min:0,   max:.07, p:.10, m:1.50},
-  {s:"MW", n:"Немного поношенное",      min:.07, max:.15, p:.25, m:1.15},
+  {s:"FN", n:"Прямо с завода",          min:0,   max:.07, p:.10, m:1.25},
+  {s:"MW", n:"Немного поношенное",      min:.07, max:.15, p:.25, m:1.10},
   {s:"FT", n:"После полевых испытаний", min:.15, max:.38, p:.40, m:1.00},
-  {s:"WW", n:"Поношенное",              min:.38, max:.45, p:.10, m:0.80},
-  {s:"BS", n:"Закалённое в боях",       min:.45, max:1,   p:.15, m:0.70}
+  {s:"WW", n:"Поношенное",              min:.38, max:.45, p:.10, m:0.92},
+  {s:"BS", n:"Закалённое в боях",       min:.45, max:1,   p:.15, m:0.85}
 ];
-const ST_P = 0.10, ST_M = 2;
+const ST_P = 0.10, ST_M = 1.5;
 const E_WEAR = WEAR.reduce((a,w)=>a+w.p*w.m,0);
 const E_ST = 1 + ST_P*(ST_M-1);
 let RTP = 0.95;
@@ -842,7 +845,7 @@ const CASES = [
    pal:[["#111111","#fde68a"],["#2a2416","#f5f5f4"],["#3b2f0b","#facc15"],["#0c0a09","#d6d3d1"]],
    names:["Купюра","Пачка","Чек","Сейф","Хранилище","Биржа","Акция","Дивиденд","Капитал","Магнат","Монетный двор","Джекпот","Миллион"]}
 ];
-const LAYOUT = [0,0,0,0,1,1,1,2,2,3,3,4,4]; // редкость для каждого из 13 предметов кейса
+const LAYOUT = [0,0,0,1,1,1,2,2,2,3,3,4,4]; // редкость для каждого из 13 предметов кейса
 
 /* ---------- Детерминированная генерация скинов ---------- */
 function hash(s){let h=2166136261;for(const ch of s){h^=ch.charCodeAt(0);h=Math.imul(h,16777619)}return h>>>0}
@@ -860,7 +863,7 @@ CASES.forEach(c=>{
     const pair = c.pal[Math.floor(r()*c.pal.length)];
     const pt = ["grad","stripes","camo","dots"][Math.floor(r()*4)];
     const blobs = Array.from({length:9},()=>[r()*200,r()*80,8+r()*22,4+r()*10,r()*180]);
-    return {i, rar, weapon, type, knife:rar===4, name:c.names[i], c:pair, pt, blobs, f:0.7+r()*0.8};
+    return {i, rar, weapon, type, knife:rar===4, name:c.names[i], c:pair, pt, blobs, f:0.85+r()*0.35};
   });
   c.defPrice = c.price; c.defNew = !!c.isNew; c.off = false;
 });
@@ -876,6 +879,7 @@ function recomputeCases(){
     c.m = (c.rtp || RTP)*c.price/ev;
     c.skins.forEach(s=>{s.basePrice = RAR[s.rar].base*s.f*c.m; s.chance = RAR[s.rar].p / c.skins.filter(x=>x.rar===s.rar).length;});
     c.maxP = Math.max(...c.skins.map(s=>s.basePrice))*WEAR[0].m*ST_M;
+    c.minP = Math.max(2, Math.round(Math.min(...c.skins.map(s=>s.basePrice))*WEAR[4].m));
   });
 }
 recomputeCases();
@@ -1099,7 +1103,7 @@ function drawCaseGrid(){
         ${c.isNew?'<span class="new-tag">Новый</span>':''}
         ${caseArt(c)}
         <div class="case-row"><h3>${c.name}</h3><span class="price">${money(c.price)}</span></div>
-        <div class="top">до <b>${money(c.maxP)}</b></div>
+        <div class="top">от <b>${money(c.minP)}</b> до <b>${money(c.maxP)}</b></div>
       </a>`).join("") : '<p class="empty-note">Ничего не нашлось. Измените поиск или диапазон цены.</p>';
 }
 
@@ -1129,7 +1133,7 @@ function viewCase(c){
       </div>
     </section>
     <div class="section-title"><h2>Содержимое кейса</h2>
-      <div class="odds"><span class="odd rtp-chip" title="Какая доля цены кейса в среднем возвращается предметами">Отдача <span class="num">${Math.round((c.rtp||RTP)*100)}%</span></span>${RAR.map(r=>`<span class="odd" style="--rc:${r.color}"><i></i>${r.name} <span class="num">${(r.p*100).toFixed(2)}%</span></span>`).join("")}</div>
+      <div class="odds"><span class="odd rtp-chip" title="Какая доля цены кейса в среднем возвращается предметами">RTP <span class="num">${Math.round((c.rtp||RTP)*100)}%</span></span>${RAR.map(r=>`<span class="odd" style="--rc:${r.color}"><i></i>${r.name} <span class="num">${(r.p*100).toFixed(2)}%</span></span>`).join("")}</div>
     </div>
     <div class="contents">${contents.map(sk=>{
       const lo = sk.basePrice*WEAR[4].m, hi = sk.basePrice*WEAR[0].m*ST_M;
@@ -1359,7 +1363,7 @@ function topups(){ return S.top||0; }
 
 
 /* ---------- Вид: апгрейд ---------- */
-let UP_EDGE = 0.95, UP_MAX = 0.85; const UP_SEL = 6;
+let UP_EDGE = 0.95, UP_MAX = 0.90; const UP_SEL = 6;
 const CATALOG = [];
 function buildCatalog(){
 CATALOG.length = 0;
@@ -1481,6 +1485,9 @@ function drawUpTargets(){
   const list = CATALOG.filter(t=>t.price>st && t.price>=lo && t.price<=hi && (!upQuery || upQuery.split(/\s+/).every(w=>t.text.includes(w)))).slice(0,60);
   box.innerHTML = list.length ? list.map(t=>mini(t, `data-k="${t.k}"${upSpinning?' disabled':''}`, upTarget===t)).join("")
     : `<p class="empty-note">Ничего не нашлось</p>`;
+  // шанс на каждой цели, чтобы сразу было видно, на что есть смысл идти
+  if(st) box.querySelectorAll("[data-k]").forEach(b=>{ const t = CATALOG[+b.dataset.k], ch = Math.min(UP_MAX, st*UP_EDGE/t.price);
+    const e = document.createElement("span"); e.className = "m-ch" + (ch>=0.3?" hi":ch>=0.1?" mid":""); e.textContent = pct(ch); b.appendChild(e); });
   box.querySelectorAll("[data-k]").forEach(b=>b.addEventListener("click",()=>{
     if(upSpinning) return;
     const t = CATALOG[+b.dataset.k];
@@ -2178,13 +2185,13 @@ function renderFeed(){
 
 
 /* ---------- Общие настройки (их меняет владелец) ---------- */
-let CFG = {rtp:0.95, runRate:0.5, upMax:0.85, upEdge:0.95, start:4000, cases:{}, announce:{text:"", on:false, ts:0}, hidden:{}};
+let CFG = {rtp:0.95, runRate:0.5, upMax:0.90, upEdge:0.95, start:4000, cases:{}, announce:{text:"", on:false, ts:0}, hidden:{}};
 function applyConfig(raw){
   const c = raw || {};
   const n = (v,lo,hi,d)=>{ v = Number(v); return isFinite(v) ? Math.min(hi, Math.max(lo, v)) : d; };
   const obj = v => v && typeof v==="object" && !Array.isArray(v) ? v : {};
   const an = obj(c.announce);
-  CFG = {rtp:n(c.rtp,.3,.99,.95), runRate:n(c.runRate,.05,10,.5), upMax:n(c.upMax,.05,.95,.85), upEdge:n(c.upEdge,.3,1,.95),
+  CFG = {rtp:n(c.rtp,.3,.99,.95), runRate:n(c.runRate,.05,10,.5), upMax:n(c.upMax,.05,.95,.90), upEdge:n(c.upEdge,.3,1,.95),
     start:Math.round(n(c.start,0,1e7,4000)), cases:obj(c.cases), hidden:obj(c.hidden),
     announce:{text:String(an.text||"").slice(0,300), on:!!an.on, ts:Number(an.ts)||0}};
   RTP = CFG.rtp; RUB_PER_POINT = CFG.runRate; UP_MAX = CFG.upMax; UP_EDGE = CFG.upEdge; START = CFG.start;
@@ -2284,10 +2291,10 @@ function viewAdmin(){
       </section>
       <section class="panel"><div class="ph"><h2>Экономика</h2></div>
         <div class="adm-form">
-          <label for="e-rtp">Отдача кейсов, %<small>какая доля цены кейса в среднем возвращается предметами</small></label><input id="e-rtp" type="number" min="30" max="99" step="1" value="${pctv(CFG.rtp)}">
+          <label for="e-rtp">RTP кейсов, %<small>какая доля цены кейса в среднем возвращается предметами</small></label><input id="e-rtp" type="number" min="30" max="99" step="1" value="${pctv(CFG.rtp)}">
           <label for="e-run">Рублей за 1 очко забега<small>сейчас: ${rateText()}</small></label><input id="e-run" type="number" min="0.05" max="10" step="0.05" value="${CFG.runRate}">
           <label for="e-upmax">Макс. шанс апгрейда, %</label><input id="e-upmax" type="number" min="5" max="95" step="1" value="${pctv(CFG.upMax)}">
-          <label for="e-upedge">Отдача апгрейда, %<small>шанс = ставка × отдача ÷ цена цели</small></label><input id="e-upedge" type="number" min="30" max="100" step="1" value="${pctv(CFG.upEdge)}">
+          <label for="e-upedge">RTP апгрейда, %<small>шанс = ставка × отдача ÷ цена цели</small></label><input id="e-upedge" type="number" min="30" max="100" step="1" value="${pctv(CFG.upEdge)}">
           <label for="e-start">Стартовый баланс, ₽<small>для новых игроков и при сбросе</small></label><input id="e-start" type="number" min="0" step="100" value="${CFG.start}">
         </div>
         <div class="adm-row"><button class="btn primary" id="e-save">Сохранить</button><button class="btn" id="e-def">По умолчанию</button><span class="hint" id="e-msg"></span></div>
@@ -2327,7 +2334,7 @@ function viewAdmin(){
     try{ await saveConfig(patch); drawAdminRtp(); flash(m, true, "Сохранено, уже действует у всех"); }catch(e){ flash(m, false, "Не сохранилось. Попробуйте ещё раз."); }
   });
   document.getElementById("e-def").addEventListener("click", ()=>{
-    document.getElementById("e-rtp").value = 95; document.getElementById("e-run").value = 0.5; document.getElementById("e-upmax").value = 85;
+    document.getElementById("e-rtp").value = 95; document.getElementById("e-run").value = 0.5; document.getElementById("e-upmax").value = 90;
     document.getElementById("e-upedge").value = 95; document.getElementById("e-start").value = 4000;
     flash(document.getElementById("e-msg"), true, "Значения по умолчанию подставлены, нажмите «Сохранить»");
   });
