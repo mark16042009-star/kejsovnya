@@ -72,7 +72,7 @@ main{max-width:1240px;margin:0 auto;padding:24px 16px 48px}
 .case::before{content:"";position:absolute;inset:0;background:radial-gradient(240px 140px at 50% 30%, var(--ca) 0%, transparent 70%);opacity:.18;pointer-events:none}
 .case:hover{transform:translateY(-3px);border-color:var(--ca)}
 .case svg{width:100%;height:auto;position:relative}
-.case-art{display:block;border-radius:8px;image-rendering:pixelated}
+.case-art{display:block;filter:drop-shadow(0 6px 10px rgba(0,0,0,.35))}
 .case-row{display:flex;justify-content:space-between;align-items:baseline;gap:8px;position:relative}
 .case h3{font-size:18px}
 .price{font-family:var(--mono);font-weight:700;color:var(--accent)}
@@ -918,7 +918,7 @@ nav a .nav-dot,#nav-more .nav-dot{position:absolute;top:10px;right:2px;width:8px
 #adm-rtp{min-width:0;overflow:hidden}
 .rtp-table{max-width:100%}
 </style>
-<script>window.APP_BUILD="03.11 14:40";</script>
+<script>window.APP_BUILD="03.11 14:44";</script>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="adapter.js"></script>
 <link rel="icon" href="icon.png">
@@ -1720,7 +1720,7 @@ function pixelArt(sk){
 }
 function art(sk){ return pixelArt(sk); }
 /* ---------- Пиксельные иллюстрации кейсов ----------
- * У каждого кейса своя сцена (64×44 пикселя), сундук в цветах кейса и своя эмблема на нём. */
+ * Сундук в цветах кейса и своя эмблема на нём, без фона. */
 const EMB = {
   carton:{p:{a:"#c8a273",b:"#8a6a43",c:"#e8d8a8"}, s:`
 ..............
@@ -1984,39 +1984,14 @@ kbbaaakkaaabbk
 ....kkkkkk....`}
 };
 const CW = 64, CH = 44;
-/* фоновые сцены: (x, y, шум) → цвет */
-const SCENE = {
-  carton:(x,y,N)=>y>34 ? (x%8===0 ? "#5a4026" : "#7a5a36") : (y%9===0 ? "#6b4f2e" : mix(hexRgb("#3a2e22"), hexRgb("#5a4632"), N(x/6,y/6))),
-  chalk:(x,y,N)=>y>36 ? ((x+y)%6===0 ? "#5a3a1a" : "#7a5226") : y<3 ? "#2a1a10" : mix(hexRgb("#1a3326"), hexRgb("#24402f"), N(x/5,y/5)),
-  sand:(x,y,N)=>{ const d = 30 + 4*Math.sin(x/7) + 2*Math.sin(x/3+1); return y>d ? mix(hexRgb("#d9a85a"), hexRgb("#b07a3a"), (y-d)/10) : mix(hexRgb("#7ac8f0"), hexRgb("#ffe0a0"), y/30); },
-  retro:(x,y)=>y%3===0 ? "#2a0f4a" : mix(hexRgb("#3b0a5a"), hexRgb("#ff6ab0"), y/44),
-  ocean:(x,y,N)=>{ const w = 22 + 1.6*Math.sin(x/4 + y/9); if(y<w) return mix(hexRgb("#5ac8f0"), hexRgb("#c8ecff"), y/22); return (y===Math.round(w)+1 && x%5<2) ? "#e6f7ff" : mix(hexRgb("#1a6ab0"), hexRgb("#04223f"), (y-22)/22); },
-  rust:(x,y,N)=>{ if(x%16===3 && y%10===4) return "#9a9a9a"; const f = N.f(x/6,y/5); return f>.62 ? "#a8461d" : f>.55 ? "#7a3a12" : mix(hexRgb("#2e2622"), hexRgb("#4a3a30"), N(x/3,y/3)); },
-  candy:(x,y)=>((x+ (Math.floor(y/6)%2)*3)%6===0 && y%6===2) ? "#ffffff" : mix(hexRgb("#ff9ac8"), hexRgb("#b04a8a"), y/44),
-  jungle:(x,y,N)=>{ const f = N.f(x/5,y/4); return f>.66 ? "#2e8b4a" : f>.55 ? "#1a5a2e" : mix(hexRgb("#0b2a16"), hexRgb("#123d1e"), y/44); },
-  tundra:(x,y,N)=>{ if(N.h(x,y)<.04 && y<34) return "#ffffff"; const g = 33 + 2*Math.sin(x/9); return y>g ? mix(hexRgb("#e8f4ff"), hexRgb("#b8d4ea"), (y-g)/10) : mix(hexRgb("#4a7fb0"), hexRgb("#bfe0f5"), y/33); },
-  city:(x,y,N)=>{ const bh = 14 + Math.floor(N.h(Math.floor(x/6),1)*18); if(y > 44-bh){ return (x%6!==0 && x%2===1 && y%3===1 && N.h(x,y)>.45) ? "#ffd23a" : "#141822"; } return N.h(x,y)<.02 ? "#ffffff" : mix(hexRgb("#05061a"), hexRgb("#2a1e4a"), y/40); },
-  neon:(x,y)=>{ if(y<22){ const dx = x-32, dy = y-20; if(dx*dx + dy*dy*2.5 < 140 && y%3!==1) return mix(hexRgb("#ffd23a"), hexRgb("#ff3ea5"), y/20); return mix(hexRgb("#12002b"), hexRgb("#4a0a5a"), y/22); } const t = (x-32)*2.2/(y-19), hl = [23,25,28,32,37,43].includes(y); return (hl || (Math.abs(t-Math.round(t))<.18/(1+(43-y)/12) && y>22)) ? mix(hexRgb("#ff3ea5"), hexRgb("#7a1a6a"), (43-y)/22) : "#14001f"; },
-  volcano:(x,y,N)=>{ if(y>38) return N.f(x/3,y)>.5 ? "#ff5a1f" : "#a01a05"; if(N.h(x,y)<.03) return "#ffb02e"; return mix(hexRgb("#1a0505"), hexRgb("#5a1206"), y/38); },
-  cosmos:(x,y,N)=>{ const h = N.h(x,y); if(h<.04) return "#ffffff"; const f = N.f(x/8,y/6); return f>.6 ? mix(hexRgb("#3a1a6a"), hexRgb("#ff6ad5"), (f-.6)*2.5) : mix(hexRgb("#03031a"), hexRgb("#0b0b2b"), f); },
-  gold:(x,y,N)=>{ const pile = 34 + 3*Math.sin(x/5) + 2*Math.cos(x/3); if(y>pile) return (x+y)%4===0 ? "#fff3c4" : N.h(x,y)>.5 ? "#f2c94c" : "#c8902a"; return N.h(x,y)<.03 ? "#fff3c4" : mix(hexRgb("#1a1208"), hexRgb("#3a2a10"), y/40); },
-  diamond:(x,y,N)=>{ const cx = Math.floor(x/8), cy = Math.floor(y/8), up = (x%8) > (y%8); const h = N.h(cx*2+(up?1:0), cy); if(N.h(x,y)<.02) return "#ffffff"; return mix(hexRgb("#0e3a4a"), hexRgb("#2a8aa8"), h*.8); },
-  empire:(x,y)=>{ if(y<3) return "#fbbf24"; if(y===3) return "#b8862a"; const fold = Math.sin(x/2.2); return mix(hexRgb("#2e0a4a"), hexRgb("#6b21a8"), .5+.5*fold); },
-  plasma:(x,y,N)=>{ for(let b=0;b<3;b++){ let yy = 6 + b*14; for(let i=0;i<=x;i++) yy += (N.h(i,b+20)-.5)*2.6; const d = Math.abs(y-yy); if(d<.7) return "#e0fbff"; if(d<1.6) return "#22d3ee"; } return mix(hexRgb("#020818"), hexRgb("#0b1a4a"), N.f(x/8,y/6)); },
-  abyss:(x,y,N)=>{ if(N.h(x,y)<.025) return "#5eead4"; return mix(hexRgb("#0a3a3a"), hexRgb("#000608"), y/44 + (N(x/6,y/6)-.5)*.3); },
-  legend:(x,y)=>{ const dx = x-32, dy = y-14, a = Math.atan2(dy,dx); return Math.sin(a*10)>.6 ? mix(hexRgb("#8a5a10"), hexRgb("#2a0505"), Math.min(1,Math.sqrt(dx*dx+dy*dy)/40)) : mix(hexRgb("#3a0a10"), hexRgb("#0a0204"), y/44); },
-  million:(x,y,N)=>{ const dx = x-32, dy = y-16, a = Math.atan2(dy,dx); if(x%10===3 && y%9===4) return "#2e6b3a"; return Math.sin(a*8)>.55 ? mix(hexRgb("#fde68a"), hexRgb("#0c2a14"), Math.min(1,Math.sqrt(dx*dx+dy*dy)/34)) : mix(hexRgb("#0c2a14"), hexRgb("#04140a"), y/44); }
-};
 function caseArt(c){
   if(c._art) return c._art;
-  const N = vnoise(hash("case|"+c.id)), scene = SCENE[c.id] || ((x,y)=>mix(hexRgb(c.pal[0][0]), [0,0,0], y/60));
   const grid = new Array(CW*CH).fill(null);
   const put = (x,y,col) => { if(x>=0 && x<CW && y>=0 && y<CH && col) grid[y*CW+x] = typeof col==="string" ? col : rgbHex(col); };
-  for(let y=0;y<CH;y++) for(let x=0;x<CW;x++){ const col = scene(x,y,N); put(x,y, mix(typeof col==="string" ? hexRgb(col) : col, [0,0,0], .18)); }
   // тень и сундук
   const X0 = 13, X1 = 50, Y0 = 18, YL = 25, Y1 = 40;
   const body = hexRgb(c.accent), dark = shade(hexRgb(c.pal[0][0]), -.2), metal = [58,62,70], metalL = [128,136,148];
-  for(let x=X0+1;x<=X1+1;x++) put(x, Y1+1, "#000000");
+  for(let x=X0+2;x<=X1;x++) put(x, Y1+1, "rgba0");
   for(let y=Y0;y<=Y1;y++) for(let x=X0;x<=X1;x++){
     const edge = x===X0 || x===X1 || y===Y0 || y===Y1 || y===YL;
     let col;
@@ -2037,10 +2012,9 @@ function caseArt(c){
     rows.forEach((r,y)=>[...r].forEach((ch,x)=>{ if(ch===".") return; put(ex+x, ey+y-1, ch==="k" ? "#0b0b0e" : em.p[ch]); }));
   }
   // искры у дорогих кейсов
-  if(c.defPrice >= 7999){ const r = rng(hash("spark|"+c.id)); for(let k=0;k<(c.elite?14:8);k++){ const x = Math.floor(r()*CW), y = Math.floor(r()*16); put(x,y,"#fff3c4"); put(x+1,y,"#ffd23a"); put(x-1,y,"#ffd23a"); put(x,y+1,"#ffd23a"); put(x,y-1,"#ffd23a"); } }
   const byCol = {};
   for(let y=0;y<CH;y++){ let x = 0; while(x<CW){ const col = grid[y*CW+x]; if(!col){ x++; continue; } let w = 1; while(x+w<CW && grid[y*CW+x+w]===col) w++; (byCol[col] = byCol[col] || []).push(`M${x} ${y}h${w}v1h-${w}z`); x += w; } }
-  return c._art = `<svg class="case-art" viewBox="0 0 ${CW} ${CH}" shape-rendering="crispEdges" aria-hidden="true">${Object.entries(byCol).map(([col,d])=>`<path fill="${col}" d="${d.join("")}"/>`).join("")}</svg>`;
+  return c._art = `<svg class="case-art" viewBox="${X0-3} ${Y0-6} ${X1-X0+7} ${Y1-Y0+10}" shape-rendering="crispEdges" aria-hidden="true">${Object.entries(byCol).map(([col,d])=>`<path fill="${col==="rgba0" ? "#000" : col}"${col==="rgba0" ? ' opacity=".45"' : ""} d="${d.join("")}"/>`).join("")}</svg>`;
 }
 
 /* ---------- Состояние ---------- */
