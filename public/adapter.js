@@ -11,7 +11,13 @@
 
   var tg = window.Telegram && window.Telegram.WebApp;
   var initData = (tg && tg.initData) || "";
-  var API = (window.APP_CONFIG && window.APP_CONFIG.api) || "/api";
+  var CFG = window.APP_CONFIG || {};
+  var API = CFG.api || "/api";
+  // auth: "cookie" — свой сервер (server.js), "token" — Cloudflare Worker на другом адресе
+  var AUTH = CFG.auth || "cookie";
+  var TOKEN_KEY = "kejsovnya-token";
+  function getToken() { try { return localStorage.getItem(TOKEN_KEY) || ""; } catch (e) { return ""; } }
+  function setToken(t) { try { if (t) localStorage.setItem(TOKEN_KEY, t); else localStorage.removeItem(TOKEN_KEY); } catch (e) {} }
 
   // ---- Оформление внутри Telegram ----
   if (tg) {
@@ -29,7 +35,8 @@
   function call(method, url, body) {
     return fetch(API + url, {
       method: method,
-      headers: { "Content-Type": "application/json", "X-Tg-Init-Data": initData },
+      headers: Object.assign({ "Content-Type": "application/json", "X-Tg-Init-Data": initData },
+        AUTH === "token" && getToken() ? { "Authorization": "Bearer " + getToken() } : {}),
       body: body ? JSON.stringify(body) : undefined
     }).then(function (r) {
       if (r.status === 401 || r.status === 403 || r.status === 400 || r.status === 413) throw { code: "invalid_argument", message: "HTTP " + r.status };
@@ -40,12 +47,18 @@
   }
 
   var mePromise = null;
-  function me() { return mePromise || (mePromise = call("GET", "/me").catch(function () { return null; })); }
+  function me() {
+    if (!mePromise) mePromise = (AUTH === "token" && !getToken() && !initData) ? Promise.resolve(null)
+      : call("GET", "/me").catch(function (e) { if (AUTH === "token" && e && e.code === "invalid_argument") setToken(""); return null; });
+    return mePromise;
+  }
 
   // Опрос вместо живой подписки: документы раз в 3 с, коллекции раз в 5 с,
   // плюс сразу после собственной записи.
-  var POLL_DOC = 3000, POLL_COL = 5000;
+  var POLL_DOC = CFG.pollDoc || 3000, POLL_COL = CFG.pollCol || 5000;
   var pollers = new Set();
+  // пока вкладка свёрнута, не опрашиваем сервер; при возвращении — сразу обновляем
+  document.addEventListener("visibilitychange", function () { if (!document.hidden) pollers.forEach(function (p) { p(); }); });
   function bump() { setTimeout(function () { pollers.forEach(function (p) { p(); }); }, 300); }
 
   function frozen(v) { return v === undefined ? undefined : JSON.parse(JSON.stringify(v)); }
@@ -58,6 +71,7 @@
     var stop = false, timer = 0, ver = null, busy = false;
     function tick() {
       if (stop || busy) return;
+      if (document.hidden) { clearTimeout(timer); timer = setTimeout(tick, interval); return; }
       busy = true; clearTimeout(timer);
       load().then(function (res) {
         busy = false;
@@ -97,10 +111,15 @@
 
   function colRef(path, lim) {
     var limit = lim || 1000;
-    function load() {
-      return call("GET", "/col?path=" + encodeURIComponent(path) + "&limit=" + limit).then(function (r) {
-        var docs = r.docs.map(function (x) { return docSnap(path + "/" + x.id, { exists: true, data: x.data }); });
-        return { ver: String(r.ver), snap: { docs: docs, size: docs.length, empty: !docs.length, docChanges: function () { return []; }, metadata: { fromCache: false, hasPendingWrites: false } } };
+    var lastVer = null, lastSnap = null;
+    function load(useVer) {
+      var q = "/col?path=" + encodeURIComponent(path) + "&limit=" + limit + (useVer && lastVer ? "&ver=" + encodeURIComponent(lastVer) : "");
+      return call("GET", q).then(function (r) {
+        if (r.same && lastSnap) return { ver: String(r.ver), snap: lastSnap };
+        var docs = (r.docs || []).map(function (x) { return docSnap(path + "/" + x.id, { exists: true, data: x.data }); });
+        lastVer = String(r.ver);
+        lastSnap = { docs: docs, size: docs.length, empty: !docs.length, docChanges: function () { return []; }, metadata: { fromCache: false, hasPendingWrites: false } };
+        return { ver: lastVer, snap: lastSnap };
       });
     }
     var q = {
@@ -110,8 +129,8 @@
       limit: function (n) { return colRef(path, n); },
       orderBy: function () { return q; },
       where: function () { return q; },
-      get: function () { return load().then(function (r) { return r.snap; }); },
-      onSnapshot: function (next, error) { return subscribe(load, POLL_COL, function (r) { next(r.snap); }, error); }
+      get: function () { return load(false).then(function (r) { return r.snap; }); },
+      onSnapshot: function (next, error) { return subscribe(function () { return load(true); }, POLL_COL, function (r) { next(r.snap); }, error); }
     };
     return q;
   }
@@ -195,10 +214,11 @@
       if (pass.length < 6) { err.textContent = "Пароль должен быть не короче 6 символов"; return; }
       if (mode === "register" && pass !== ov.querySelector("#auth-pass2").value) { err.textContent = "Пароли не совпадают"; return; }
       var go = ov.querySelector("#auth-go"); go.disabled = true; err.textContent = "";
-      fetch(API + "/" + mode, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ login: login, password: pass }) })
+      fetch(API + "/" + mode, { method: "POST", headers: { "Content-Type": "application/json" }, credentials: AUTH === "token" ? "omit" : "same-origin", body: JSON.stringify({ login: login, password: pass }) })
         .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }); })
         .then(function (r) {
           if (!r.ok) { go.disabled = false; err.textContent = (r.j && r.j.error) || "Не получилось, попробуйте ещё раз"; return; }
+          if (AUTH === "token") setToken(r.j && r.j.token);
           if (mode === "login") { try { localStorage.removeItem(LOCAL_KEY); } catch (x) {} } // при входе берём прогресс из аккаунта
           location.reload();
         }, function () { go.disabled = false; err.textContent = "Нет связи с сервером"; });
@@ -208,9 +228,10 @@
   }
 
   function logout() {
-    fetch(API + "/logout", { method: "POST" }).finally(function () {
+    fetch(API + "/logout", { method: "POST", headers: AUTH === "token" && getToken() ? { "Authorization": "Bearer " + getToken() } : {} }).catch(function () {}).finally(function () {
+      setToken("");
       try { localStorage.removeItem(LOCAL_KEY); } catch (x) {}
-      location.replace(location.pathname + "#cases");
+      try { history.replaceState(null, "", location.pathname + "#cases"); } catch (x) {}
       location.reload();
     });
   }
