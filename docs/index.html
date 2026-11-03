@@ -447,6 +447,16 @@ img,svg,canvas{-webkit-user-drag:none;user-drag:none}
 .wheel-lost{font-family:var(--mono);font-size:20px;fill:var(--text)}
 
 .case-result{display:grid;gap:10px}
+.tr-banner{position:fixed;top:76px;right:16px;z-index:90;display:flex;align-items:center;gap:12px;max-width:min(380px,calc(100vw - 32px));padding:12px 14px;background:var(--panel);border:2px solid var(--accent);box-shadow:6px 6px 0 #000,0 0 24px rgba(255,200,0,.25);color:var(--text);text-decoration:none;animation:trIn .25s steps(4)}
+.tr-banner[hidden]{display:none}
+.tr-banner.out{animation:trOut .2s steps(3) forwards}
+.tr-banner svg{flex:none;width:28px;height:28px;fill:none;stroke:var(--accent);stroke-width:2.4}
+.tr-banner span{display:grid;gap:3px;min-width:0}
+.tr-banner b{font-size:14px} .tr-banner small{font-size:11px;color:var(--muted)}
+.tr-banner i{font-style:normal;color:var(--muted);font-size:20px;padding:0 2px 0 6px;cursor:pointer}
+@keyframes trIn{from{transform:translateY(-20px);opacity:0}}
+@keyframes trOut{to{transform:translateY(-20px);opacity:0}}
+@media (max-width:760px){ .tr-banner{top:auto;bottom:84px;left:12px;right:12px;max-width:none} }
 .pp-head{display:flex;align-items:center;gap:18px;flex-wrap:wrap;margin-bottom:14px}
 .pp-main{flex:1 1 260px;display:grid;gap:8px;min-width:0}
 .pp-nick{font-size:26px;word-break:break-word}
@@ -1256,10 +1266,10 @@ body.wide-case main{max-width:none}
 #adm-rtp{min-width:0;overflow:hidden}
 .rtp-table{max-width:100%}
 </style>
-<script>window.APP_BUILD="03.11 23:17";</script>
+<script>window.APP_BUILD="03.11 23:31";</script>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
-<script src="config.js?v=202611032117"></script>
-<script src="adapter.js?v=202611032117"></script>
+<script src="config.js?v=202611032131"></script>
+<script src="adapter.js?v=202611032131"></script>
 <link rel="icon" href="icon.png">
 </head>
 <body>
@@ -3933,6 +3943,7 @@ async function initCloud(){
     subscribeTop();
     subscribeFeed();
     subscribeStock();
+    tgLinkOnce();
     btInitSettle();
     trStart();
     const ref = db.collection("data/users/"+id).doc("game");
@@ -5768,14 +5779,49 @@ async function trRefresh(){
   if(!trOn()) return;
   let r; try{ r = await trAct({action:"list"}); }catch(e){ return; }
   if(!Array.isArray(r.trades)) return;
-  TR.list = r.trades; trSettle(); trBadge();
+  TR.list = r.trades; trSettle(); trBadge(); trNotify();
   if(document.getElementById("tr-list")) drawTrades();
   if(TR.view && document.getElementById("tw")){ const t = TR.list.find(x=>x.id===TR.view); if(t) drawTradeView(t); }
 }
+function tgLinkOnce(){
+  try{
+    const w = window.Telegram && window.Telegram.WebApp, init = w && w.initData;
+    if(!init || !CL.db || typeof CL.db.action!=="function" || sessionStorage.getItem("pd-tglink")===CL.id) return;
+    CL.db.action("tglink", {initData:init}).then(r=>{ if(r && r.ok) sessionStorage.setItem("pd-tglink", CL.id); }).catch(()=>{});
+  }catch(e){}
+}
+/* уведомления о входящих трейдах прямо на сайте */
+const TR_SEEN_KEY = "pd-tr-seen";
+function trNotify(){
+  const inc = trIncoming(); let seen;
+  try{ seen = new Set(JSON.parse(localStorage.getItem(TR_SEEN_KEY) || "[]")); }catch(e){ seen = new Set(); }
+  const fresh = inc.filter(t=>!seen.has(t.id));
+  if(fresh.length){
+    fresh.forEach(t=>seen.add(t.id));
+    try{ localStorage.setItem(TR_SEEN_KEY, JSON.stringify([...seen].slice(-200))); }catch(e){}
+    const t = fresh[0], onPage = location.hash==="#trade-"+t.id;
+    if(!onPage) trBanner(fresh.length > 1 ? `Новых предложений обмена: ${fresh.length}` : `${t.fromNick} предлагает обмен`, fresh.length > 1 ? "#trades" : "#trade-"+t.id);
+    if(S.sound){ beep(988,.09,.05,"triangle"); setTimeout(()=>beep(1319,.09,.05,"triangle"),110); setTimeout(()=>beep(1760,.14,.05,"triangle"),220); }
+    haptic && haptic("success");
+  }
+  const n = inc.length, base = document.title.replace(/^\(\d+\)\s*/, "");
+  document.title = n ? `(${n}) ${base}` : base;
+}
+function trBanner(text, href){
+  let el = document.getElementById("tr-banner");
+  if(!el){ el = document.createElement("a"); el.id = "tr-banner"; el.className = "tr-banner"; document.body.appendChild(el); }
+  el.href = href;
+  el.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h14l-4-4M20 16H6l4 4"/></svg><span><b></b><small>Нажмите, чтобы посмотреть</small></span><i aria-hidden="true">×</i>`;
+  el.querySelector("b").textContent = text;
+  el.classList.remove("out"); el.hidden = false;
+  el.onclick = e=>{ if(e.target.tagName==="I"){ e.preventDefault(); } el.classList.add("out"); setTimeout(()=>{ el.hidden = true; }, 200); };
+  clearTimeout(el._t); el._t = setTimeout(()=>{ el.classList.add("out"); setTimeout(()=>{ el.hidden = true; }, 200); }, 9000);
+}
+document.addEventListener("visibilitychange", ()=>{ if(!document.hidden && trOn()) trRefresh(); });
 function trStart(){
   if(TR.timer || !trOn()) return;
   trRefresh();
-  TR.timer = setInterval(()=>{ if(!document.hidden && !document.getElementById("tr-list") && !document.getElementById("tw")) trRefresh(); }, 60000);
+  TR.timer = setInterval(()=>{ if(!document.hidden && !document.getElementById("tr-list") && !document.getElementById("tw")) trRefresh(); }, 30000);
 }
 function trFast(){ // на страницах обмена обновляем чаще
   clearInterval(TR.fast);

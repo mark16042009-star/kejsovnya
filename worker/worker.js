@@ -220,7 +220,33 @@ async function promoActivate(st, uid, b) {
 const cleanTradeItems = a => (Array.isArray(a) ? a.slice(0, 20) : []).map(x => x && typeof x === "object" ? {
   id: String(x.id || "").replace(/[^a-z0-9]/gi, "").slice(0, 24), c: String(x.c || "").slice(0, 20), s: x.s | 0, w: x.w | 0,
   fl: Number(x.fl) || 0, st: !!x.st, price: Math.max(0, Math.round(Number(x.price) || 0)) } : null).filter(x => x && x.id && x.c);
-async function tradeAction(st, uid, b) {
+/* уведомления о трейдах в Telegram: бот пишет игроку, если тот хоть раз заходил через Telegram */
+const fmtCoins = v => Math.round(v).toLocaleString("ru-RU").replace(/\u00a0/g, " ");
+const tradeSide = (items, coins) => {
+  const p = items.reduce((a, x) => a + (x.price || 0), 0), parts = [];
+  if (items.length) parts.push(`${items.length} шт. на ${fmtCoins(p)} монет`);
+  if (coins) parts.push(`${fmtCoins(coins)} монет`);
+  return parts.join(" + ") || "ничего";
+};
+async function tgNotify(env, st, uid, text, path) {
+  const token = String((env && env.BOT_TOKEN) || "").trim(); if (!token) return;
+  try {
+    const link = await st.get("tglinks/" + uid); const chat = link && link.data && link.data.tg; if (!chat) return;
+    const base = String(env.APP_URL || "https://mark16042009-star.github.io/kejsovnya/").replace(/#.*$/, "");
+    const body = { chat_id: chat, text, disable_web_page_preview: true,
+      reply_markup: { inline_keyboard: [[{ text: "Открыть в игре", web_app: { url: base + (path || "") } }]] } };
+    await fetch(`https://api.telegram.org/bot${token}/sendMessage`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+  } catch (e) { /* уведомление не обязательно — трейд всё равно создан */ }
+}
+async function tgLink(env, st, uid, b) {
+  const token = String((env && env.BOT_TOKEN) || "").trim(); if (!token) return { ok: false };
+  const user = await tgUser(b && b.initData, token);
+  if (!user || !user.id) return { ok: false };
+  const cur = await st.get("tglinks/" + uid);
+  if (!cur || !cur.data || cur.data.tg !== user.id) await st.set("tglinks/" + uid, { tg: user.id, ts: Date.now() });
+  return { ok: true };
+}
+async function tradeAction(st, uid, b, env) {
   b = b && typeof b === "object" ? b : {};
   const now = Date.now();
   const setIf = st.setIf ? (p, d, v) => st.setIf(p, d, v) : async (p, d, v) => { const c = await st.get(p); if (!c || c.ver !== v) return false; await st.set(p, d); return true; };
@@ -243,6 +269,7 @@ async function tradeAction(st, uid, b) {
     const t = { id, from: uid, fromNick: String(b.nick || "Игрок").slice(0, 20), to, toNick: String(b.toNick || "Игрок").slice(0, 20),
       give, get, giveCoins, getCoins, msg: String(b.msg || "").slice(0, 120), state: "pending", ts: now };
     await st.set("trades/" + id, t);
+    await tgNotify(env, st, to, `🔄 ${t.fromNick} предлагает вам обмен\n\nВы отдаёте: ${tradeSide(get, getCoins)}\nВы получаете: ${tradeSide(give, giveCoins)}${t.msg ? `\nСообщение: «${t.msg}»` : ""}`, "#trade-" + id);
     return { trade: t };
   }
   const id = String(b.id || "");
@@ -256,6 +283,8 @@ async function tradeAction(st, uid, b) {
   if (t.state !== "pending") return { error: "Трейд уже закрыт", trade: t };
   t.state = next[1]; t.done = now;
   if (!(await setIf("trades/" + id, t, cur.ver))) { const again = await st.get("trades/" + id); return { error: "Трейд уже закрыт", trade: again && again.data }; }
+  if (b.action === "accept") await tgNotify(env, st, t.from, `✅ ${t.toNick} принял ваш обмен — предметы уже ждут вас в инвентаре`, "#trade-" + id);
+  if (b.action === "decline") await tgNotify(env, st, t.from, `❌ ${t.toNick} отклонил ваш обмен. Вещи вернутся, когда зайдёте в игру`, "#trade-" + id);
   return { trade: t };
 }
 
@@ -426,7 +455,11 @@ export default {
       }
       if (route === "POST /api/trade") {
         if (tooMany(writeTries, uid, 30, 10000)) return json(200, { error: "Слишком часто" });
-        return json(200, await tradeAction(st, uid, await readBody(MAX_BODY)));
+        return json(200, await tradeAction(st, uid, await readBody(MAX_BODY), env));
+      }
+      if (route === "POST /api/tglink") {
+        if (tooMany(writeTries, uid, 10, 60000)) return json(200, { ok: false });
+        return json(200, await tgLink(env, st, uid, await readBody(MAX_BODY)));
       }
       if (route === "POST /api/stock") {
         if (tooMany(writeTries, uid, 30, 10000)) return json(200, { error: "Слишком часто" });
