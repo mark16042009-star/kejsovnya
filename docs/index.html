@@ -540,6 +540,22 @@ img,svg,canvas{-webkit-user-drag:none;user-drag:none}
 #cr-msg{grid-column:1/-1}
 #cr-msg:empty{display:none}
 @media (max-width:820px){ .cr-ctl{grid-template-columns:1fr} .cr-go{width:100%} .cr-stage canvas{height:260px} .cr-big{font-size:48px} }
+.daily{display:grid;grid-template-columns:auto 1fr auto auto;gap:14px;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px 16px;margin-bottom:18px}
+.daily.ready{border-color:color-mix(in srgb,var(--accent) 55%,var(--line));background:linear-gradient(90deg,color-mix(in srgb,var(--accent) 12%,var(--panel)),var(--panel) 60%)}
+.daily-ic{width:34px;height:34px;fill:none;stroke:var(--accent);stroke-width:1.6;stroke-linejoin:round}
+.daily:not(.ready) .daily-ic{stroke:var(--muted)}
+.daily.ready .daily-ic{animation:giftwob 2.4s ease-in-out infinite}
+@keyframes giftwob{0%,80%,100%{transform:rotate(0)}84%{transform:rotate(-10deg)}88%{transform:rotate(9deg)}92%{transform:rotate(-6deg)}96%{transform:rotate(4deg)}}
+.daily-t{display:grid;gap:2px;min-width:0}
+.daily-t span{color:var(--muted);font-size:13px}
+.daily-days{display:flex;gap:5px;list-style:none;margin:0;padding:0}
+.daily-days li{display:grid;justify-items:center;gap:1px;min-width:46px;padding:5px 6px;border-radius:8px;background:var(--panel2);border:1px solid var(--line);font-family:var(--mono);font-size:12px;color:var(--muted)}
+.daily-days li small{font-size:10px;opacity:.8}
+.daily-days li.got{color:var(--good);border-color:color-mix(in srgb,var(--good) 45%,var(--line))}
+.daily-days li.now{color:var(--accent);border-color:var(--accent)}
+.daily-go{white-space:nowrap}
+@media (prefers-reduced-motion: reduce){ .daily.ready .daily-ic{animation:none} }
+@media (max-width:980px){ .daily{grid-template-columns:auto 1fr} .daily-days{grid-column:1/-1;overflow-x:auto} .daily-days li{flex:1;min-width:40px} .daily-go{grid-column:1/-1;width:100%;padding:12px} }
 .rtp-chip{background:color-mix(in srgb, var(--accent) 14%, var(--panel));border-color:color-mix(in srgb, var(--accent) 40%, var(--line))}
 .adm-case{grid-template-columns:10px minmax(0,1fr) 80px 64px auto auto}
 .adm-case input[data-f=rtp]{grid-row:1/span 2;grid-column:4}
@@ -716,10 +732,10 @@ button,a,input,select,label{-webkit-tap-highlight-color:transparent;touch-action
 #adm-rtp{min-width:0;overflow:hidden}
 .rtp-table{max-width:100%}
 </style>
-<script>window.APP_BUILD="03.11 12:53";</script>
+<script>window.APP_BUILD="03.11 12:59";</script>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
-<script src="config.js?v=202611031053"></script>
-<script src="adapter.js?v=202611031053"></script>
+<script src="config.js?v=202611031059"></script>
+<script src="adapter.js?v=202611031059"></script>
 <link rel="icon" href="icon.png">
 </head>
 <body>
@@ -1115,7 +1131,9 @@ function viewCases(){
   const app = document.getElementById("app");
   if(!CASE_SORTS[S.caseSort]) S.caseSort = "price-asc";
   const f = S.caseFilter = Object.assign({q:"", min:"", max:""}, S.caseFilter||{});
+  queueMicrotask(()=>drawDaily());
   app.innerHTML = `
+    <section class="daily" id="daily" aria-live="polite" hidden></section>
     <div class="view-head"><h1>Кейсы</h1>
       <form class="case-tools" id="case-tools" role="search">
         <input id="cf-q" type="search" placeholder="Поиск по названию" value="${esc(f.q)}" aria-label="Поиск кейса по названию" autocomplete="off">
@@ -1411,7 +1429,7 @@ function topups(){ return S.top||0; }
 
 
 /* ---------- Вид: апгрейд ---------- */
-let UP_EDGE = 0.95, UP_MAX = 0.90, CRASH_RTP = 0.95; const UP_SEL = 6;
+let UP_EDGE = 0.95, UP_MAX = 0.90, CRASH_RTP = 0.95, DAILY_BASE = 100; const UP_SEL = 6;
 const CATALOG = [];
 function buildCatalog(){
 CATALOG.length = 0;
@@ -2234,17 +2252,17 @@ function renderFeed(){
 
 
 /* ---------- Общие настройки (их меняет владелец) ---------- */
-let CFG = {rtp:0.95, runRate:0.5, upMax:0.90, upEdge:0.95, crashRtp:0.95, start:4000, cases:{}, luck:{}, announce:{text:"", on:false, ts:0}, hidden:{}};
+let CFG = {rtp:0.95, runRate:0.5, upMax:0.90, upEdge:0.95, crashRtp:0.95, dailyBase:100, start:4000, cases:{}, luck:{}, announce:{text:"", on:false, ts:0}, hidden:{}};
 function applyConfig(raw){
   const c = raw || {};
   const n = (v,lo,hi,d)=>{ v = Number(v); return isFinite(v) ? Math.min(hi, Math.max(lo, v)) : d; };
   const obj = v => v && typeof v==="object" && !Array.isArray(v) ? v : {};
   const an = obj(c.announce);
-  CFG = {rtp:n(c.rtp,.3,.99,.95), runRate:n(c.runRate,.05,10,.5), upMax:n(c.upMax,.05,.95,.90), upEdge:n(c.upEdge,.3,1,.95), crashRtp:n(c.crashRtp,.3,.99,.95),
+  CFG = {rtp:n(c.rtp,.3,.99,.95), runRate:n(c.runRate,.05,10,.5), upMax:n(c.upMax,.05,.95,.90), upEdge:n(c.upEdge,.3,1,.95), crashRtp:n(c.crashRtp,.3,.99,.95), dailyBase:Math.round(n(c.dailyBase,0,1e6,100)),
     start:Math.round(n(c.start,0,1e7,4000)), cases:obj(c.cases), hidden:obj(c.hidden),
     luck:Object.fromEntries(Object.entries(obj(c.luck)).filter(([k,v])=>typeof k==="string" && isFinite(Number(v)) && Number(v)>0 && Number(v)!==1).map(([k,v])=>[k, Math.min(5, Math.max(0.1, Number(v)))])),
     announce:{text:String(an.text||"").slice(0,300), on:!!an.on, ts:Number(an.ts)||0}};
-  RTP = CFG.rtp; RUB_PER_POINT = CFG.runRate; UP_MAX = CFG.upMax; UP_EDGE = CFG.upEdge; CRASH_RTP = CFG.crashRtp; START = CFG.start;
+  RTP = CFG.rtp; RUB_PER_POINT = CFG.runRate; UP_MAX = CFG.upMax; UP_EDGE = CFG.upEdge; CRASH_RTP = CFG.crashRtp; DAILY_BASE = CFG.dailyBase; START = CFG.start;
   CASES.forEach(cs=>{ const o = obj(CFG.cases[cs.id]); cs.price = Math.round(n(o.price,1,1e7,cs.defPrice)); cs.off = !!o.off; cs.isNew = o.isNew===undefined ? cs.defNew : !!o.isNew; const r = Number(o.rtp); cs.rtp = isFinite(r) && r>=0.3 && r<=0.99 ? r : null; });
   recomputeCases(); buildCatalog();
 }
@@ -2346,6 +2364,7 @@ function viewAdmin(){
           <label for="e-upmax">Макс. шанс апгрейда, %</label><input id="e-upmax" type="number" min="5" max="95" step="1" value="${pctv(CFG.upMax)}">
           <label for="e-upedge">RTP апгрейда, %<small>шанс = ставка × отдача ÷ цена цели</small></label><input id="e-upedge" type="number" min="30" max="100" step="1" value="${pctv(CFG.upEdge)}">
           <label for="e-crash">RTP краша, %<small>шанс дожить до ×x = RTP ÷ x</small></label><input id="e-crash" type="number" min="30" max="99" step="1" value="${pctv(CFG.crashRtp)}">
+          <label for="e-daily">Ежедневный подарок, ₽<small>за 1-й день серии; к 7-му дню ×10. 0 — выключить</small></label><input id="e-daily" type="number" min="0" step="10" value="${CFG.dailyBase}">
           <label for="e-start">Стартовый баланс, ₽<small>для новых игроков и при сбросе</small></label><input id="e-start" type="number" min="0" step="100" value="${CFG.start}">
         </div>
         <div class="adm-row"><button class="btn primary" id="e-save">Сохранить</button><button class="btn" id="e-def">По умолчанию</button><span class="hint" id="e-msg"></span></div>
@@ -2380,13 +2399,13 @@ function viewAdmin(){
   // экономика
   document.getElementById("e-save").addEventListener("click", async ()=>{
     const v = id => Number(document.getElementById(id).value), m = document.getElementById("e-msg");
-    const patch = {rtp:v("e-rtp")/100, runRate:v("e-run"), upMax:v("e-upmax")/100, upEdge:v("e-upedge")/100, crashRtp:v("e-crash")/100, start:Math.round(v("e-start"))};
+    const patch = {rtp:v("e-rtp")/100, runRate:v("e-run"), upMax:v("e-upmax")/100, upEdge:v("e-upedge")/100, crashRtp:v("e-crash")/100, dailyBase:Math.round(v("e-daily")), start:Math.round(v("e-start"))};
     if(Object.values(patch).some(x=>!isFinite(x) || x<0)){ flash(m, false, "Проверьте числа: нужны положительные значения."); return; }
     try{ await saveConfig(patch); drawAdminRtp(); flash(m, true, "Сохранено, уже действует у всех"); }catch(e){ flash(m, false, "Не сохранилось. Попробуйте ещё раз."); }
   });
   document.getElementById("e-def").addEventListener("click", ()=>{
     document.getElementById("e-rtp").value = 95; document.getElementById("e-run").value = 0.5; document.getElementById("e-upmax").value = 90;
-    document.getElementById("e-upedge").value = 95; document.getElementById("e-crash").value = 95; document.getElementById("e-start").value = 4000;
+    document.getElementById("e-upedge").value = 95; document.getElementById("e-crash").value = 95; document.getElementById("e-daily").value = 100; document.getElementById("e-start").value = 4000;
     flash(document.getElementById("e-msg"), true, "Значения по умолчанию подставлены, нажмите «Сохранить»");
   });
   // кейсы
@@ -2683,6 +2702,52 @@ function viewCrash(){
     requestAnimationFrame(frame);
   }
   requestAnimationFrame(frame);
+}
+
+/* ---------- Ежедневный подарок ----------
+ * Раз в календарный день. Серия из 7 дней: награда растёт, пропуск дня сбрасывает серию на первый день. */
+const DAILY_MULT = [1, 1.5, 2, 3, 4, 6, 10];
+const dayKey = d => d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+function dailyState(){
+  const d = S.daily && typeof S.daily==="object" ? S.daily : {last:"", streak:0};
+  const now = new Date(), today = dayKey(now), y = new Date(now); y.setDate(y.getDate()-1);
+  const ready = d.last !== today;
+  const cont = d.last === dayKey(y) || d.last === today;
+  const streak = cont ? (d.streak|0) : 0;                   // сколько дней уже собрано в текущей серии
+  const next = ready ? (cont ? streak % 7 : 0) + 1 : streak; // номер дня, который можно забрать (или забран сегодня)
+  return {ready, streak: ready && !cont ? 0 : streak, day: next, prize: Math.round(DAILY_BASE * DAILY_MULT[(next-1)%7])};
+}
+function claimDaily(){
+  const st = dailyState(); if(!st.ready || DAILY_BASE<=0) return;
+  S.daily = {last: dayKey(new Date()), streak: st.day};
+  S.bal = Math.round((S.bal + st.prize)*100)/100;
+  S.stats.daily = Math.round((S.stats.daily||0) + st.prize);
+  save(); renderHeader();
+  if(S.sound){ beep(660,.08,.05,"triangle"); setTimeout(()=>beep(990,.08,.05,"triangle"),90); setTimeout(()=>beep(1320,.14,.05,"triangle"),180); }
+  drawDaily(true);
+}
+function untilTomorrow(){
+  const now = new Date(), t = new Date(now); t.setHours(24,0,0,0);
+  const m = Math.max(1, Math.ceil((t-now)/60000)), h = Math.floor(m/60);
+  return h ? `${h} ч ${m%60} мин` : `${m} мин`;
+}
+let dailyTimer = 0;
+function drawDaily(justGot){
+  const box = document.getElementById("daily"); if(!box) return;
+  if(DAILY_BASE<=0){ box.hidden = true; return; }
+  box.hidden = false;
+  const st = dailyState();
+  const done = st.ready ? st.streak : st.day; // сколько клеток закрашено
+  box.className = "daily" + (st.ready ? " ready" : "");
+  box.innerHTML = `
+    <svg class="daily-ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="9" width="18" height="12" rx="2"/><path d="M3 13h18M12 9v12M12 9c-2-4-7-4-7-1s4 1 7 1zm0 0c2-4 7-4 7-1s-4 1-7 1z"/></svg>
+    <div class="daily-t"><b>Ежедневный подарок</b>
+      <span>${st.ready ? `День ${st.day} из 7 — заходите каждый день, награда растёт` : justGot ? `Получено ${money(Math.round(DAILY_BASE*DAILY_MULT[(st.day-1)%7]))}! Следующий — через ${untilTomorrow()}` : `Следующий подарок через ${untilTomorrow()}`}</span></div>
+    <ol class="daily-days" aria-label="Серия дней">${DAILY_MULT.map((m,i)=>`<li class="${i<done?'got':''}${st.ready && i===st.day-1?' now':''}"><small>Д${i+1}</small>${money(DAILY_BASE*m).replace(/\s₽$/,"")}</li>`).join("")}</ol>
+    ${st.ready ? `<button class="btn primary daily-go" id="daily-go">Забрать ${money(st.prize)}</button>` : ``}`;
+  const b = document.getElementById("daily-go"); if(b) b.addEventListener("click", claimDaily);
+  clearInterval(dailyTimer);
+  dailyTimer = setInterval(()=>{ if(!document.getElementById("daily")){ clearInterval(dailyTimer); return; } const r = dailyState().ready; if(r !== st.ready || !r) drawDaily(); }, 30000);
 }
 
 /* ---------- Маршрутизация ---------- */
