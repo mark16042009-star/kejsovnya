@@ -665,6 +665,30 @@ img,svg,canvas{-webkit-user-drag:none;user-drag:none}
 .vault-how{margin:0;padding-left:18px;display:grid;gap:4px;color:var(--muted);font-size:14px} .vault-how b{color:var(--text)}
 .nav-dot{position:absolute;top:8px;right:4px;width:8px;height:8px;border-radius:50%;background:var(--good)}
 @media (max-width:820px){ .vault-wrap{grid-template-columns:1fr} .vault-bar{grid-template-columns:auto minmax(0,1fr) auto} .vb-locks{display:none} .vb-prog{grid-column:1/-1;order:5} .vault-list li{grid-template-columns:1fr auto} .vault-list li em{grid-column:1/-1;text-align:left} }
+.epic{position:fixed;inset:0;z-index:90;display:grid;place-items:center;background:radial-gradient(circle at center,color-mix(in srgb,var(--ec) 30%,transparent),rgba(0,0,0,.72) 65%);animation:epicin .35s ease-out both;cursor:pointer;overflow:hidden}
+.epic.out{animation:epicout .45s ease-in both}
+@keyframes epicin{from{opacity:0}to{opacity:1}} @keyframes epicout{to{opacity:0}}
+.epic-rays{position:absolute;width:160vmax;height:160vmax;left:50%;top:50%;margin:-80vmax 0 0 -80vmax;background:repeating-conic-gradient(from 0deg,color-mix(in srgb,var(--ec) 28%,transparent) 0deg 8deg,transparent 8deg 20deg);animation:epicspin 9s linear infinite;-webkit-mask:radial-gradient(circle,#000 0,transparent 60%);mask:radial-gradient(circle,#000 0,transparent 60%)}
+@keyframes epicspin{to{transform:rotate(360deg)}}
+.epic-box{position:relative;display:grid;justify-items:center;gap:8px;text-align:center;padding:20px;animation:epicpop .7s cubic-bezier(.2,1.6,.4,1) both}
+@keyframes epicpop{0%{transform:scale(.2) rotate(-8deg);opacity:0}100%{transform:none;opacity:1}}
+.epic-tag{font-size:clamp(20px,4vw,34px);color:var(--ec);letter-spacing:.06em;text-shadow:3px 3px 0 #000,0 0 24px var(--ec);animation:epicblink .5s steps(2) 6}
+@keyframes epicblink{50%{opacity:.35}}
+.epic-art{width:min(440px,84vw);height:auto;filter:drop-shadow(0 0 22px var(--ec)) drop-shadow(4px 4px 0 #000);animation:epicfloat 1.6s ease-in-out infinite alternate}
+.epic-art .art{width:100%;height:auto}
+@keyframes epicfloat{to{transform:translateY(-8px)}}
+.epic-name{font-size:clamp(14px,2.4vw,20px);color:#fff;text-shadow:2px 2px 0 #000}
+.epic-price{font-size:clamp(26px,5vw,44px);color:var(--accent);text-shadow:3px 3px 0 #000}
+.epic-price span{font-size:.55em;color:#fff;background:var(--ec);color:#111;padding:2px 8px;border-radius:6px;vertical-align:middle;text-shadow:none}
+.epic-conf i{position:absolute;top:-20px;width:var(--s);height:var(--s);background:var(--c);box-shadow:2px 2px 0 rgba(0,0,0,.4);animation:epicfall var(--t) var(--d) cubic-bezier(.3,.6,.6,1) both}
+@keyframes epicfall{to{transform:translate(var(--x),110vh) rotate(var(--r))}}
+body.epic-shake #app{animation:eshake .55s}
+@keyframes eshake{0%,100%{transform:none}20%{transform:translate(-6px,3px)}40%{transform:translate(5px,-4px)}60%{transform:translate(-4px,2px)}80%{transform:translate(3px,-1px)}}
+#mus{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:10px}
+#mus .btn{padding:6px 10px;font-size:13px;cursor:pointer}
+#mus .btn.on{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.mus-name{max-width:220px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@media (prefers-reduced-motion: reduce){ .epic-rays,.epic-art,.epic-tag{animation:none} }
 .rtp-chip{background:color-mix(in srgb, var(--accent) 14%, var(--panel));border-color:color-mix(in srgb, var(--accent) 40%, var(--line))}
 .adm-case{grid-template-columns:10px minmax(0,1fr) 80px 64px auto auto}
 .adm-case input[data-f=rtp]{grid-row:1/span 2;grid-column:4}
@@ -841,7 +865,7 @@ button,a,input,select,label{-webkit-tap-highlight-color:transparent;touch-action
 #adm-rtp{min-width:0;overflow:hidden}
 .rtp-table{max-width:100%}
 </style>
-<script>window.APP_BUILD="03.11 13:54";</script>
+<script>window.APP_BUILD="03.11 14:01";</script>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="adapter.js"></script>
 <link rel="icon" href="icon.png">
@@ -1592,6 +1616,7 @@ async function openCases(c){
     else segs = [{to:pos(WIN-1,rnd(.15,.44)), d:D, e:outQuint}, {hold:rnd(350,750)}, {to:pos(WIN,rnd(-.47,-.2)), d:rnd(800,1400), e:inOut}];
     return {el, roll:el.parentElement, cells:el.children, step, cw, segs, seg:0, t0:null, from:0, x:0, done:false, hot:-1, plain:m==="plain"||m==="soft"};
   });
+  if(!plain && S.sound) whoosh();
   await new Promise(res=>{
     let lastNow = performance.now();
     function next(s, now){ s.seg++; s.t0 = now; s.from = s.x; if(s.seg>=s.segs.length) s.done = true; else if(s.segs[s.seg].hold && !S.fast) beep(80,.22,.07,"sine"); }
@@ -1611,7 +1636,7 @@ async function openCases(c){
         if(cur !== s.hot){
           if(s.cells[s.hot]) s.cells[s.hot].classList.remove("hot");
           s.hot = cur; if(s.cells[cur]) s.cells[cur].classList.add("hot");
-          if(si===0 && !S.fast) beep(speed < 3 ? 1900 : 1400, .025, speed < 3 ? .045 : .03);
+          if(si===0 && S.sound) tick(speed < 3);
         }
       });
       if(all || !document.body.contains(strips[0].el)) res(); else requestAnimationFrame(frame);
@@ -1641,13 +1666,133 @@ async function openCases(c){
   spinning = false;
   S.recent = wins.slice().reverse().concat(S.recent).slice(0,14);
   save(); renderHeader();
-  winSound(Math.max(...wins.map(w=>skinOf(w).rar)));
+  const epic = wins.filter(w=>isEpic(w, c)).sort((a,b)=>b.price-a.price)[0];
+  if(epic) epicDrop(epic, c); else winSound(Math.max(...wins.map(w=>skinOf(w).rar)));
   await new Promise(r=>setTimeout(r, reduce ? 0 : (S.fast ? 400 : 1000)));
   showCaseResult(wins, c);
   if(document.getElementById("open")){
     document.querySelectorAll(".seg button").forEach(b=>b.disabled=false);
     updateOpenBtn(c);
   }
+}
+
+
+/* ---------- Звук прокрутки рулетки: щелчок «трещотки» ---------- */
+let tickBuf = null;
+function tick(slow){
+  const a = audio(); if(!a) return;
+  if(!tickBuf){ const n = Math.floor(a.sampleRate*0.02); tickBuf = a.createBuffer(1, n, a.sampleRate); const d = tickBuf.getChannelData(0); for(let i=0;i<n;i++) d[i] = (Math.random()*2-1)*Math.pow(1-i/n, 3); }
+  const t = a.currentTime, src = a.createBufferSource(), f = a.createBiquadFilter(), g = a.createGain();
+  src.buffer = tickBuf; f.type = "bandpass"; f.frequency.value = slow ? 3200 : 2400; f.Q.value = 2.5;
+  g.gain.setValueAtTime(slow ? 0.55 : 0.32, t);
+  src.connect(f).connect(g).connect(a.destination); src.start(t);
+  const o = a.createOscillator(), og = a.createGain(); o.type = "square"; o.frequency.value = slow ? 1250 : 980;
+  og.gain.setValueAtTime(slow ? 0.035 : 0.02, t); og.gain.exponentialRampToValueAtTime(0.0001, t+0.03);
+  o.connect(og).connect(a.destination); o.start(t); o.stop(t+0.035);
+}
+function whoosh(){
+  const a = audio(); if(!a) return;
+  const n = Math.floor(a.sampleRate*0.6), b = a.createBuffer(1, n, a.sampleRate), d = b.getChannelData(0);
+  for(let i=0;i<n;i++) d[i] = (Math.random()*2-1)*Math.sin(Math.PI*i/n);
+  const src = a.createBufferSource(), f = a.createBiquadFilter(), g = a.createGain(), t = a.currentTime;
+  src.buffer = b; f.type = "bandpass"; f.Q.value = 1.2; f.frequency.setValueAtTime(500, t); f.frequency.exponentialRampToValueAtTime(3000, t+0.5);
+  g.gain.value = 0.18; src.connect(f).connect(g).connect(a.destination); src.start(t);
+}
+
+/* ---------- Эпичный дроп: особая анимация для очень хорошего предмета ---------- */
+const isEpic = (it, c) => skinOf(it).rar===4 || it.price >= c.price*5;
+function epicDrop(it, c){
+  if(window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  const sk = skinOf(it), col = sk.rar===4 ? "#ffc800" : RAR[sk.rar].color, mult = it.price/c.price;
+  const old = document.getElementById("epic"); if(old) old.remove();
+  const el = document.createElement("div"); el.id = "epic"; el.className = "epic"; el.style.setProperty("--ec", col);
+  el.setAttribute("aria-live", "polite");
+  const conf = Array.from({length:70}, (_,k)=>{ const x = Math.random()*100, d = Math.random()*0.8, dur = 1.6+Math.random()*1.4, sz = 4+Math.floor(Math.random()*3)*3;
+    const cc = [col, "#ffc800", "#ffffff", "#ff7a1a", RAR[3].color][k%5];
+    return `<i style="left:${x.toFixed(1)}%;--d:${d.toFixed(2)}s;--t:${dur.toFixed(2)}s;--s:${sz}px;--c:${cc};--r:${Math.round(Math.random()*720-360)}deg;--x:${Math.round(Math.random()*160-80)}px"></i>`; }).join("");
+  el.innerHTML = `<div class="epic-rays"></div><div class="epic-conf">${conf}</div>
+    <div class="epic-box">
+      <div class="epic-tag">${sk.rar===4 ? "★ ЛЕГЕНДАРНЫЙ ДРОП ★" : "ОГРОМНЫЙ ДРОП"}</div>
+      <div class="epic-art">${art(sk)}</div>
+      <div class="epic-name"></div>
+      <div class="epic-price">${money(it.price)} <span>×${mult.toFixed(1).replace(".",",")}</span></div>
+    </div>`;
+  el.querySelector(".epic-name").textContent = (it.st?"StatTrak · ":"") + title(sk) + " | " + sk.name;
+  document.body.appendChild(el);
+  document.body.classList.add("epic-shake"); setTimeout(()=>document.body.classList.remove("epic-shake"), 600);
+  haptic("success");
+  if(S.sound){ const notes = [523,659,784,1047,1319,1568]; notes.forEach((f,i)=>setTimeout(()=>{ beep(f,.18,.06,"square"); beep(f/2,.18,.04,"triangle"); }, i*85)); setTimeout(()=>{ beep(2093,.6,.05,"triangle"); beep(1047,.6,.05,"square"); }, 560); }
+  const close = ()=>{ el.classList.add("out"); setTimeout(()=>el.remove(), 450); };
+  el.addEventListener("click", close);
+  setTimeout(close, 3600);
+}
+
+/* ---------- Музыка в «Заработать»: своя 8-битная мелодия или свой трек с устройства ---------- */
+const MUS = {timer:0, next:0, step:0, gain:null, on:false, audioEl:null, url:""};
+const NOTE = n => 440*Math.pow(2,(n-69)/12);
+// 4 такта по 8 восьмых: Am – F – C – G
+const MEL = [69,72,76,72, 74,72,69,67,  65,69,72,69, 72,74,72,69,  67,72,76,79, 77,76,74,72,  67,71,74,71, 74,76,74,71];
+const BAS = [45,45,57,45, 45,45,57,45,  41,41,53,41, 41,41,53,41,  48,48,60,48, 48,48,60,48,  43,43,55,43, 43,43,55,43];
+function chipNote(a, type, freq, t, dur, vol){ const o = a.createOscillator(), g = a.createGain(); o.type = type; o.frequency.value = freq; g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(0.0001, t+dur); o.connect(g).connect(MUS.gain); o.start(t); o.stop(t+dur+0.02); }
+function chipHat(a, t, vol){ const n = Math.floor(a.sampleRate*0.04), b = a.createBuffer(1,n,a.sampleRate), d = b.getChannelData(0); for(let i=0;i<n;i++) d[i]=(Math.random()*2-1)*(1-i/n); const s = a.createBufferSource(), f = a.createBiquadFilter(), g = a.createGain(); s.buffer = b; f.type = "highpass"; f.frequency.value = 6000; g.gain.value = vol; s.connect(f).connect(g).connect(MUS.gain); s.start(t); }
+function chipStart(){
+  const a = audio(); if(!a || MUS.timer) return;
+  MUS.gain = a.createGain(); MUS.gain.gain.value = 0.5; MUS.gain.connect(a.destination);
+  MUS.next = a.currentTime + 0.05; MUS.step = 0;
+  const STEP = 60/150/2; // 150 BPM, восьмые
+  MUS.timer = setInterval(()=>{
+    if(!S.sound){ MUS.gain.gain.value = 0; } else MUS.gain.gain.value = 0.5;
+    while(MUS.next < a.currentTime + 0.12){
+      const i = MUS.step % 32, t = MUS.next, bar = Math.floor(MUS.step/32) % 2;
+      chipNote(a, "square", NOTE(MEL[i] + (bar && i%8===7 ? 12 : 0)), t, STEP*0.9, 0.05);
+      if(i%2===0) chipNote(a, "triangle", NOTE(BAS[i]), t, STEP*1.8, 0.16);
+      chipHat(a, t, i%4===2 ? 0.09 : 0.04);
+      if(i%8===0 || i%8===5) chipNote(a, "sine", 70, t, 0.12, 0.35);
+      MUS.next += STEP; MUS.step++;
+    }
+  }, 25);
+}
+function chipStop(){ clearInterval(MUS.timer); MUS.timer = 0; if(MUS.gain){ try{ MUS.gain.disconnect(); }catch(e){} MUS.gain = null; } }
+/* свой трек хранится только на этом устройстве (IndexedDB), на сервер не загружается */
+function trackDB(){ return new Promise((res,rej)=>{ const r = indexedDB.open("kejsovnya-music", 1); r.onupgradeneeded = ()=>r.result.createObjectStore("t"); r.onsuccess = ()=>res(r.result); r.onerror = ()=>rej(r.error); }); }
+async function trackGet(){ try{ const db = await trackDB(); return await new Promise(res=>{ const q = db.transaction("t").objectStore("t").get("track"); q.onsuccess = ()=>res(q.result||null); q.onerror = ()=>res(null); }); }catch(e){ return null; } }
+async function trackPut(file){ const db = await trackDB(); await new Promise((res,rej)=>{ const tx = db.transaction("t","readwrite"); tx.objectStore("t").put({blob:file, name:file.name}, "track"); tx.oncomplete = res; tx.onerror = ()=>rej(tx.error); }); }
+async function musicStart(){
+  if(MUS.on) return; MUS.on = true;
+  const mode = S.music || "chip";
+  if(mode==="off" || !S.sound) return;
+  if(mode==="own"){
+    const t = await trackGet(); if(!MUS.on) return;
+    if(t && t.blob){
+      if(!MUS.audioEl){ MUS.audioEl = new Audio(); MUS.audioEl.loop = true; MUS.audioEl.volume = 0.6; }
+      if(!MUS.url){ MUS.url = URL.createObjectURL(t.blob); MUS.audioEl.src = MUS.url; }
+      MUS.audioEl.play().catch(()=>{});
+      return;
+    }
+  }
+  chipStart();
+}
+function musicStop(){ MUS.on = false; chipStop(); if(MUS.audioEl) MUS.audioEl.pause(); }
+function musicRestart(){ const was = MUS.on; musicStop(); if(was) musicStart(); }
+async function drawMusicCtl(){
+  const box = document.getElementById("mus"); if(!box) return;
+  const t = await trackGet(), mode = S.music || "chip";
+  box.innerHTML = `<span class="hint">Музыка:</span>
+    ${[["chip","8-бит"],["own", t ? "Свой трек" : "Свой трек…"],["off","Выкл."]].map(([k,n])=>`<button type="button" class="btn${mode===k?' on':''}" data-mus="${k}">${n}</button>`).join("")}
+    <label class="btn" for="mus-file">${t ? "Заменить файл" : "Загрузить mp3"}</label><input id="mus-file" type="file" accept="audio/*" hidden>
+    ${t ? `<span class="hint mus-name"></span>` : ""}`;
+  if(t){ box.querySelector(".mus-name").textContent = "♪ " + String(t.name||"трек").slice(0,40); }
+  box.querySelectorAll("[data-mus]").forEach(b=>b.addEventListener("click", async ()=>{
+    if(b.dataset.mus==="own" && !(await trackGet())){ document.getElementById("mus-file").click(); return; }
+    b.blur(); S.music = b.dataset.mus; save(); musicRestart(); drawMusicCtl();
+  }));
+  document.getElementById("mus-file").addEventListener("change", async e=>{
+    const f = e.target.files && e.target.files[0]; if(!f) return;
+    if(f.size > 30*1024*1024){ box.querySelector(".hint").textContent = "Файл больше 30 МБ"; return; }
+    try{ await trackPut(f); }catch(err){ return; }
+    if(MUS.url){ URL.revokeObjectURL(MUS.url); MUS.url = ""; }
+    S.music = "own"; save(); musicRestart(); drawMusicCtl();
+  });
 }
 
 /* ---------- Результат открытия под рулеткой ---------- */
@@ -2048,7 +2193,9 @@ function viewRunner(){
       </div>
     </div>
     <section class="panel runner"><canvas id="rc" width="${GW}" height="${GH}" aria-label="Игра: бегущий кейс. Пробел — прыжок, стрелка вниз — пригнуться."></canvas></section>
-    <p class="hint" style="margin-top:12px"><kbd>Пробел</kbd> прыжок · <kbd>↓</kbd> пригнуться · на телефоне тап сверху или снизу поля</p>`;
+    <p class="hint" style="margin-top:12px"><kbd>Пробел</kbd> прыжок · <kbd>↓</kbd> пригнуться · на телефоне тап сверху или снизу поля</p>
+    <div id="mus"></div>`;
+  drawMusicCtl();
   newGame();
   const cv = document.getElementById("rc");
   cv.addEventListener("pointerdown", e=>{
@@ -2060,7 +2207,7 @@ function viewRunner(){
   cv.addEventListener("pointerup", up); cv.addEventListener("pointerleave", up); cv.addEventListener("pointercancel", up);
   const id = ++runLoop; let last = performance.now();
   function frame(now){
-    if(id!==runLoop || !document.body.contains(cv)){ if(G && G.state==="run") endGame(); return; }
+    if(id!==runLoop || !document.body.contains(cv)){ musicStop(); if(G && G.state==="run") endGame(); return; }
     const dt = Math.min(3, (now-last)/16.667); last = now;
     if(G.state==="run") step(dt);
     draw(cv.getContext("2d"), now);
@@ -2075,8 +2222,8 @@ function newGame(){
 }
 function press(){
   if(!G) return;
-  if(G.state==="ready"){ G.state="run"; audio(); return; }
-  if(G.state==="over"){ if(performance.now()-G.overAt>450){ newGame(); G.state="run"; } return; }
+  if(G.state==="ready"){ G.state="run"; audio(); musicStart(); return; }
+  if(G.state==="over"){ if(performance.now()-G.overAt>450){ newGame(); G.state="run"; musicStart(); } return; }
   if(G.ground && !G.duck){ G.vy = -15.2; G.ground = false; beep(520,.07,.03,"triangle"); }
 }
 window.addEventListener("keydown", e=>{
@@ -3482,7 +3629,7 @@ let lastHash = location.hash;
 window.addEventListener("hashchange",()=>{ if(location.hash!==lastHash){ lastHash=location.hash; window.scrollTo(0,0); } route(); });
 
 /* ---------- Кнопки шапки ---------- */
-document.getElementById("sound").addEventListener("click",()=>{ S.sound=!S.sound; save(); renderHeader(); });
+document.getElementById("sound").addEventListener("click",()=>{ S.sound=!S.sound; save(); renderHeader(); if(MUS.on || document.getElementById("rc")){ musicStop(); if(S.sound && G && G.state==="run") musicStart(); } });
 
 const editable = t => t && t.closest && t.closest("input,textarea");
 ["copy","cut"].forEach(ev=>document.addEventListener(ev, e=>{ if(!editable(e.target)) e.preventDefault(); }));
