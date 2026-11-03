@@ -732,7 +732,7 @@ button,a,input,select,label{-webkit-tap-highlight-color:transparent;touch-action
 #adm-rtp{min-width:0;overflow:hidden}
 .rtp-table{max-width:100%}
 </style>
-<script>window.APP_BUILD="03.11 12:59";</script>
+<script>window.APP_BUILD="03.11 13:01";</script>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="adapter.js"></script>
 <link rel="icon" href="icon.png">
@@ -1428,7 +1428,7 @@ function topups(){ return S.top||0; }
 
 
 /* ---------- Вид: апгрейд ---------- */
-let UP_EDGE = 0.95, UP_MAX = 0.90, CRASH_RTP = 0.95, DAILY_BASE = 100; const UP_SEL = 6;
+let UP_EDGE = 0.95, UP_MAX = 0.90, CRASH_RTP = 0.95, DAILY_BASE = 50000; const UP_SEL = 6;
 const CATALOG = [];
 function buildCatalog(){
 CATALOG.length = 0;
@@ -2251,13 +2251,13 @@ function renderFeed(){
 
 
 /* ---------- Общие настройки (их меняет владелец) ---------- */
-let CFG = {rtp:0.95, runRate:0.5, upMax:0.90, upEdge:0.95, crashRtp:0.95, dailyBase:100, start:4000, cases:{}, luck:{}, announce:{text:"", on:false, ts:0}, hidden:{}};
+let CFG = {rtp:0.95, runRate:0.5, upMax:0.90, upEdge:0.95, crashRtp:0.95, dailyBase:50000, start:4000, cases:{}, luck:{}, announce:{text:"", on:false, ts:0}, hidden:{}};
 function applyConfig(raw){
   const c = raw || {};
   const n = (v,lo,hi,d)=>{ v = Number(v); return isFinite(v) ? Math.min(hi, Math.max(lo, v)) : d; };
   const obj = v => v && typeof v==="object" && !Array.isArray(v) ? v : {};
   const an = obj(c.announce);
-  CFG = {rtp:n(c.rtp,.3,.99,.95), runRate:n(c.runRate,.05,10,.5), upMax:n(c.upMax,.05,.95,.90), upEdge:n(c.upEdge,.3,1,.95), crashRtp:n(c.crashRtp,.3,.99,.95), dailyBase:Math.round(n(c.dailyBase,0,1e6,100)),
+  CFG = {rtp:n(c.rtp,.3,.99,.95), runRate:n(c.runRate,.05,10,.5), upMax:n(c.upMax,.05,.95,.90), upEdge:n(c.upEdge,.3,1,.95), crashRtp:n(c.crashRtp,.3,.99,.95), dailyBase:Math.round(n(c.dailyBase,0,1e7,50000)),
     start:Math.round(n(c.start,0,1e7,4000)), cases:obj(c.cases), hidden:obj(c.hidden),
     luck:Object.fromEntries(Object.entries(obj(c.luck)).filter(([k,v])=>typeof k==="string" && isFinite(Number(v)) && Number(v)>0 && Number(v)!==1).map(([k,v])=>[k, Math.min(5, Math.max(0.1, Number(v)))])),
     announce:{text:String(an.text||"").slice(0,300), on:!!an.on, ts:Number(an.ts)||0}};
@@ -2363,7 +2363,7 @@ function viewAdmin(){
           <label for="e-upmax">Макс. шанс апгрейда, %</label><input id="e-upmax" type="number" min="5" max="95" step="1" value="${pctv(CFG.upMax)}">
           <label for="e-upedge">RTP апгрейда, %<small>шанс = ставка × отдача ÷ цена цели</small></label><input id="e-upedge" type="number" min="30" max="100" step="1" value="${pctv(CFG.upEdge)}">
           <label for="e-crash">RTP краша, %<small>шанс дожить до ×x = RTP ÷ x</small></label><input id="e-crash" type="number" min="30" max="99" step="1" value="${pctv(CFG.crashRtp)}">
-          <label for="e-daily">Ежедневный подарок, ₽<small>за 1-й день серии; к 7-му дню ×10. 0 — выключить</small></label><input id="e-daily" type="number" min="0" step="10" value="${CFG.dailyBase}">
+          <label for="e-daily">Ежедневный подарок, ₽<small>за 1-й день серии; к 7-му дню ×10. 0 — выключить</small></label><input id="e-daily" type="number" min="0" step="1000" value="${CFG.dailyBase}">
           <label for="e-start">Стартовый баланс, ₽<small>для новых игроков и при сбросе</small></label><input id="e-start" type="number" min="0" step="100" value="${CFG.start}">
         </div>
         <div class="adm-row"><button class="btn primary" id="e-save">Сохранить</button><button class="btn" id="e-def">По умолчанию</button><span class="hint" id="e-msg"></span></div>
@@ -2404,7 +2404,7 @@ function viewAdmin(){
   });
   document.getElementById("e-def").addEventListener("click", ()=>{
     document.getElementById("e-rtp").value = 95; document.getElementById("e-run").value = 0.5; document.getElementById("e-upmax").value = 90;
-    document.getElementById("e-upedge").value = 95; document.getElementById("e-crash").value = 95; document.getElementById("e-daily").value = 100; document.getElementById("e-start").value = 4000;
+    document.getElementById("e-upedge").value = 95; document.getElementById("e-crash").value = 95; document.getElementById("e-daily").value = 50000; document.getElementById("e-start").value = 4000;
     flash(document.getElementById("e-msg"), true, "Значения по умолчанию подставлены, нажмите «Сохранить»");
   });
   // кейсы
