@@ -129,7 +129,7 @@ async function battleAction(st, uid, owner, b) {
     const size = [2, 3, 4].includes(b.size) ? b.size : 2;
     const cost = Math.round(Number(b.cost));
     if (!cases.length) return { error: "Выберите кейсы" };
-    if (!(cost > 0) || cost > 1e12) return { error: "Неверная цена" };
+    if (!(cost > 0) || cost > 1e15) return { error: "Неверная цена" };
     const all = await st.list("battles", 1000);
     if (all.filter(x => x.data.by === uid && x.data.state === "open").length >= 3) return { error: "У вас уже 3 открытых батла" };
     let cleaned = 0; // старые батлы (старше двух суток) убираем понемногу
@@ -259,7 +259,7 @@ async function tradeAction(st, uid, b, env) {
     const to = String(b.to || "").slice(0, 80);
     if (!to || to === uid) return { error: "Выберите другого игрока" };
     const give = cleanTradeItems(b.give), get = cleanTradeItems(b.get);
-    const giveCoins = Math.max(0, Math.min(1e12, Math.round(Number(b.giveCoins) || 0))), getCoins = Math.max(0, Math.min(1e12, Math.round(Number(b.getCoins) || 0)));
+    const giveCoins = Math.max(0, Math.min(1e15, Math.round(Number(b.giveCoins) || 0))), getCoins = Math.max(0, Math.min(1e15, Math.round(Number(b.getCoins) || 0)));
     if (!give.length && !get.length && !giveCoins && !getCoins) return { error: "Добавьте предметы или монеты" };
     const all = await st.list("trades", 1000);
     if (all.filter(x => x.data && x.data.from === uid && x.data.state === "pending").length >= 10) return { error: "У вас уже 10 открытых предложений" };

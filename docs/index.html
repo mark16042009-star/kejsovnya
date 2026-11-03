@@ -1284,10 +1284,10 @@ body.wide-case main{max-width:none}
 #adm-rtp{min-width:0;overflow:hidden}
 .rtp-table{max-width:100%}
 </style>
-<script>window.APP_BUILD="03.11 23:59";</script>
+<script>window.APP_BUILD="04.11 00:05";</script>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
-<script src="config.js?v=202611032159"></script>
-<script src="adapter.js?v=202611032159"></script>
+<script src="config.js?v=202611032205"></script>
+<script src="adapter.js?v=202611032205"></script>
 <link rel="icon" href="icon.png">
 </head>
 <body>
@@ -1479,6 +1479,15 @@ const CASES = [
    fixed:{p:0.1, items:[{weapon:"Сосиска", name:"Молочная", rar:1, price:5000, knife:false},
                         {weapon:"Огурец", name:"Огурчик", rar:4, price:50000, knife:false},
                         {weapon:"Золотой огурец", name:"Золотой огурец", rar:4, price:0, knife:false, noDrop:true, priceless:true}]}},
+  {id:"crown", name:"Корона", price:10000000000, accent:"#ffd23a", isNew:true, elite:true,
+   pal:[["#3a2a00","#ffd23a"],["#2a0a12","#e11d48"],["#0a1a3a","#60a5fa"],["#1a1a1a","#fff3c4"]],
+   names:["Медь","Бронза","Серебряный лев","Скипетр","Мантия","Трон","Бархат","Герб","Рубиновый венец","Королевская охота","Сапфировая корона","Династия","Абсолютная власть"]},
+  {id:"meteor", name:"Метеорит", price:50000000000, accent:"#ff7a1a", isNew:true, elite:true,
+   pal:[["#2a1a10","#ff7a1a"],["#1a0a05","#ef4444"],["#3a3a3a","#9aa3ad"],["#2a1500","#ffd23a"]],
+   names:["Пыль","Кратер","Осколок","Хвост кометы","Раскалённый","Ударная волна","Пепел звёзд","Железный дождь","Огненный шар","Звездопад","Тунгуска","Вымирание","Армагеддон"]},
+  {id:"universe", name:"Вселенная", price:250000000000, accent:"#a78bfa", isNew:true, elite:true,
+   pal:[["#05001a","#a78bfa"],["#000814","#22d3ee"],["#14002a","#f472b6"],["#0a0a0a","#fde68a"]],
+   names:["Вакуум","Туманность","Пульсар","Квазар","Тёмная энергия","Сверхновая","Червоточина","Горизонт событий","Изнанка","Большой взрыв","Бесконечность","Начало всего","Творец"]},
   {id:"rickroll", name:"RickRoll", price:100000000, accent:"#ff4fa3", isNew:true, elite:true,
    pal:[["#1a0a2e","#ff4fa3"],["#0a1a3a","#22d3ee"],["#2a0a3a","#fde68a"],["#120024","#a78bfa"]],
    names:["Кликбейт","Ссылка","Подвох","Сюрприз","Ловушка","Кассета","Синтипоп","Диско","Видеоклип","Хит-парад 80-х","Розыгрыш","Мем века","Легенда интернета"]}
@@ -1545,6 +1554,7 @@ const COLLECTIONS = [
   {id:"treasure", name:"Сокровищница", desc:"Золото, бриллианты и власть",         cases:["gold","diamond","empire"]},
   {id:"social",   name:"Соцсети",         desc:"Стримы, ролики и переписки",          cases:["stream","blog","chat"]},
   {id:"special",  name:"Особые",          desc:"Странные кейсы с секретами",           cases:["pickle"]},
+  {id:"olymp",    name:"Олимп",           desc:"Для миллиардеров: скины до триллионов",  cases:["crown","meteor","universe"]},
   {id:"elite",    name:"Элита",           desc:"Самые дорогие кейсы сайта",            cases:["million","titan","tycoon","galaxy","frog","rickroll","blades","allin"]}
 ];
 CASES.forEach(c=>{ const k = COLLECTIONS.find(x=>x.cases.includes(c.id)); c.coll = k ? k.id : COLLECTIONS[0].id; });
@@ -2175,6 +2185,9 @@ xxxxxxxxxxxxxxmmxxxxx..xxxxxxxxxxx......
 };
 /* узор каждого скина по смыслу названия: [узор, основной, второй, акцент] */
 const LOOK = {
+  crown:[["metal","#7a4a2a","#b87333","#e0a070"],["metal","#5a3a1a","#cd7f32","#f0b070"],["metal","#8a929c","#e5e7eb","#ffffff"],["royal","#3a2a00","#ffd23a","#ffffff"],["royal","#4a0a1a","#e11d48","#ffd23a"],["gold","#3a2a00","#d4a017","#fff3c4"],["noise","#3a0a2a","#7a1a5a","#ffd23a"],["check","#0a1a3a","#ffd23a","#e11d48"],["gem","#7a0a1a","#ff4d6d","#ffd1d1"],["camo","#1a2a0a","#3a5a1a","#ffd23a"],["gem","#0a1a5a","#60a5fa","#e0f2ff"],["royal","#1a1a1a","#ffd23a","#8b5cf6"],["gold","#d4a017","#fff3c4","#ffffff"]],
+  meteor:[["noise","#3a3a3a","#5a5a5a","#2a2a2a"],["rust","#2a2a2a","#5a4a3a","#8a6a4a"],["marble","#3a3f47","#9aa3ad","#1a1a1a"],["laser","#0a0a1a","#9ad0ff","#ffffff"],["lava","#3a0a00","#ff7a1a","#ffd23a"],["burst","#1a0a05","#ff7a1a","#ffffff"],["stars","#1a1a1a","#9aa3ad","#ffffff"],["rain","#2a2a2a","#9aa3ad","#ffffff"],["flames","#3a0a00","#ff4d1a","#ffd23a"],["stars","#05001a","#ffd23a","#ffffff"],["burst","#2a1500","#ffd23a","#ffffff"],["lava","#1a0000","#ef4444","#ff7a1a"],["flames","#ffd23a","#ff7a1a","#ffffff"]],
+  universe:[["void","#000000","#1a1a2a","#05000a"],["nebula","#05001a","#a78bfa","#f472b6"],["rings","#000814","#22d3ee","#ffffff"],["burst","#05001a","#ffffff","#a78bfa"],["void","#000000","#5a2a8a","#14002a"],["burst","#3a0a2a","#f472b6","#fde68a"],["swirl","#000814","#22d3ee","#a78bfa"],["void","#000000","#fde68a","#000000"],["glitch","#a78bfa","#22d3ee","#000000"],["burst","#fde68a","#ffffff","#ff7a1a"],["holo","#a78bfa","#ffffff","#22d3ee"],["nebula","#14002a","#fde68a","#ffffff"],["holo","#fff3c4","#ffffff","#f9a8d4"]],
   pickle:[["noise","#b5543f","#d9735a","#8a3a2a"],["dots","#2f6b1e","#5fb83a","#a3d977"],["gold","#d4a017","#fff3c4","#ffffff"]],
   allin:[["noise","#3a3f47","#5a6068","#2a2f35"],["gold","#d4a017","#fff3c4","#ffffff"]],
   blades:[["noise","#3a3a3a","#5a5a5a","#2a2a2a"],["metal","#8a929c","#c0c8d0","#ffffff"],["marble","#4a4f55","#9aa3ad","#2a2f35"],["camo","#a8865a","#c8a273","#6b5a3a"],["camo","#14301e","#2e5a3a","#0a1a10"],["burst","#f97316","#fde68a","#7c2d12"],["lightning","#1e1b4b","#818cf8","#e0e7ff"],["ice","#bae6fd","#ffffff","#38bdf8"],["lava","#450a0a","#ef4444","#fca5a5"],["nebula","#0f172a","#22d3ee","#a78bfa"],["gem","#9aa3ad","#ffffff","#7dd3fc"],["gold","#1a1a1a","#d4a017","#fff3c4"],["holo","#ffd1ec","#ffffff","#a5f3fc"]],
@@ -2310,6 +2323,45 @@ function art(sk){ return pixelArt(sk); }
 /* ---------- Пиксельные иллюстрации кейсов ----------
  * Сундук в цветах кейса и своя эмблема на нём, без фона. */
 const EMB = {
+  crown:{p:{y:"#ffd23a",r:"#e11d48",w:"#ffffff"}, s:`
+..............
+.k....kk....k.
+.kk..kyyk..kk.
+.kyk.kyyk.kyk.
+.kyykyyyykyyk.
+.kyyyyyyyyyyk.
+.kyrywyyrywyk.
+.kyyyyyyyyyyk.
+.kkkkkkkkkkkk.
+..............
+..............
+..............`},
+  meteor:{p:{o:"#ff7a1a",y:"#ffd23a",r:"#ef4444",w:"#ffffff",g:"#7a7f87"}, s:`
+..........kkk.
+.........kgggk
+........kggwgk
+.......kggggk.
+......krrggk..
+.....kryrkk...
+....kryyrk....
+...kryyrk.....
+..kyyork......
+.kyook........
+.kook.........
+.kk...........`},
+  universe:{p:{p:"#a78bfa",b:"#22d3ee",r:"#fde68a",w:"#ffffff"}, s:`
+..w.......w...
+......kkk.....
+....kkpppkk...
+...kpppbppk...
+.rrkppbbppkrr.
+rrrkpppppbkrrr
+.rrkkbpppkkrr.
+...kpppppk....
+....kkpppkk...
+......kkk..w..
+.w............
+..............`},
   pickle:{p:{g:"#a3d977",a:"#4c9a2a",p:"#d9735a",q:"#f4a28c"}, s:`
 ...kk....kkk..
 ..kgak..kppk..
@@ -4445,7 +4497,7 @@ function applyConfig(raw){
     luck:Object.fromEntries(Object.entries(obj(c.luck)).filter(([k,v])=>typeof k==="string" && isFinite(Number(v)) && Number(v)>0 && Number(v)!==1).map(([k,v])=>[k, Math.min(5, Math.max(0.1, Number(v)))])),
     announce:{text:String(an.text||"").slice(0,300), on:!!an.on, ts:Number(an.ts)||0}};
   RTP = CFG.rtp; RUB_PER_POINT = CFG.runRate; UP_MAX = CFG.upMax; UP_EDGE = CFG.upEdge; CRASH_RTP = CFG.crashRtp; CONTRACT_RTP = CFG.contractRtp; MINES_RTP = CFG.minesRtp; DAILY_BASE = CFG.dailyBase; VAULT_RATE = CFG.vaultRate; START = CFG.start;
-  CASES.forEach(cs=>{ const o = obj(CFG.cases[cs.id]); cs.price = Math.round(n(o.price,1,1e10,cs.defPrice)); cs.off = !!o.off; cs.isNew = o.isNew===undefined ? cs.defNew : !!o.isNew; const r = Number(o.rtp); cs.rtp = isFinite(r) && r>=0.3 && r<=0.99 ? r : null; cs.limit = Math.floor(n(o.limit,0,1e9,0)); });
+  CASES.forEach(cs=>{ const o = obj(CFG.cases[cs.id]); cs.price = Math.round(n(o.price,1,1e13,cs.defPrice)); cs.off = !!o.off; cs.isNew = o.isNew===undefined ? cs.defNew : !!o.isNew; const r = Number(o.rtp); cs.rtp = isFinite(r) && r>=0.3 && r<=0.99 ? r : null; cs.limit = Math.floor(n(o.limit,0,1e9,0)); });
   recomputeCases(); buildCatalog();
 }
 function subscribeConfig(){
@@ -5465,6 +5517,7 @@ const TITLES = [
   {id:"lucky",  n:"Счастливчик",         c:"#ec4899", req:"дроп дороже 1 000 000 ₽",      ok:()=>S.stats.best && S.stats.best.price>=1e6},
   {id:"mill",   n:"Миллионер",           c:"#fde68a", req:"состояние от 1 000 000 ₽",     ok:()=>worthNow()>=1e6,             pr:()=>[Math.floor(worthNow()),1e6]},
   {id:"season", n:"Легенда сезона",      c:"#ff7a1a", req:"30 уровень сезонного пропуска", ok:()=>!!(S.deco && Array.isArray(S.deco.own) && S.deco.own.includes("title:season"))},
+  {id:"trill",  n:"Триллионер",          c:"#a78bfa", req:"состояние от 1 000 000 000 000 ₽", ok:()=>worthNow()>=1e12,         pr:()=>[Math.floor(worthNow()),1e12]},
   {id:"tycoon", n:"Магнат",              c:"#ffd23a", req:"состояние от 100 000 000 ₽",   ok:()=>worthNow()>=1e8,             pr:()=>[Math.floor(worthNow()),1e8]}
 ];
 const TITLE_BY = Object.fromEntries(TITLES.map(t=>[t.id,t]));
