@@ -440,6 +440,31 @@ img,svg,canvas{-webkit-user-drag:none;user-drag:none}
 .wheel-lost{font-family:var(--mono);font-size:20px;fill:var(--text)}
 
 .case-result{display:grid;gap:10px}
+.cr-acts{display:flex;flex-wrap:wrap;gap:8px}
+.cr-rar{display:flex;flex-wrap:wrap;gap:6px}
+.cr-more{justify-self:center}
+.seg button{white-space:nowrap}
+.rolls.mass{display:grid;gap:8px;align-content:start}
+.mass-bar{display:flex;justify-content:space-between;align-items:center;gap:10px;color:var(--muted);font-size:14px}
+.mass-bar b{color:var(--accent);font-size:18px}
+.mass-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:6px;max-height:min(62vh,560px);overflow:auto;padding:2px}
+.mt{position:relative;display:grid;place-items:center;height:62px;padding:4px 4px 16px;background:var(--bg2);border:1px solid var(--line);border-bottom:3px solid #3a3a3a;overflow:hidden}
+.mt .art{width:100%;height:32px;opacity:0;transform:scale(.6)}
+.mt small{position:absolute;left:0;right:0;bottom:2px;text-align:center;font-size:10px;color:var(--accent);opacity:0;white-space:nowrap}
+.mt-q{position:absolute;inset:0;display:grid;place-items:center;font-style:normal;font-size:20px;color:var(--ac);background:repeating-linear-gradient(135deg,color-mix(in srgb,var(--ac) 18%,var(--panel)) 0 6px,var(--panel) 6px 12px);transition:opacity .15s}
+.mt.open{border-bottom-color:var(--rc);background:radial-gradient(60px 30px at 50% 45%, color-mix(in srgb, var(--rc) 30%, transparent), transparent 80%), var(--bg2)}
+.mt.open .mt-q{opacity:0}
+.mt.open .art{opacity:1;transform:none;transition:transform .25s cubic-bezier(.2,1.5,.4,1),opacity .15s}
+.mt.open small{opacity:1}
+.mt.open.hi{box-shadow:0 0 0 1px var(--rc),0 0 14px color-mix(in srgb,var(--rc) 55%,transparent);animation:pop .35s cubic-bezier(.2,1.4,.4,1)}
+.mt.open.top{outline:2px solid var(--accent);outline-offset:-2px}
+@media (max-width:560px){
+  .controls .seg.seg-n{display:grid;grid-template-columns:repeat(5,1fr);flex:1 1 100%;width:100%}
+  .controls .seg.seg-n button{padding:8px 0}
+  .mass-grid{grid-template-columns:repeat(auto-fill,minmax(64px,1fr));max-height:58vh}
+  .mt{height:50px;padding-bottom:14px} .mt .art{height:24px} .mt small{font-size:9px}
+}
+@media (prefers-reduced-motion:reduce){.mt .art,.mt.open .art{transition:none}.mt.open.hi{animation:none}}
 .case-result[hidden]{display:none}
 .cr-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;color:var(--muted)}
 .cr-head b{color:var(--text)}
@@ -1140,7 +1165,7 @@ body.wide-case main{max-width:none}
 #adm-rtp{min-width:0;overflow:hidden}
 .rtp-table{max-width:100%}
 </style>
-<script>window.APP_BUILD="03.11 20:03";</script>
+<script>window.APP_BUILD="03.11 20:09";</script>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="adapter.js"></script>
 <link rel="icon" href="icon.png">
@@ -2765,8 +2790,10 @@ function drawCaseGrid(){
 }
 
 /* ---------- Вид: кейс ---------- */
+const OPEN_NS = [1,2,3,4,5,10,25,50,100], MASS_N = 5, INV_MAX = 1000;
 let spinning = false;
 function viewCase(c){
+  if(!OPEN_NS.includes(S.n)) S.n = 1;
   document.body.classList.add("wide-case");
   const app = document.getElementById("app");
   if(c.off){ app.innerHTML = `<div class="view-head"><div><a class="back" href="#cases">← Все кейсы</a><h1 style="margin-top:6px">Кейс «${c.name}»</h1></div></div><div class="empty">Этот кейс сейчас недоступен.</div>`; return; }
@@ -2781,7 +2808,7 @@ function viewCase(c){
       <div class="case-result" id="case-result" hidden></div>
       <div class="controls">
         <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
-          <div class="seg" role="group" aria-label="Сколько кейсов открыть">${[1,2,3,4,5].map(n=>`<button data-n="${n}" class="${S.n===n?'on':''}" aria-pressed="${S.n===n}">×${n}</button>`).join("")}</div>
+          <div class="seg seg-n" role="group" aria-label="Сколько кейсов открыть">${OPEN_NS.map(n=>`<button data-n="${n}" class="${S.n===n?'on':''}" aria-pressed="${S.n===n}">×${n}</button>`).join("")}</div>
           <label class="toggle" for="fast"><input type="checkbox" id="fast" ${S.fast?'checked':''}> Быстрое открытие</label>
         </div>
         <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;justify-content:flex-end">
@@ -2859,8 +2886,14 @@ async function openCases(c, free){
     if(!S.stats.best || it.price > S.stats.best.price) S.stats.best = it;
     if(skinOf(it).rar===4) S.stats.knives = (S.stats.knives||0) + 1;
   });
+  if(S.inv.length > INV_MAX){
+    const fresh = new Set(wins.map(w=>w.id));
+    const extra = S.inv.filter(it=>!fresh.has(it.id)).sort((a,b)=>a.price-b.price).slice(0, S.inv.length - INV_MAX);
+    if(extra.length){ sell(extra.map(it=>it.id), {quiet:true}); toast(`Инвентарь полон (${INV_MAX}): ${extra.length} самых дешёвых предметов продано за ${money(extra.reduce((a,it)=>a+it.price,0))}`); }
+  }
   save(); renderHeader(); updateOpenBtn(c);
   document.querySelectorAll(".seg button").forEach(b=>b.disabled=true);
+  if(wins.length > MASS_N){ await massReveal(wins, c); return; }
 
   const crBox = document.getElementById("case-result"); if(crBox){ crBox.hidden = true; crBox.innerHTML = ""; }
   const rolls = document.getElementById("rolls");
@@ -2876,6 +2909,7 @@ async function openCases(c, free){
     return {mode, bait};
   });
   const vert = wins.length > 1;
+  rolls.classList.remove("mass");
   rolls.classList.toggle("vert", vert);
   rolls.style.setProperty("--n", wins.length);
   rolls.innerHTML = wins.map((w,i)=>`<div class="roll"><div class="strip">${buildStrip(c,w,LEN,WIN, plans[i].bait)}</div><i class="flash"></i></div>`).join("");
@@ -2980,6 +3014,37 @@ function whoosh(){
 }
 
 /* ---------- Эпичный дроп: особая анимация для очень хорошего предмета ---------- */
+async function massReveal(wins, c){
+  const rolls = document.getElementById("rolls");
+  const crBox = document.getElementById("case-result"); if(crBox){ crBox.hidden = true; crBox.innerHTML = ""; }
+  const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  rolls.classList.remove("vert"); rolls.classList.add("mass");
+  rolls.style.setProperty("--ac", c.accent || "var(--accent)");
+  const best = Math.max(...wins.map(w=>w.price));
+  rolls.innerHTML = `<div class="mass-bar"><span id="mass-n">0 / ${wins.length}</span><b class="num" id="mass-sum">${money(0)}</b></div>
+    <div class="mass-grid">${wins.map(w=>{ const sk = skinOf(w);
+      return `<div class="mt${sk.rar>=3?' hi':''}${w.price===best?' top':''}" style="--rc:${RAR[sk.rar].color}" title="${esc(title(sk)+' | '+sk.name)} — ${money(w.price)}"><i class="mt-q">?</i>${art(sk)}<small class="num">${money(w.price)}</small></div>`; }).join("")}</div>`;
+  const tiles = [...rolls.querySelectorAll(".mt")], nEl = document.getElementById("mass-n"), sumEl = document.getElementById("mass-sum");
+  const total = reduce ? 0 : (S.fast ? 900 : 2800), gap = total / wins.length;
+  if(!reduce && S.sound) whoosh();
+  let sum = 0;
+  for(let i=0;i<tiles.length;i++){
+    if(!document.body.contains(rolls)) break;
+    tiles[i].classList.add("open"); sum += wins[i].price;
+    if(i % 3 === 0 || i === tiles.length-1){ nEl.textContent = `${i+1} / ${wins.length}`; sumEl.textContent = money(sum); }
+    const r = skinOf(wins[i]).rar;
+    if(S.sound && !reduce && (r >= 3 || i % 2 === 0)) r >= 3 ? beep(880 + r*120, .12, .06) : tick(false);
+    if(gap && (i % 2 === 1 || r >= 3)) await new Promise(res=>setTimeout(res, r >= 3 ? gap*2 + 90 : gap*2));
+  }
+  nEl.textContent = `${wins.length} / ${wins.length}`; sumEl.textContent = money(sum);
+  spinning = false;
+  S.recent = wins.slice().sort((a,b)=>b.price-a.price).slice(0,14).concat(S.recent).slice(0,14);
+  save(); renderHeader();
+  const epic = wins.filter(w=>isEpic(w, c)).sort((a,b)=>b.price-a.price)[0];
+  if(epic) epicDrop(epic, c); else winSound(Math.max(...wins.map(w=>skinOf(w).rar)));
+  showCaseResult(wins, c);
+  if(document.getElementById("open")){ document.querySelectorAll(".seg button").forEach(b=>b.disabled=false); updateOpenBtn(c); }
+}
 const isEpic = (it, c) => skinOf(it).rar===4 || it.price >= c.price*5;
 function epicDrop(it, c){
   if(window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
@@ -3093,26 +3158,36 @@ function rrJingle(){
   }
 }
 /* ---------- Результат открытия под рулеткой ---------- */
-function showCaseResult(wins, c){
+function showCaseResult(wins, c, showAll){
   const box = document.getElementById("case-result"); if(!box) return;
+  const big = wins.length > MASS_N;
+  if(big){ wins = wins.slice().sort((a,b)=>b.price-a.price); if(showAll===undefined) showAll = box.dataset.all==="1" && box.dataset.k===wins.map(w=>w.id)[0]; }
+  box.dataset.all = showAll ? "1" : ""; box.dataset.k = wins[0] ? wins[0].id : "";
+  const SHOW = 10;
   const owned = new Set(S.inv.map(i=>i.id));
   const left = wins.filter(w=>owned.has(w.id));
   const total = wins.reduce((a,w)=>a+w.price,0), diff = total - c.price*wins.length;
   const leftSum = left.reduce((a,w)=>a+w.price,0);
+  const cheap = left.filter(w=>w.price < c.price), cheapSum = cheap.reduce((a,w)=>a+w.price,0);
   box.hidden = false;
   box.innerHTML = `
     <div class="cr-head">
       <span>Выпало на <b class="num">${money(total)}</b> · <span class="${diff>=0?'pos':'neg'}">${diff>=0?'+':'−'}${money(Math.abs(diff))}</span> к цене открытия</span>
-      ${left.length>1 ? `<button class="btn" id="cr-all">Продать всё за ${money(leftSum)}</button>` : ''}
+      <span class="cr-acts">${big && cheap.length && cheap.length < left.length ? `<button class="btn" id="cr-cheap">Продать дешевле кейса (${cheap.length}) за ${money(cheapSum)}</button>` : ''}
+      ${left.length>1 ? `<button class="btn" id="cr-all">Продать всё за ${money(leftSum)}</button>` : ''}</span>
     </div>
-    <div class="cr-items">${wins.map(w=>{
+    ${big ? `<div class="cr-rar">${RAR.map((r,k)=>{ const n = wins.filter(w=>skinOf(w).rar===k).length; return n ? `<span class="odd" style="--rc:${r.color}"><i></i>${r.name} <span class="num">×${n}</span></span>` : ""; }).join("")}</div>` : ''}
+    <div class="cr-items">${(big && !showAll ? wins.slice(0, SHOW) : wins).map(w=>{
       const sk = skinOf(w), have = owned.has(w.id);
       return `<div class="cr-it${have?'':' sold'}" style="--rc:${RAR[sk.rar].color}">
         ${art(sk)}
         <div class="cr-t"><small>${w.st?'ST · ':''}${esc(title(sk))} · ${WEAR[w.w].s}</small><b>${esc(sk.name)}</b></div>
         ${have ? `<button class="btn" data-cr="${w.id}">Продать · ${money(w.price)}</button>` : `<span class="hint">Продано · ${money(w.price)}</span>`}
-      </div>`;}).join("")}</div>`;
-  const done = ids => { sell(ids, {quiet:true}); updateOpenBtn(c); showCaseResult(wins, c); };
+      </div>`;}).join("")}</div>
+    ${big && wins.length > SHOW ? `<button class="btn cr-more" id="cr-more">${showAll ? "Свернуть" : `Показать все ${wins.length}`}</button>` : ''}`;
+  const done = ids => { sell(ids, {quiet:true}); updateOpenBtn(c); showCaseResult(wins, c, showAll); };
+  const more = document.getElementById("cr-more"); if(more) more.addEventListener("click",()=>showCaseResult(wins, c, !showAll));
+  const ch = document.getElementById("cr-cheap"); if(ch) ch.addEventListener("click",()=>done(cheap.map(w=>w.id)));
   box.querySelectorAll("[data-cr]").forEach(b=>b.addEventListener("click",()=>done([b.dataset.cr])));
   const all = document.getElementById("cr-all");
   if(all) all.addEventListener("click",()=>done(left.map(w=>w.id)));
