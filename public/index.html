@@ -1035,7 +1035,7 @@ h1,h2,h3{letter-spacing:.04em}
 #adm-rtp{min-width:0;overflow:hidden}
 .rtp-table{max-width:100%}
 </style>
-<script>window.APP_BUILD="03.11 15:22";</script>
+<script>window.APP_BUILD="03.11 15:26";</script>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="adapter.js"></script>
 <link rel="icon" href="icon.png">
@@ -3305,7 +3305,7 @@ function publicProfile(){
   const xp = xpOf(S), t = S.stats;
   return {nick:S.profile.nick, av:{g:S.profile.av.g|0, c:S.profile.av.c|0}, img:validImg(S.profile.img)?S.profile.img:"", xp, lvl:levelOf(xp).lvl, worth:worthOf(S), bal:Math.round(S.bal),
     opened:t.opened, upg:t.upg, upgWin:t.upgWin, runs:t.runs, runBest:Math.floor(t.runBest), runEarned:t.runEarned,
-    deco:cleanDeco(myDeco()),
+    deco:cleanDeco(myDeco()), admin:!!CL.owner,
     rtp:{c:t.byCase, us:t.upgStake||0, ug:t.upgGot||0, cs:(t.crash&&t.crash.bet)||0, cg:(t.crash&&t.crash.got)||0},
     best:pubItem(t.best), show:showcase(S), drops:S.recent.slice(0,10).map(pubDrop)};
 }
@@ -3314,7 +3314,7 @@ function cleanProfile(id, d){
   const n = v => { v = Number(v); return isFinite(v) && v>=0 ? v : 0; };
   const item = it => (it && validItem({...it, price:n(it.price), fl:n(it.fl)})) ? {c:it.c, s:it.s|0, w:it.w|0, st:!!it.st, price:n(it.price), fl:n(it.fl)} : null;
   return {id, nick:String(d.nick||"Игрок").slice(0,20), av:{g:(d.av&&d.av.g)|0, c:(d.av&&d.av.c)|0}, img:validImg(d.img)?d.img:"", xp:n(d.xp), lvl:Math.max(1,n(d.lvl)|0),
-    worth:n(d.worth), bal:n(d.bal), opened:n(d.opened), upg:n(d.upg), upgWin:n(d.upgWin), runs:n(d.runs), runBest:n(d.runBest), runEarned:n(d.runEarned), deco:cleanDeco(d.deco),
+    worth:n(d.worth), bal:n(d.bal), opened:n(d.opened), upg:n(d.upg), upgWin:n(d.upgWin), runs:n(d.runs), runBest:n(d.runBest), runEarned:n(d.runEarned), deco:cleanDeco(d.deco), admin:d.admin===true,
     rtp:(()=>{ const r = d.rtp && typeof d.rtp==="object" ? d.rtp : {}; const c = {};
       if(r.c && typeof r.c==="object") Object.entries(r.c).forEach(([k,v])=>{ if(CASE_BY_ID[k] && Array.isArray(v)) c[k] = [n(v[0]), n(v[1]), n(v[2])]; });
       return {c, us:n(r.us), ug:n(r.ug), cs:n(r.cs), cg:n(r.cg)}; })(),
@@ -3541,8 +3541,9 @@ function drawBoard(){
   const box = document.getElementById("board"); if(!box) return;
   const note = document.getElementById("top-note");
   const mine = Object.assign({id:CL.id||"me"}, publicProfile());
-  let list = CL.list.filter(p=>p.id!==CL.id);
-  list.push(mine);
+  // администраторы в рейтинге не участвуют
+  let list = CL.list.filter(p=>p.id!==CL.id && !p.admin);
+  if(!CL.owner) list.push(mine);
   const T = TABS[topTab];
   list.sort((a,b)=>T.val(b)-T.val(a));
   list = list.slice(0,100);
@@ -3550,7 +3551,7 @@ function drawBoard(){
   else if(CL.status==="readonly") note.textContent = "Вы видите рейтинг, но ваш профиль в него не попадает: у вас доступ только на просмотр.";
   else if(CL.err) note.textContent = "Не удалось загрузить рейтинг. Обновите страницу позже.";
   else if(!CL.loaded) note.textContent = CL.slow ? "Рейтинг пока не загрузился, данные могут быть неполными." : "Загружаем рейтинг…";
-  else note.textContent = `Игроков в рейтинге: ${CL.list.length || 1}.`;
+  else note.textContent = `Игроков в рейтинге: ${list.length}.` + (CL.owner ? " Вы администратор, поэтому в рейтинге не участвуете." : "");
   box.innerHTML = list.map((p,i)=>`<button class="row${p===mine?' you':''}${i<3?' p'+(i+1):''}" data-pid="${esc(p.id)}">
       <span class="place">#${i+1}</span>${framed(p===mine ? S.profile : p, avatarOf(p,40))}
       <span class="who"><b data-nick class="${nickCls(p===mine ? S.profile : p)}"></b><small>${titleChip(p===mine ? S.profile : p)} ур. ${p.lvl} · ${rankOf(p.lvl)} · кейсов: ${p.opened}</small></span>
