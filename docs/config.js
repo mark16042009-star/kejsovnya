@@ -2,7 +2,7 @@
 // api — адрес вашего Cloudflare Worker'а с /api на конце.
 // Пока адрес не вписан (или Worker недоступен), игра работает локально в браузере.
 window.APP_CONFIG = {
-  api: "https://ВСТАВЬТЕ-АДРЕС.workers.dev/api",
+  api: "https://hidden-union-e818.mark16042009.workers.dev/api",
   auth: "token",
   pollDoc: 60000,   // настройки и начисления админа — раз в минуту
   pollCol: 30000    // рейтинг и лента дропов — раз в 30 секунд
