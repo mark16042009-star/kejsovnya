@@ -690,6 +690,53 @@ body.epic-shake #app{animation:eshake .55s}
 #mus .btn.on{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
 .mus-name{max-width:220px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 @media (prefers-reduced-motion: reduce){ .epic-rays,.epic-art,.epic-tag{animation:none} }
+/* ===== Оформление профиля ===== */
+.dfr{position:relative;display:inline-grid;place-items:center;border-radius:30%;isolation:isolate;flex:none;line-height:0}
+.dfr > .ava{position:relative;z-index:1}
+.dfr-silver{box-shadow:0 0 0 3px #c0c8d0,0 0 0 5px #0b0b0e}
+.dfr-pixel{outline:3px dashed #ffc800;outline-offset:2px}
+.dfr-neon{box-shadow:0 0 0 3px #ff3ea5,0 0 14px 3px rgba(255,62,165,.8);animation:dneon 1.6s ease-in-out infinite alternate}
+@keyframes dneon{to{box-shadow:0 0 0 3px #22d3ee,0 0 16px 4px rgba(34,211,238,.8)}}
+.dfr-gold{box-shadow:0 0 0 3px #ffd23a,0 0 0 6px #8a5a10,0 0 18px rgba(255,210,58,.6)}
+.dfr-ice{box-shadow:0 0 0 3px #a5f3fc,0 0 0 5px #0e7490,0 0 14px rgba(103,232,249,.7)}
+.dfr-fire::before,.dfr-rainbow::before{content:"";position:absolute;inset:-4px;border-radius:32%;z-index:0}
+.dfr-fire::before{background:conic-gradient(#ff2e00,#ffc23a,#ff5a1f,#ffe46b,#ff2e00);box-shadow:0 0 12px #ff5a1f;animation:dfire .9s ease-in-out infinite alternate}
+@keyframes dfire{to{filter:brightness(1.35) saturate(1.2);box-shadow:0 0 20px #ffc23a}}
+.dfr-rainbow::before{background:conic-gradient(#ff3e3e,#ffd23a,#3ecf6e,#22d3ee,#8b5cf6,#ff3ea5,#ff3e3e);box-shadow:0 0 12px rgba(255,255,255,.5);animation:dhue 3s linear infinite}
+@keyframes dhue{to{filter:hue-rotate(360deg)}}
+.dnc-gold{color:#ffd23a!important}.dnc-red{color:#ff4d4d!important}.dnc-violet{color:#b48cff!important}.dnc-cyan{color:#5ae0ff!important}.dnc-green{color:#4ade80!important}.dnc-pink{color:#ff7ac8!important}
+.dnc-rainbow{background:linear-gradient(90deg,#ff3e3e,#ffd23a,#3ecf6e,#22d3ee,#8b5cf6,#ff3ea5,#ff3e3e);background-size:200% 100%;-webkit-background-clip:text;background-clip:text;color:transparent!important;-webkit-text-fill-color:transparent;animation:drain 3s linear infinite}
+input.dnc-rainbow{-webkit-text-fill-color:#ff7ac8;color:#ff7ac8!important;background:transparent}
+@keyframes drain{to{background-position:200% 0}}
+.dtitle{display:inline-block;font-size:11px;line-height:1.5;padding:1px 7px;border-radius:6px;color:var(--tc);border:1px solid color-mix(in srgb,var(--tc) 55%,transparent);background:color-mix(in srgb,var(--tc) 14%,transparent);letter-spacing:.03em;white-space:nowrap;vertical-align:middle}
+.dbg-neon{background:repeating-linear-gradient(0deg,rgba(255,62,165,.22) 0 2px,transparent 2px 18px),repeating-linear-gradient(90deg,rgba(34,211,238,.18) 0 2px,transparent 2px 18px),linear-gradient(135deg,#1a0030,#2a0a4a 50%,#06122a)!important}
+.dbg-sunset{background:repeating-linear-gradient(180deg,transparent 0 7px,rgba(0,0,0,.14) 7px 9px),linear-gradient(180deg,#c2410c,#be185d 45%,#3b0764)!important}
+.dbg-ocean{background:radial-gradient(circle,rgba(255,255,255,.18) 0 2px,transparent 3px) 0 0/34px 34px,radial-gradient(circle,rgba(125,211,252,.25) 0 3px,transparent 4px) 17px 11px/46px 46px,linear-gradient(180deg,#0c4a6e,#04223f)!important}
+.dbg-jungle{background:repeating-linear-gradient(45deg,rgba(74,222,128,.14) 0 8px,transparent 8px 18px),repeating-linear-gradient(-45deg,rgba(22,101,52,.4) 0 6px,transparent 6px 22px),linear-gradient(180deg,#0b2a16,#14532d)!important}
+.dbg-space{background:radial-gradient(#fff 1px,transparent 1.6px) 0 0/23px 23px,radial-gradient(#c4b5fd 1px,transparent 1.6px) 11px 7px/31px 31px,radial-gradient(ellipse at 70% 30%,rgba(236,72,153,.35),transparent 55%),linear-gradient(135deg,#05031a,#1e0a3c)!important}
+.dbg-lava{background:repeating-linear-gradient(115deg,transparent 0 22px,rgba(255,140,0,.28) 22px 25px),linear-gradient(180deg,#1a0505,#5a1206 60%,#9a2a06)!important}
+.dbg-matrix{background:repeating-linear-gradient(90deg,rgba(34,255,120,.16) 0 2px,transparent 2px 12px),repeating-linear-gradient(180deg,rgba(34,255,120,.12) 0 3px,transparent 3px 9px),#020a04!important;animation:dmatrix 4s linear infinite}
+@keyframes dmatrix{to{background-position:0 0,0 90px,0 0}}
+.dbg-gold{background:linear-gradient(rgba(0,0,0,.42),rgba(0,0,0,.42)),linear-gradient(115deg,#5a3d06,#b8862a 35%,#fff3c4 50%,#b8862a 65%,#5a3d06)!important;background-size:100% 100%,250% 100%!important;animation:dgold 5s ease-in-out infinite alternate}
+@keyframes dgold{to{background-position:0 0,100% 0}}
+.dbg-rainbow{background:linear-gradient(rgba(0,0,0,.45),rgba(0,0,0,.45)),linear-gradient(90deg,#ff3e3e,#ffd23a,#3ecf6e,#22d3ee,#8b5cf6,#ff3ea5,#ff3e3e)!important;background-size:100% 100%,300% 100%!important;animation:dgold 8s linear infinite alternate}
+.pcard[class*="dbg-"]:not(.dbg-none){border-color:rgba(255,255,255,.18)}
+.deco-tabs{margin-bottom:4px}
+.dgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.dtile{display:grid;justify-items:center;gap:4px;padding:10px 8px;border-radius:12px;background:var(--panel2);border:1px solid var(--line);color:var(--text);font:inherit;cursor:pointer;text-align:center;transition:border-color .15s,transform .15s}
+.dtile:hover:not([disabled]){border-color:#4a4a4a}
+.dtile.on{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.dtile b{font-size:13px} .dtile small{font-size:11px;color:var(--muted)}
+.dtile.on small{color:var(--accent)}
+.dtile.poor small{color:var(--bad)}
+.dtile.locked{opacity:.55;cursor:not-allowed}
+.dprev{display:grid;place-items:center;height:56px;width:100%}
+.dsw{display:block;width:100%;height:52px;border-radius:8px;border:1px solid rgba(255,255,255,.1)}
+.dnick{font-size:15px;font-weight:800}
+.row .dfr{margin:2px}
+.row .who small .dtitle{margin-left:2px}
+.pl-head{display:flex;gap:16px;align-items:center;flex-wrap:wrap;padding:14px;border-radius:12px;background:var(--panel2)}
+@media (prefers-reduced-motion: reduce){ .dfr-fire::before,.dfr-rainbow::before,.dfr-neon,.dbg-matrix,.dbg-gold,.dbg-rainbow,.dnc-rainbow{animation:none} }
 .rtp-chip{background:color-mix(in srgb, var(--accent) 14%, var(--panel));border-color:color-mix(in srgb, var(--accent) 40%, var(--line))}
 .adm-case{grid-template-columns:10px minmax(0,1fr) 80px 64px auto auto}
 .adm-case input[data-f=rtp]{grid-row:1/span 2;grid-column:4}
@@ -918,10 +965,10 @@ nav a .nav-dot,#nav-more .nav-dot{position:absolute;top:10px;right:2px;width:8px
 #adm-rtp{min-width:0;overflow:hidden}
 .rtp-table{max-width:100%}
 </style>
-<script>window.APP_BUILD="03.11 14:50";</script>
+<script>window.APP_BUILD="03.11 14:59";</script>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
-<script src="config.js?v=202611031250"></script>
-<script src="adapter.js?v=202611031250"></script>
+<script src="config.js?v=202611031259"></script>
+<script src="adapter.js?v=202611031259"></script>
 <link rel="icon" href="icon.png">
 </head>
 <body>
@@ -939,7 +986,6 @@ nav a .nav-dot,#nav-more .nav-dot{position:absolute;top:10px;right:2px;width:8px
       <a href="#runner" id="nav-run" class="nav-x"><svg class="ni" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 7v10M9.5 9.5h4a1.5 1.5 0 010 3h-3a1.5 1.5 0 000 3h4"/></svg><span class="nl">Заработать</span></a>
       <a href="#top" id="nav-top" class="nav-x"><svg class="ni" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 20V11M12 20V5M17 20v-6"/></svg><span class="nl">Рейтинг</span></a>
       <a href="#admin" id="nav-admin" class="nav-x" hidden><svg class="ni" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1"/></svg><span class="nl">Админ</span></a>
-      <a href="#vault" id="nav-vault" class="nav-x nav-vault"><svg class="ni" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="12" cy="12" r="4.5"/><path d="M12 7.5v2M12 14.5v2M7.5 12h2M14.5 12h2"/></svg><span class="nl">Хранилище</span><i class="nav-dot" id="nav-vault-dot" hidden></i></a>
       <a href="#profile" id="nav-inv"><svg class="ni" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4-6 8-6s7 2 8 6"/></svg><span class="nl">Профиль</span> <span class="cnt" id="inv-count">0</span></a>
       <button type="button" id="nav-more" aria-expanded="false" aria-controls="more-sheet"><svg class="ni" viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg><span class="nl">Ещё</span><i class="nav-dot" id="nav-more-dot" hidden></i></button>
     </nav>
@@ -2208,7 +2254,7 @@ function winSound(rar){ if(rar>=2) haptic('success'); [0,4,7,12].slice(0,2+Math.
 /* ---------- Шапка и лента ---------- */
 function renderHeader(){
   const me = document.getElementById("me");
-  if(me){ const L = levelOf(xpOf(S)).lvl; me.innerHTML = `${avatarOf(S.profile,30)}<span class="me-t"><b></b><small>ур. ${L} · ${CL.status==="ok"?"в рейтинге":CL.status==="sync"?"синхронизация…":"локально"}</small></span>`; me.querySelector("b").textContent = S.profile.nick; }
+  if(me){ const L = levelOf(xpOf(S)).lvl; me.innerHTML = `${framed(S.profile, avatarOf(S.profile,30))}<span class="me-t"><b class="${nickCls(S.profile)}"></b><small>ур. ${L} · ${CL.status==="ok"?"в рейтинге":CL.status==="sync"?"синхронизация…":"локально"}</small></span>`; me.querySelector("b").textContent = S.profile.nick; }
   document.getElementById("balance").textContent = money(S.bal);
   document.getElementById("inv-count").textContent = S.inv.length;
   const snd = document.getElementById("sound");
@@ -2243,10 +2289,9 @@ function viewCases(){
   const app = document.getElementById("app");
   if(!CASE_SORTS[S.caseSort]) S.caseSort = "price-asc";
   const f = S.caseFilter = Object.assign({q:"", min:"", max:""}, S.caseFilter||{});
-  queueMicrotask(()=>{ drawDaily(); drawVaultBar(); });
+  queueMicrotask(()=>drawDaily());
   app.innerHTML = `
     <section class="daily" id="daily" aria-live="polite" hidden></section>
-    <a class="vault-bar" id="vault-bar" href="#vault"></a>
     <div class="view-head"><h1>Кейсы</h1>
       <form class="case-tools" id="case-tools" role="search">
         <input id="cf-q" type="search" placeholder="Поиск по названию" value="${esc(f.q)}" aria-label="Поиск кейса по названию" autocomplete="off">
@@ -2377,7 +2422,6 @@ async function openCases(c){
   audio();
   S.bal = Math.round((S.bal-cost)*100)/100;
   S.stats.opened += n; S.stats.spent = Math.round((S.stats.spent+cost)*100)/100;
-  vaultAdd(cost);
   const wins = Array.from({length:n},()=>roll(c));
   // сразу кладём в инвентарь, чтобы ничего не потерялось при уходе со страницы
   const bc = S.stats.byCase[c.id] = S.stats.byCase[c.id] || [0,0,0]; // [открыто, потрачено, выпало]
@@ -2387,6 +2431,7 @@ async function openCases(c){
     bc[2] = Math.round(bc[2] + it.price);
     S.stats.won = Math.round((S.stats.won+it.price)*100)/100;
     if(!S.stats.best || it.price > S.stats.best.price) S.stats.best = it;
+    if(skinOf(it).rar===4) S.stats.knives = (S.stats.knives||0) + 1;
   });
   save(); renderHeader(); updateOpenBtn(c);
   document.querySelectorAll(".seg button").forEach(b=>b.disabled=true);
@@ -2883,7 +2928,6 @@ async function doUpgrade(){
   }
   S.stats.upg++;
   S.stats.upgStake = Math.round((S.stats.upgStake||0) + st);
-  vaultAdd(st);
   if(win) S.stats.upgGot = Math.round((S.stats.upgGot||0) + t.price);
   save();
   upSpinning = true;
@@ -3192,7 +3236,7 @@ function publicProfile(){
   const xp = xpOf(S), t = S.stats;
   return {nick:S.profile.nick, av:{g:S.profile.av.g|0, c:S.profile.av.c|0}, img:validImg(S.profile.img)?S.profile.img:"", xp, lvl:levelOf(xp).lvl, worth:worthOf(S), bal:Math.round(S.bal),
     opened:t.opened, upg:t.upg, upgWin:t.upgWin, runs:t.runs, runBest:Math.floor(t.runBest), runEarned:t.runEarned,
-    vault:vaultLocks(),
+    deco:cleanDeco(myDeco()),
     rtp:{c:t.byCase, us:t.upgStake||0, ug:t.upgGot||0, cs:(t.crash&&t.crash.bet)||0, cg:(t.crash&&t.crash.got)||0},
     best:pubItem(t.best), show:showcase(S), drops:S.recent.slice(0,10).map(pubDrop)};
 }
@@ -3201,7 +3245,7 @@ function cleanProfile(id, d){
   const n = v => { v = Number(v); return isFinite(v) && v>=0 ? v : 0; };
   const item = it => (it && validItem({...it, price:n(it.price), fl:n(it.fl)})) ? {c:it.c, s:it.s|0, w:it.w|0, st:!!it.st, price:n(it.price), fl:n(it.fl)} : null;
   return {id, nick:String(d.nick||"Игрок").slice(0,20), av:{g:(d.av&&d.av.g)|0, c:(d.av&&d.av.c)|0}, img:validImg(d.img)?d.img:"", xp:n(d.xp), lvl:Math.max(1,n(d.lvl)|0),
-    worth:n(d.worth), bal:n(d.bal), opened:n(d.opened), upg:n(d.upg), upgWin:n(d.upgWin), runs:n(d.runs), runBest:n(d.runBest), runEarned:n(d.runEarned), vault:Math.min(999, n(d.vault)|0),
+    worth:n(d.worth), bal:n(d.bal), opened:n(d.opened), upg:n(d.upg), upgWin:n(d.upgWin), runs:n(d.runs), runBest:n(d.runBest), runEarned:n(d.runEarned), deco:cleanDeco(d.deco),
     rtp:(()=>{ const r = d.rtp && typeof d.rtp==="object" ? d.rtp : {}; const c = {};
       if(r.c && typeof r.c==="object") Object.entries(r.c).forEach(([k,v])=>{ if(CASE_BY_ID[k] && Array.isArray(v)) c[k] = [n(v[0]), n(v[1]), n(v[2])]; });
       return {c, us:n(r.us), ug:n(r.ug), cs:n(r.cs), cg:n(r.cg)}; })(),
@@ -3308,9 +3352,9 @@ function viewProfile(){
   if(sortMode==="rar") items.sort((a,b)=>skinOf(b).rar-skinOf(a).rar || b.price-a.price);
   const best = t.best, net = t.won - t.spent;
   app.innerHTML = `
-    <section class="panel pcard">
+    <section class="panel pcard dbg-${decoOf(S.profile).bg}">
       <div class="pcard-ava drop-ava" id="p-ava" title="Перетащите картинку сюда">
-        ${avatarOf(S.profile,104)}
+        ${framed(S.profile, avatarOf(S.profile,104))}
         <label for="p-file" class="ava-edit" role="button" tabindex="0" id="p-file-btn" aria-label="${S.profile.img?'Заменить картинку':'Загрузить картинку'}">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14"/></svg></label>
         <input type="file" id="p-file" accept="image/png,image/jpeg,image/webp,image/gif" class="sr-only">
@@ -3318,10 +3362,10 @@ function viewProfile(){
       <div class="pcard-main">
         <form class="nick-form" id="p-form">
           <label class="sr-only" for="p-nick">Ник</label>
-          <input id="p-nick" maxlength="20" autocomplete="off">
+          <input id="p-nick" maxlength="20" autocomplete="off" class="${nickCls(S.profile)}">
           <button class="btn" type="submit">Сохранить</button>
         </form>
-        <div class="pcard-lvl"><span class="lvl">Уровень <b>${L.lvl}</b> · ${rankOf(L.lvl)}</span>
+        <div class="pcard-lvl">${titleChip(S.profile)}<span class="lvl">Уровень <b>${L.lvl}</b> · ${rankOf(L.lvl)}</span>
           <span class="hint num">${xp} / ${L.hi} XP</span>
           ${S.profile.img?'<button type="button" class="linkish" id="p-img-del">Убрать картинку</button>':''}</div>
         <div class="xpbar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(L.p*100)}" aria-label="Опыт до следующего уровня"><i style="width:${(L.p*100).toFixed(1)}%"></i></div>
@@ -3329,6 +3373,7 @@ function viewProfile(){
         <div class="sync" id="p-sync"></div>
       </div>
     </section>
+    <section class="panel deco" id="deco" style="margin:14px 0 18px"></section>
     <div class="stats pstats">
       <div class="stat"><small>Состояние</small><b>${money(S.bal+value)}</b></div>
       <div class="stat"><small>Открыто кейсов</small><b>${t.opened}</b></div>
@@ -3348,6 +3393,7 @@ function viewProfile(){
       : `<div class="empty">Инвентарь пуст. <a href="#cases">Откройте кейс</a></div>`}
     <p style="margin-top:28px"><button class="btn" id="reset">Начать заново</button> <span class="hint">Сбросит баланс до ${money(START)}, инвентарь и статистику.</span></p>`;
 
+  drawDeco();
   // ник
   const inp = document.getElementById("p-nick"); inp.value = S.profile.nick;
   document.getElementById("p-form").addEventListener("submit", e=>{
@@ -3357,6 +3403,7 @@ function viewProfile(){
     S.profile.nick = v; save(); renderHeader();
     msg.className="hint"; msg.textContent="Ник сохранён.";
     const svgA = document.querySelector("#p-ava svg.ava"); if(svgA) svgA.outerHTML = avatarOf(S.profile,104);
+    drawDeco();
   });
   // картинка
   const setImg = async file => {
@@ -3436,8 +3483,8 @@ function drawBoard(){
   else if(!CL.loaded) note.textContent = CL.slow ? "Рейтинг пока не загрузился, данные могут быть неполными." : "Загружаем рейтинг…";
   else note.textContent = `Игроков в рейтинге: ${CL.list.length || 1}.`;
   box.innerHTML = list.map((p,i)=>`<button class="row${p===mine?' you':''}${i<3?' p'+(i+1):''}" data-pid="${esc(p.id)}">
-      <span class="place">#${i+1}</span>${avatarOf(p,40)}
-      <span class="who"><b data-nick></b><small>ур. ${p.lvl} · ${rankOf(p.lvl)} · кейсов: ${p.opened}${p.vault ? ` · замков: ${p.vault}` : ""}</small></span>
+      <span class="place">#${i+1}</span>${framed(p===mine ? S.profile : p, avatarOf(p,40))}
+      <span class="who"><b data-nick class="${nickCls(p===mine ? S.profile : p)}"></b><small>${titleChip(p===mine ? S.profile : p)} ур. ${p.lvl} · ${rankOf(p.lvl)} · кейсов: ${p.opened}</small></span>
       <span class="val">${T.fmt(T.val(p),p)}</span></button>`).join("");
   box.querySelectorAll(".row").forEach((row,i)=>{
     const p = list[i], b = row.querySelector("[data-nick]");
@@ -3449,8 +3496,8 @@ function drawBoard(){
 function showPlayer(p){
   const modal = document.getElementById("modal");
   modal.innerHTML = `
-    <div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap">${avatarOf(p,72)}
-      <div><h2 id="modal-title"></h2><span class="lvl" style="margin-top:6px">Уровень <b>${p.lvl}</b> · ${rankOf(p.lvl)}</span></div></div>
+    <div class="pl-head dbg-${decoOf(p.id===CL.id||p.id==="me" ? S.profile : p).bg}">${framed(p.id===CL.id||p.id==="me" ? S.profile : p, avatarOf(p,72))}
+      <div><h2 id="modal-title" class="${nickCls(p.id===CL.id||p.id==="me" ? S.profile : p)}"></h2><div style="margin-top:6px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">${titleChip(p.id===CL.id||p.id==="me" ? S.profile : p)}<span class="lvl">Уровень <b>${p.lvl}</b> · ${rankOf(p.lvl)}</span></div></div></div>
     <div class="stats" style="margin:0">
       <div class="stat"><small>Состояние</small><b>${money(p.worth)}</b></div>
       <div class="stat"><small>Открыто кейсов</small><b>${p.opened}</b></div>
@@ -3619,7 +3666,6 @@ function viewAdmin(){
           <label for="e-upedge">RTP апгрейда, %<small>шанс = ставка × отдача ÷ цена цели</small></label><input id="e-upedge" type="number" min="30" max="100" step="1" value="${pctv(CFG.upEdge)}">
           <label for="e-crash">RTP краша, %<small>шанс дожить до ×x = RTP ÷ x</small></label><input id="e-crash" type="number" min="30" max="99" step="1" value="${pctv(CFG.crashRtp)}">
           <label for="e-daily">Ежедневный подарок, ₽<small>за 1-й день серии; к 7-му дню ×10. 0 — выключить</small></label><input id="e-daily" type="number" min="0" step="1000" value="${CFG.dailyBase}">
-          <label for="e-vault">Хранилище: ₽ ставок за 1 фрагмент<small>меньше — замки открываются быстрее</small></label><input id="e-vault" type="number" min="1" step="10" value="${CFG.vaultRate}">
           <label for="e-start">Стартовый баланс, ₽<small>для новых игроков и при сбросе</small></label><input id="e-start" type="number" min="0" step="100" value="${CFG.start}">
         </div>
         <div class="adm-row"><button class="btn primary" id="e-save">Сохранить</button><button class="btn" id="e-def">По умолчанию</button><span class="hint" id="e-msg"></span></div>
@@ -3654,13 +3700,13 @@ function viewAdmin(){
   // экономика
   document.getElementById("e-save").addEventListener("click", async ()=>{
     const v = id => Number(document.getElementById(id).value), m = document.getElementById("e-msg");
-    const patch = {rtp:v("e-rtp")/100, runRate:v("e-run"), upMax:v("e-upmax")/100, upEdge:v("e-upedge")/100, crashRtp:v("e-crash")/100, dailyBase:Math.round(v("e-daily")), vaultRate:Math.max(1, v("e-vault")), start:Math.round(v("e-start"))};
+    const patch = {rtp:v("e-rtp")/100, runRate:v("e-run"), upMax:v("e-upmax")/100, upEdge:v("e-upedge")/100, crashRtp:v("e-crash")/100, dailyBase:Math.round(v("e-daily")), start:Math.round(v("e-start"))};
     if(Object.values(patch).some(x=>!isFinite(x) || x<0)){ flash(m, false, "Проверьте числа: нужны положительные значения."); return; }
     try{ await saveConfig(patch); drawAdminRtp(); flash(m, true, "Сохранено, уже действует у всех"); }catch(e){ flash(m, false, "Не сохранилось. Попробуйте ещё раз."); }
   });
   document.getElementById("e-def").addEventListener("click", ()=>{
     document.getElementById("e-rtp").value = 95; document.getElementById("e-run").value = 0.5; document.getElementById("e-upmax").value = 90;
-    document.getElementById("e-upedge").value = 95; document.getElementById("e-crash").value = 95; document.getElementById("e-daily").value = 50000; document.getElementById("e-vault").value = 100; document.getElementById("e-start").value = 4000;
+    document.getElementById("e-upedge").value = 95; document.getElementById("e-crash").value = 95; document.getElementById("e-daily").value = 50000; document.getElementById("e-start").value = 4000;
     flash(document.getElementById("e-msg"), true, "Значения по умолчанию подставлены, нажмите «Сохранить»");
   });
   // кейсы
@@ -3824,7 +3870,6 @@ function crStart(){
   S.crBet = bet; S.crAuto = auto>1 ? Math.round(auto*100)/100 : 0;
   S.bal = Math.round((S.bal-bet)*100)/100;
   const st = crStats(); st.n++; st.bet = Math.round(st.bet + bet);
-  vaultAdd(bet);
   Object.assign(CR, {state:"run", bet, point:crashPoint(), t0:performance.now(), auto:S.crAuto, at:0});
   save(); renderHeader(); crButtons();
 }
@@ -3979,7 +4024,6 @@ function claimDaily(){
   S.daily = {last: dayKey(new Date()), streak: st.day};
   S.bal = Math.round((S.bal + st.prize)*100)/100;
   S.stats.daily = Math.round((S.stats.daily||0) + st.prize);
-  vaultAdd(0, 25);
   save(); renderHeader();
   if(S.sound){ beep(660,.08,.05,"triangle"); setTimeout(()=>beep(990,.08,.05,"triangle"),90); setTimeout(()=>beep(1320,.14,.05,"triangle"),180); }
   drawDaily(true);
@@ -4041,7 +4085,7 @@ function btSettle(d){
   const m = btMine()[d.id]; if(!m || m.done || BT.anim===d.id) return false;
   const inIt = d.players.some(q=>q.pid===CL.id), st = btStats();
   if(d.state==="cancel" || (d.state==="done" && !inIt) || (d.state==="open" && !inIt && Date.now()-m.t > 20000)){
-    S.bal = Math.round((S.bal + m.paid)*100)/100; st.spent = Math.max(0, st.spent - m.paid); st.n = Math.max(0, st.n - 1); vaultAdd(-m.paid);
+    S.bal = Math.round((S.bal + m.paid)*100)/100; st.spent = Math.max(0, st.spent - m.paid); st.n = Math.max(0, st.n - 1);
     m.done = true; m.refund = true; return true;
   }
   if(d.state!=="done") return false;
@@ -4050,7 +4094,7 @@ function btSettle(d){
   if(d.players[w].pid===CL.id){
     const now = Date.now(); let sum = 0;
     res.flat().filter(Boolean).forEach((it,i)=>{ const o = Object.assign({}, it, {id:now.toString(36)+i.toString(36)+Math.random().toString(36).slice(2,6), t:now}); S.inv.unshift(o); sum += o.price; if(!S.stats.best || o.price > S.stats.best.price) S.stats.best = o; });
-    st.win++; st.got = Math.round(st.got + sum); m.won = sum; vaultAdd(0, 20);
+    st.win++; st.got = Math.round(st.got + sum); m.won = sum;
   }
   return true;
 }
@@ -4078,8 +4122,8 @@ async function btAct(body){
   if(r.battle){ const d = btParse(r.battle.id, r.battle); if(d){ const i = BT.list.findIndex(x=>x.id===d.id); if(i>=0) BT.list[i] = d; else BT.list.unshift(d); r.battle = d; } }
   return r;
 }
-function btPay(id, cost){ vaultAdd(cost); S.bal = Math.round((S.bal-cost)*100)/100; btMine()[id] = {paid:cost, t:Date.now()}; const st = btStats(); st.n++; st.spent = Math.round(st.spent + cost); save(); renderHeader(); }
-function btUnpay(id){ const m = btMine()[id]; if(!m) return; vaultAdd(-m.paid); S.bal = Math.round((S.bal+m.paid)*100)/100; const st = btStats(); st.n = Math.max(0, st.n-1); st.spent = Math.max(0, st.spent - m.paid); delete btMine()[id]; save(); renderHeader(); }
+function btPay(id, cost){ S.bal = Math.round((S.bal-cost)*100)/100; btMine()[id] = {paid:cost, t:Date.now()}; const st = btStats(); st.n++; st.spent = Math.round(st.spent + cost); save(); renderHeader(); }
+function btUnpay(id){ const m = btMine()[id]; if(!m) return; S.bal = Math.round((S.bal+m.paid)*100)/100; const st = btStats(); st.n = Math.max(0, st.n-1); st.spent = Math.max(0, st.spent - m.paid); delete btMine()[id]; save(); renderHeader(); }
 async function btCreate(){
   const msg = document.getElementById("bt-msg"), ids = BT.create.cases.slice(), cost = btCostOf(ids), b = document.getElementById("bt-create");
   if(!ids.length){ flash(msg, false, "Добавьте хотя бы один кейс"); return; }
@@ -4300,113 +4344,6 @@ function bvFinal(d){
   void m;
 }
 
-/* ---------- Секретное хранилище ----------
- * Долгая цель: за игру начисляются фрагменты кода (1 фрагмент за VAULT_RATE ₽ оборота во всех режимах,
- * плюс бонусы за ежедневный подарок и победы в батлах). Каждые 6 замков — новое хранилище, пороги и награды ×2. */
-const VAULT_STEPS = [50, 200, 600, 1500, 4000, 10000];
-const VAULT_CASH  = [1000, 3000, 8000, 20000, 50000];
-const VAULT_FINAL = ["gold","diamond","empire","plasma","abyss","legend","million","titan","tycoon","galaxy"];
-function vaultState(){
-  const v = S.vault && typeof S.vault==="object" ? S.vault : (S.vault = {f:0, season:1, claimed:0});
-  v.f = Math.max(0, Number(v.f)||0); v.season = Math.max(1, v.season|0); v.claimed = Math.min(6, Math.max(0, v.claimed|0));
-  return v;
-}
-const vaultK = season => Math.pow(2, season-1);
-const vaultNeed = (season, i) => VAULT_STEPS[i]*vaultK(season);
-const vaultFinalCase = season => CASE_BY_ID[VAULT_FINAL[Math.min(VAULT_FINAL.length-1, season-1)]] || CASES[CASES.length-1];
-const vaultLocks = () => { const v = vaultState(); return (v.season-1)*6 + v.claimed; };
-function vaultReady(){ const v = vaultState(); return v.claimed < 6 && v.f >= vaultNeed(v.season, v.claimed); }
-function vaultAdd(rub, bonus){
-  const v = vaultState();
-  v.f = Math.max(0, Math.round((v.f + (rub||0)/VAULT_RATE + (bonus||0))*100)/100);
-  vaultBadge();
-}
-function vaultItem(c){
-  const list = c.skins.filter(x=>x.rar===4), sk = list[Math.floor(Math.random()*list.length)];
-  let x = Math.random(), acc = 0, w = 2; for(let i=0;i<WEAR.length;i++){ acc += WEAR[i].p; if(x<acc){ w = i; break; } }
-  const fl = WEAR[w].min + Math.random()*(WEAR[w].max-WEAR[w].min), st = Math.random() < ST_P;
-  return {id:Date.now().toString(36)+Math.random().toString(36).slice(2,7), c:c.id, s:sk.i, w, fl:+fl.toFixed(4), st, price:Math.max(2, Math.round(sk.basePrice*WEAR[w].m*(st?ST_M:1))), t:Date.now()};
-}
-function vaultClaim(){
-  const v = vaultState(); if(!vaultReady()) return;
-  const i = v.claimed;
-  if(i < 5){ const a = VAULT_CASH[i]*vaultK(v.season); S.bal = Math.round((S.bal + a)*100)/100; v.last = {type:"cash", amount:a}; }
-  else { const it = vaultItem(vaultFinalCase(v.season)); S.inv.unshift(it); if(!S.stats.best || it.price > S.stats.best.price) S.stats.best = it; v.last = {type:"item", item:it}; }
-  v.claimed++;
-  if(S.sound){ [523,659,784,1047].forEach((f,k)=>setTimeout(()=>beep(f,.12,.05,"triangle"), k*110)); }
-  save(); renderHeader(); viewVault(true);
-}
-function vaultNext(){
-  const v = vaultState(); if(v.claimed < 6) return;
-  v.season++; v.claimed = 0; v.f = 0; v.last = null; save(); viewVault();
-}
-function vaultBadge(){
-  const b = document.getElementById("nav-vault-dot"); if(b) b.hidden = !vaultReady(); navMoreState();
-  const box = document.getElementById("vault-bar"); if(box) drawVaultBar();
-}
-const fr = n => Math.floor(n).toLocaleString("ru-RU");
-function drawVaultBar(){
-  const box = document.getElementById("vault-bar"); if(!box) return;
-  const v = vaultState(), i = Math.min(5, v.claimed), need = vaultNeed(v.season, i), prev = i ? vaultNeed(v.season, i-1) : 0;
-  const pctv = v.claimed>=6 ? 100 : Math.min(100, Math.max(0, (v.f-prev)/(need-prev)*100));
-  const ready = vaultReady() || v.claimed>=6;
-  box.className = "vault-bar" + (ready ? " ready" : "");
-  box.innerHTML = `${VAULT_ICON}
-    <span class="vb-t"><b>Секретное хранилище ${v.season>1 ? toRoman(v.season) : ""}</b><small>${v.claimed>=6 ? "Хранилище вскрыто! Откройте следующее" : ready ? `Замок ${i+1} готов к взлому — заберите награду` : `Замок ${i+1} из 6 · ${fr(v.f)} / ${fr(need)} фрагментов`}</small></span>
-    <span class="vb-locks">${Array.from({length:6},(_,k)=>`<i class="${k<v.claimed?'open':k===v.claimed&&ready?'ready':''}"></i>`).join("")}</span>
-    <span class="vb-prog"><i style="width:${pctv.toFixed(1)}%"></i></span>
-    <span class="btn ${ready?'primary':''}">${ready ? "Взломать" : "Открыть"}</span>`;
-}
-const toRoman = n => { const m = [[10,"X"],[9,"IX"],[5,"V"],[4,"IV"],[1,"I"]]; let r = ""; for(const [v,c] of m) while(n>=v){ r+=c; n-=v; } return r; };
-const VAULT_ICON = `<svg class="vb-ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="12" cy="12" r="4.5"/><path d="M12 7.5v2M12 14.5v2M7.5 12h2M14.5 12h2M6 21v1.5M18 21v1.5"/></svg>`;
-function viewVault(justClaimed){
-  const app = document.getElementById("app"), v = vaultState(), K = vaultK(v.season), fc = vaultFinalCase(v.season);
-  const i = Math.min(5, v.claimed), need = vaultNeed(v.season, i), ready = vaultReady();
-  const angle = v.claimed*60;
-  const last = justClaimed && v.last;
-  app.innerHTML = `
-    <div class="view-head"><div><h1>Секретное хранилище ${v.season>1 ? toRoman(v.season) : ""}</h1>
-      <p class="sub">Играйте в любые режимы — копите фрагменты кода и взламывайте замки. За каждым замком награда, а внутри хранилища — то, о чём никто не знает.</p></div>
-      <div class="run-stats"><div class="stat"><small>Фрагменты</small><b class="num">${fr(v.f)}</b></div><div class="stat"><small>Вскрыто замков</small><b class="num">${vaultLocks()}</b></div></div>
-    </div>
-    <div class="vault-wrap">
-      <section class="panel vault-door-p">
-        <svg class="vault-door${v.claimed>=6?' open':''}" viewBox="0 0 300 300" aria-label="Дверь хранилища, вскрыто замков: ${v.claimed} из 6">
-          <defs><radialGradient id="vdg" cx=".45" cy=".4"><stop offset="0" stop-color="#3a3a3a"/><stop offset="1" stop-color="#1a1a1a"/></radialGradient></defs>
-          <rect x="18" y="18" width="264" height="264" rx="22" fill="#151515" stroke="#2c2c2c" stroke-width="3"/>
-          <circle cx="150" cy="150" r="118" fill="url(#vdg)" stroke="#3a3a3a" stroke-width="6"/>
-          ${Array.from({length:6},(_,k)=>{ const a=(k*60-90)*Math.PI/180, x=150+96*Math.cos(a), y=150+96*Math.sin(a); const st = k<v.claimed ? "open" : (k===v.claimed && ready) ? "ready" : "";
-            return `<g class="vlock ${st}"><circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="13"/><text x="${x.toFixed(1)}" y="${(y+4.5).toFixed(1)}" text-anchor="middle">${k<v.claimed ? "✓" : k+1}</text></g>`; }).join("")}
-          <g class="vwheel" style="transform:rotate(${angle}deg)">
-            <circle cx="150" cy="150" r="52" fill="#202020" stroke="var(--accent)" stroke-width="3"/>
-            ${[0,60,120].map(a=>`<rect x="146" y="92" width="8" height="116" rx="4" fill="#3a3a3a" transform="rotate(${a} 150 150)"/>`).join("")}
-            <circle cx="150" cy="150" r="16" fill="var(--accent)"/>
-          </g>
-        </svg>
-        ${last ? `<p class="vault-got">${last.type==="cash" ? `Замок вскрыт! +${money(last.amount)}` : `Хранилище вскрыто! Внутри — ★ ${esc(skinOf(last.item).name)} за ${money(last.item.price)}. Он уже в инвентаре.`}</p>` : ""}
-        ${v.claimed>=6 ? `<button class="btn primary vault-go" id="vault-next">Найти следующее хранилище</button>`
-          : `<div class="vault-prog"><div class="vb-prog big"><i style="width:${Math.min(100, v.f/need*100).toFixed(1)}%"></i></div><span>${fr(v.f)} / ${fr(need)} фрагментов до замка ${i+1}</span></div>
-             <button class="btn primary vault-go" id="vault-claim" ${ready?'':'disabled'}>${ready ? (i<5 ? `Взломать замок ${i+1} · +${money(VAULT_CASH[i]*K)}` : "Вскрыть хранилище") : `Нужно ещё ${fr(Math.ceil(need - v.f))} ${plural(Math.ceil(need - v.f),"фрагмент","фрагмента","фрагментов")}`}</button>`}
-      </section>
-      <section class="panel">
-        <div class="ph"><h2>Замки и награды</h2></div>
-        <ol class="vault-list">${VAULT_STEPS.map((st,k)=>{ const done = k<v.claimed, now = k===v.claimed;
-          const prize = k<5 ? money(VAULT_CASH[k]*K) : (v.claimed>=5 ? `★ Редкий предмет из кейса «${fc.name}»` : "??? Секрет");
-          return `<li class="${done?'done':now?'now':''}"><b>Замок ${k+1}</b><span>${fr(st*K)} фрагм.</span><em>${prize}</em></li>`; }).join("")}</ol>
-        <div class="ph" style="margin-top:6px"><h2>Как получать фрагменты</h2></div>
-        <ul class="vault-how">
-          <li>Открытие кейсов, апгрейды, краш и батлы — <b>1 фрагмент за каждые ${money(VAULT_RATE)}</b> ставок</li>
-          <li>Ежедневный подарок — <b>+25</b></li>
-          <li>Победа в батле — <b>+20</b></li>
-        </ul>
-        <p class="hint">После шестого замка открывается следующее хранилище: замки вдвое прочнее, награды вдвое больше.</p>
-      </section>
-    </div>`;
-  const c = document.getElementById("vault-claim"); if(c) c.addEventListener("click", vaultClaim);
-  const n = document.getElementById("vault-next"); if(n) n.addEventListener("click", vaultNext);
-}
-
-
 /* ---------- Меню «Ещё» на телефоне ---------- */
 function drawMore(){
   const sh = document.getElementById("more-sheet"); if(!sh) return;
@@ -4424,9 +4361,93 @@ document.addEventListener("click", e=>{ const sh = document.getElementById("more
 function navMoreState(){
   const b = document.getElementById("nav-more"); if(!b) return;
   b.classList.toggle("on", [...document.querySelectorAll("nav a.nav-x")].some(a=>a.classList.contains("on")));
-  const vd = document.getElementById("nav-vault-dot"), md = document.getElementById("nav-more-dot");
-  if(md && vd) md.hidden = vd.hidden;
+
 }
+/* ---------- Оформление профиля ----------
+ * Фон карточки, рамка аватара и цвет ника покупаются за рубли; титулы открываются достижениями.
+ * Выбранное оформление видно другим игрокам в рейтинге и в карточке игрока. */
+const DECO = {
+  bg:[{id:"none",n:"Обычный",p:0},{id:"neon",n:"Неон",p:50000},{id:"sunset",n:"Закат",p:50000},{id:"ocean",n:"Океан",p:100000},{id:"jungle",n:"Джунгли",p:100000},
+      {id:"space",n:"Космос",p:250000},{id:"lava",n:"Лава",p:250000},{id:"matrix",n:"Матрица",p:500000},{id:"gold",n:"Золото",p:2000000},{id:"rainbow",n:"Радуга",p:10000000}],
+  frame:[{id:"none",n:"Без рамки",p:0},{id:"silver",n:"Серебро",p:25000},{id:"pixel",n:"Пиксельная",p:100000},{id:"neon",n:"Неоновая",p:250000},{id:"gold",n:"Золотая",p:500000},
+      {id:"ice",n:"Ледяная",p:1000000},{id:"fire",n:"Огненная",p:1000000},{id:"rainbow",n:"Радужная",p:25000000}],
+  color:[{id:"def",n:"Белый",p:0},{id:"gold",n:"Золотой",p:10000},{id:"red",n:"Алый",p:10000},{id:"violet",n:"Фиолетовый",p:10000},{id:"cyan",n:"Голубой",p:10000},
+      {id:"green",n:"Зелёный",p:10000},{id:"pink",n:"Розовый",p:10000},{id:"rainbow",n:"Радужный",p:5000000}]
+};
+const worthNow = () => S.bal + S.inv.reduce((a,i)=>a+i.price,0);
+const TITLES = [
+  {id:"",       n:"Без титула"},
+  {id:"newbie", n:"Новичок",             c:"#94a3b8", req:"есть у всех",                  ok:()=>true},
+  {id:"opener", n:"Открыватель",         c:"#4b69ff", req:"открыть 100 кейсов",           ok:()=>S.stats.opened>=100,          pr:()=>[S.stats.opened,100]},
+  {id:"hunter", n:"Охотник за ножами",   c:"#e4ae39", req:"выбить нож ★ из кейса",        ok:()=>(S.stats.knives||0)>=1,       pr:()=>[S.stats.knives||0,1]},
+  {id:"blades", n:"Коллекционер клинков",c:"#ffd23a", req:"выбить 10 ножей ★",            ok:()=>(S.stats.knives||0)>=10,      pr:()=>[S.stats.knives||0,10]},
+  {id:"upgr",   n:"Апгрейдер",           c:"#8847ff", req:"25 удачных апгрейдов",         ok:()=>S.stats.upgWin>=25,           pr:()=>[S.stats.upgWin,25]},
+  {id:"crash",  n:"Крашер",              c:"#22d3ee", req:"забрать ×10 и больше в краше", ok:()=>((S.stats.crash||{}).best||0)>=10, pr:()=>[Math.floor((S.stats.crash||{}).best||0),10]},
+  {id:"glad",   n:"Гладиатор",           c:"#ef5350", req:"выиграть 10 батлов",           ok:()=>((S.stats.battle||{}).win||0)>=10, pr:()=>[(S.stats.battle||{}).win||0,10]},
+  {id:"runner", n:"Бегун",               c:"#3ecf6e", req:"1 000 очков в забеге",         ok:()=>S.stats.runBest>=1000,        pr:()=>[Math.floor(S.stats.runBest),1000]},
+  {id:"vet",    n:"Ветеран",             c:"#f5a524", req:"достичь 10 уровня",            ok:()=>levelOf(xpOf(S)).lvl>=10,     pr:()=>[levelOf(xpOf(S)).lvl,10]},
+  {id:"lucky",  n:"Счастливчик",         c:"#ec4899", req:"дроп дороже 1 000 000 ₽",      ok:()=>S.stats.best && S.stats.best.price>=1e6},
+  {id:"mill",   n:"Миллионер",           c:"#fde68a", req:"состояние от 1 000 000 ₽",     ok:()=>worthNow()>=1e6,             pr:()=>[Math.floor(worthNow()),1e6]},
+  {id:"tycoon", n:"Магнат",              c:"#ffd23a", req:"состояние от 100 000 000 ₽",   ok:()=>worthNow()>=1e8,             pr:()=>[Math.floor(worthNow()),1e8]}
+];
+const TITLE_BY = Object.fromEntries(TITLES.map(t=>[t.id,t]));
+const decoIds = k => new Set(DECO[k].map(x=>x.id));
+function myDeco(){
+  const d = S.deco && typeof S.deco==="object" ? S.deco : (S.deco = {});
+  if(!Array.isArray(d.own)) d.own = [];
+  ["bg","frame","color"].forEach(k=>{ const def = DECO[k][0].id; if(!decoIds(k).has(d[k]) || (d[k]!==def && !d.own.includes(k+":"+d[k]))) d[k] = def; });
+  if(typeof d.title!=="string" || !TITLE_BY[d.title] || (d.title && !TITLE_BY[d.title].ok())) d.title = "";
+  return d;
+}
+function cleanDeco(x){
+  x = x && typeof x==="object" ? x : {};
+  const pick = (k, v) => decoIds(k).has(v) ? v : DECO[k][0].id;
+  return {bg:pick("bg", x.bg), frame:pick("frame", x.frame), color:pick("color", x.color), title:TITLE_BY[x.title] ? String(x.title) : ""};
+}
+const decoOf = p => (p && p.isMe) || p===S.profile ? cleanDeco(myDeco()) : cleanDeco(p && p.deco);
+const framed = (p, html) => { const d = decoOf(p); return `<span class="dfr dfr-${d.frame}">${html}</span>`; };
+const nickCls = p => "dnc-" + decoOf(p).color;
+const titleChip = p => { const t = TITLE_BY[decoOf(p).title]; return t && t.id ? `<span class="dtitle" style="--tc:${t.c}">${esc(t.n)}</span>` : ""; };
+let decoTab = "bg";
+function drawDeco(){
+  const box = document.getElementById("deco"); if(!box) return;
+  const d = myDeco(), me = {isMe:true, nick:S.profile.nick, av:S.profile.av, img:S.profile.img};
+  const tabs = {bg:"Фон", frame:"Рамка", color:"Цвет ника", title:"Титул"};
+  let tiles = "";
+  if(decoTab==="title"){
+    tiles = TITLES.map(t=>{ const on = d.title===t.id, ok = !t.id || t.ok(); const pr = !ok && t.pr ? t.pr() : null;
+      return `<button type="button" class="dtile${on?' on':''}${ok?'':' locked'}" data-k="title" data-id="${t.id}" ${ok?'':'disabled'}>
+        <span class="dprev">${t.id ? `<span class="dtitle" style="--tc:${t.c}">${esc(t.n)}</span>` : '<span class="hint">—</span>'}</span>
+        <b>${esc(t.n)}</b><small>${on ? "Выбран" : ok ? (t.id ? "Выбрать" : "Убрать титул") : "🔒 " + esc(t.req) + (pr ? ` · ${shortNum(pr[0])} / ${shortNum(pr[1])}` : "")}</small></button>`; }).join("");
+  } else {
+    tiles = DECO[decoTab].map(o=>{ const key = decoTab+":"+o.id, own = !o.p || d.own.includes(key), on = d[decoTab]===o.id, afford = S.bal >= o.p;
+      const prev = decoTab==="bg" ? `<span class="dsw dbg-${o.id}"></span>`
+        : decoTab==="frame" ? `<span class="dfr dfr-${o.id}">${avatarOf(me,40)}</span>`
+        : `<span class="dnick dnc-${o.id}"></span>`;
+      return `<button type="button" class="dtile${on?' on':''}${!own && !afford?' poor':''}" data-k="${decoTab}" data-id="${o.id}" data-p="${o.p}">
+        <span class="dprev">${prev}</span><b>${esc(o.n)}</b><small>${on ? "Выбрано" : own ? "Выбрать" : "Купить · " + money(o.p)}</small></button>`; }).join("");
+  }
+  box.innerHTML = `<div class="ph"><h2>Оформление профиля</h2><span class="hint" id="deco-msg">Его видят все игроки в рейтинге</span></div>
+    <div class="tabs deco-tabs" role="tablist">${Object.entries(tabs).map(([k,n])=>`<button role="tab" data-dt="${k}" class="${decoTab===k?'on':''}" aria-selected="${decoTab===k}">${n}</button>`).join("")}</div>
+    <div class="dgrid">${tiles}</div>`;
+  box.querySelectorAll(".dnick").forEach(el=>el.textContent = S.profile.nick);
+  box.querySelectorAll("[data-dt]").forEach(b=>b.addEventListener("click",()=>{ decoTab = b.dataset.dt; drawDeco(); }));
+  box.querySelectorAll(".dtile:not([disabled])").forEach(b=>b.addEventListener("click",()=>{
+    const k = b.dataset.k, id = b.dataset.id, msg = document.getElementById("deco-msg");
+    if(k==="title"){ d.title = id; }
+    else {
+      const o = DECO[k].find(x=>x.id===id), key = k+":"+id;
+      if(o.p && !d.own.includes(key)){
+        if(S.bal < o.p){ msg.className = "hint err"; msg.textContent = `Не хватает ${money(o.p - S.bal)}`; return; }
+        S.bal = Math.round((S.bal - o.p)*100)/100; d.own.push(key);
+        if(S.sound){ beep(660,.08,.05,"triangle"); setTimeout(()=>beep(990,.12,.05,"triangle"), 90); }
+      }
+      d[k] = id;
+    }
+    save(); renderHeader(); viewProfile(); const nb = document.getElementById("deco"); if(nb) nb.scrollIntoView({block:"nearest"});
+  }));
+}
+
 /* ---------- Маршрутизация ---------- */
 function route(){
   const h = location.hash.slice(1);
@@ -4438,7 +4459,6 @@ function route(){
   document.getElementById("nav-bt").classList.toggle("on", h==="battles" || h.startsWith("battle-"));
   document.getElementById("nav-top").classList.toggle("on", h==="top");
   document.getElementById("nav-admin").classList.toggle("on", h==="admin");
-  document.getElementById("nav-vault").classList.toggle("on", h==="vault");
   moreToggle(false); navMoreState();
   if(h==="admin") return viewAdmin();
   if(h==="profile") return viewProfile();
@@ -4447,7 +4467,6 @@ function route(){
   if(h==="runner"){ if(document.getElementById("rc")) return; return viewRunner(); }
   if(h==="crash"){ if(document.getElementById("crc")) return; return viewCrash(); }
   if(h==="battles") return viewBattles();
-  if(h==="vault") return viewVault();
   if(h.startsWith("battle-")){ if(BT.view && BT.view.id===h.slice(7) && document.getElementById("bv")) return; return viewBattle(h.slice(7)); }
   if(h==="upgrade"){ if(upSpinning && document.getElementById("needle")) return; return viewUpgrade(); }
   if(h==="inventory") return viewInventory();
