@@ -214,6 +214,64 @@ async function promoActivate(st, uid, b) {
 }
 
 
+/* ---------------- Реферальная программа ----------------
+ * У игрока есть код приглашения (refs/{uid}). Новый игрок, пришедший по ссылке, привязывается к пригласившему
+ * (refby/{uid}). Когда приглашённый откроет REF_MIN кейсов, пригласивший получает REF_BONUS через свой почтовый ящик grants. */
+const REF_BONUS = 1000000, REF_MIN = 20, REF_NEW_DAYS = 7;
+async function grantPush(st, uid, op) {
+  const cur = await st.get("grants/" + uid), d = cur && cur.data && typeof cur.data === "object" ? cur.data : {};
+  const ops = Array.isArray(d.ops) ? d.ops.slice(-29) : [];
+  ops.push(Object.assign({ id: Date.now().toString(36) + randomHex(3), ts: Date.now() }, op));
+  await st.set("grants/" + uid, Object.assign({}, d, { ops }));
+}
+async function refAction(st, uid, login, b, env) {
+  b = b && typeof b === "object" ? b : {};
+  const bonus = Math.max(0, Number(env && env.REF_BONUS) || REF_BONUS), need = Math.max(1, Number(env && env.REF_MIN) || REF_MIN);
+  if (b.action === "claim") {
+    const code = String(b.code || "").toLowerCase().replace(/[^a-z0-9]/g, "").slice(0, 12);
+    if (!code) return { error: "Нет кода" };
+    if (await st.get("refby/" + uid)) return { error: "Вы уже пришли по приглашению" };
+    const acc = await st.get("accounts/" + String(login || "").toLowerCase());
+    const created = acc && acc.data && Number(acc.data.created) || 0;
+    if (!created || Date.now() - created > REF_NEW_DAYS * 864e5) return { error: "Приглашение действует только для новых игроков" };
+    const rc = await st.get("refcodes/" + code); const inviter = rc && rc.data && rc.data.uid;
+    if (!inviter) return { error: "Приглашение не найдено" };
+    if (inviter === uid) return { error: "Нельзя пригласить самого себя" };
+    const cur = await st.get("refs/" + inviter), d = cur && cur.data ? cur.data : { code, list: [], earned: 0 };
+    if (!Array.isArray(d.list)) d.list = [];
+    if (!d.list.some(x => x.uid === uid) && d.list.length < 500) d.list.push({ uid, ts: Date.now(), paid: false });
+    await st.set("refs/" + inviter, d);
+    await st.set("refby/" + uid, { inviter, ts: Date.now() });
+    const p = await st.get("profiles/" + inviter);
+    return { ok: true, inviterNick: p && p.data && p.data.nick ? String(p.data.nick).slice(0, 20) : "игрок", need, bonus };
+  }
+  // info: свой код, список приглашённых; заодно выплачиваем бонусы за тех, кто уже открыл нужное число кейсов
+  const cur = await st.get("refs/" + uid);
+  const d = cur && cur.data && typeof cur.data === "object" ? cur.data : {};
+  if (!d.code) {
+    let code = "";
+    for (let i = 0; i < 6 && !code; i++) { const c = randomHex(4).slice(0, 7); if (!(await st.get("refcodes/" + c))) code = c; }
+    if (!code) return { error: "Попробуйте ещё раз" };
+    d.code = code; d.list = []; d.earned = 0;
+    await st.set("refcodes/" + code, { uid });
+    await st.set("refs/" + uid, d);
+  }
+  if (!Array.isArray(d.list)) d.list = [];
+  let changed = false;
+  const out = [];
+  for (const x of d.list) {
+    const p = await st.get("profiles/" + x.uid), pd = p && p.data || {};
+    const opened = Math.max(0, Number(pd.opened) || 0);
+    if (!x.paid && opened >= need) {
+      x.paid = true; x.paidAt = Date.now(); d.earned = (Number(d.earned) || 0) + bonus; changed = true;
+      await grantPush(st, uid, { type: "ref", amount: bonus, nick: String(pd.nick || "друг").slice(0, 20) });
+    }
+    out.push({ nick: String(pd.nick || "Новый игрок").slice(0, 20), id: x.uid, opened, paid: !!x.paid, ts: x.ts });
+  }
+  if (changed) await st.set("refs/" + uid, d);
+  return { code: d.code, list: out.slice(-100).reverse(), earned: Number(d.earned) || 0, need, bonus };
+}
+
 /* ---------------- Трейды между игроками ----------------
  * Предложение обмена: предметы и монеты с обеих сторон. Сервер хранит trades/{id}
  * и следит за состоянием: pending → accepted / declined / canceled (смена только с pending). */
@@ -464,6 +522,10 @@ export default {
       if (route === "POST /api/stock") {
         if (tooMany(writeTries, uid, 30, 10000)) return json(200, { error: "Слишком часто" });
         return json(200, await stockAction(st, uid, await readBody(MAX_BODY)));
+      }
+      if (route === "POST /api/ref") {
+        if (tooMany(writeTries, uid, 20, 60000)) return json(200, { error: "Слишком часто" });
+        return json(200, await refAction(st, uid, sess.data.login, await readBody(MAX_BODY), env));
       }
       if (route === "POST /api/promo") {
         if (tooMany(writeTries, uid, 10, 60000)) return json(200, { error: "Слишком много попыток, подождите минуту" });

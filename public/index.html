@@ -457,6 +457,18 @@ img,svg,canvas{-webkit-user-drag:none;user-drag:none}
 .wheel-lost{font-family:var(--mono);font-size:20px;fill:var(--text)}
 
 .case-result{display:grid;gap:10px}
+.ref-box{display:grid;gap:12px}
+.ref-how{margin:0;color:var(--muted);font-size:14px;line-height:1.5} .ref-how b{color:var(--text)}
+.ref-links{display:grid;gap:10px;grid-template-columns:minmax(0,1fr)} .ref-links label{grid-template-columns:minmax(0,1fr);min-width:0} .ref-row .btn{flex:none;padding:8px 12px;font-size:12px} .ref-row input{width:0}
+.ref-links label{display:grid;gap:6px;font-size:12px;color:var(--muted)}
+.ref-row{display:flex;gap:8px} .ref-row input{flex:1;min-width:0;background:var(--bg2);border:1px solid var(--line);color:var(--text);font:inherit;font-size:13px;padding:9px 10px}
+.ref-acts{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.ref-stats{margin:0}
+.ref-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px}
+.ref-it{display:grid;gap:5px;padding:9px 11px;background:var(--panel2);border:1px solid var(--line);border-left:3px solid #555;color:var(--text);text-decoration:none}
+.ref-it.ok{border-left-color:var(--good)}
+.ref-it span{font-size:12px;color:var(--muted)} .ref-it.ok span{color:var(--good)}
+.ref-it .qs-bar{height:6px}
 .foot-tg{display:inline-flex;align-items:center;gap:10px;margin:0 0 12px;padding:10px 14px;background:var(--panel);border:1px solid var(--line);border-left:3px solid #2aabee;color:var(--text);text-decoration:none;font-size:13px}
 .foot-tg:hover{border-color:#2aabee;color:#fff}
 .foot-tg svg{width:22px;height:22px;flex:none;fill:#2aabee}
@@ -1284,7 +1296,7 @@ body.wide-case main{max-width:none}
 #adm-rtp{min-width:0;overflow:hidden}
 .rtp-table{max-width:100%}
 </style>
-<script>window.APP_BUILD="04.11 00:15";</script>
+<script>window.APP_BUILD="04.11 00:32";</script>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="adapter.js"></script>
 <link rel="icon" href="icon.png">
@@ -4110,7 +4122,7 @@ async function initCloud(){
     subscribeTop();
     subscribeFeed();
     subscribeStock();
-    tgLinkOnce();
+    tgLinkOnce(); refClaimOnce();
     btInitSettle();
     trStart();
     const ref = db.collection("data/users/"+id).doc("game");
@@ -4250,6 +4262,7 @@ function viewProfile(){
       </div>
     </section>
     <section class="panel promo-box" id="promo-box" style="margin-top:14px"></section>
+    <section class="panel ref-box" id="ref-box" style="margin-top:14px"></section>
     <section class="panel deco" id="deco" style="margin:14px 0 18px"></section>
     <div class="stats pstats">
       <div class="stat"><small>Состояние</small><b>${money(S.bal+value)}</b></div>
@@ -4270,7 +4283,7 @@ function viewProfile(){
       : `<div class="empty">Инвентарь пуст. <a href="#cases">Откройте кейс</a></div>`}
     <p style="margin-top:28px"><button class="btn" id="reset">Начать заново</button> <span class="hint">Сбросит баланс до ${money(START)}, инвентарь и статистику.</span></p>`;
 
-  drawDeco(); drawPromoBox();
+  drawDeco(); drawPromoBox(); drawRefBox(true);
   // ник
   const inp = document.getElementById("p-nick"); inp.value = S.profile.nick;
   document.getElementById("p-form").addEventListener("submit", e=>{
@@ -4551,6 +4564,11 @@ function subscribeGrants(){
         const a = Math.round(Number(op.amount)||0);
         S.bal = Math.max(0, Math.round(S.bal + a));
         toast(a>=0 ? `Администратор начислил вам ${money(a)}` : `Администратор списал ${money(-a)}`);
+      } else if(op.type==="ref"){
+        const a = Math.max(0, Math.round(Number(op.amount)||0));
+        S.bal = Math.round(S.bal + a); refInfo = null;
+        toast(`Ваш друг ${String(op.nick||"").slice(0,20)} открыл кейсы — бонус ${money(a)}!`);
+        if(S.sound){ beep(784,.08,.05,"triangle"); setTimeout(()=>beep(1175,.12,.05,"triangle"), 90); }
       } else if(op.type==="reset"){
         S.profile.nick = newProfile().nick; S.profile.img = "";
         toast("Администратор сбросил ваш ник и аватар");
@@ -5625,6 +5643,64 @@ function drawFreeList(){
   const box = document.getElementById("free-list"); if(!box) return;
   const ids = Object.keys(S.free||{}).filter(id=>freeOf(id)>0 && CASE_BY_ID[id]);
   box.innerHTML = ids.length ? `<span class="hint">Бесплатные кейсы:</span>` + ids.map(id=>`<a class="free-chip" href="#case-${id}">🎁 ${CASE_BY_ID[id].name} ×${freeOf(id)}</a>`).join("") : "";
+}
+
+/* ---------- Реферальная программа ----------
+ * Ссылка с ?ref=КОД (или startapp=ref_КОД в Telegram) запоминается; после входа новый игрок привязывается к пригласившему.
+ * Бонус приходит пригласившему, когда друг откроет нужное число кейсов. */
+const REF_KEY = "pd-ref", REF_DONE = "pd-ref-done", BOT_NAME = (window.APP_CONFIG && window.APP_CONFIG.bot) || "CasovnyaSimulatorBot";
+(function refCapture(){
+  try{
+    const u = new URL(location.href); let code = u.searchParams.get("ref") || "";
+    const w = window.Telegram && window.Telegram.WebApp, sp = w && w.initDataUnsafe && w.initDataUnsafe.start_param;
+    if(!code && sp && /^ref_/.test(sp)) code = sp.slice(4);
+    code = String(code).toLowerCase().replace(/[^a-z0-9]/g,"").slice(0,12);
+    if(code && !localStorage.getItem(REF_DONE)) localStorage.setItem(REF_KEY, code);
+    if(u.searchParams.has("ref")){ u.searchParams.delete("ref"); history.replaceState(null, "", u.pathname + (u.search ? u.search : "") + u.hash); }
+  }catch(e){}
+})();
+async function refClaimOnce(){
+  let code; try{ code = localStorage.getItem(REF_KEY); }catch(e){}
+  if(!code || !CL.id || !CL.db || typeof CL.db.action!=="function") return;
+  let r; try{ r = await CL.db.action("ref", {action:"claim", code}) || {}; }catch(e){ return; } // нет связи — попробуем в другой раз
+  try{ localStorage.removeItem(REF_KEY); localStorage.setItem(REF_DONE, "1"); }catch(e){}
+  if(r.ok) toast(`Вы пришли по приглашению ${r.inviterNick}. Откройте ${r.need} кейсов — и другу придёт бонус!`);
+}
+let refInfo = null;
+const refLinks = code => ({web: location.origin + location.pathname + "?ref=" + code, tg: `https://t.me/${BOT_NAME}?startapp=ref_${code}`});
+async function drawRefBox(load){
+  let box = document.getElementById("ref-box"); if(!box) return;
+  if(!promoOn()){ box.innerHTML = `<div class="ph"><h2>Приглашай друзей</h2></div><p class="hint">Войдите в аккаунт, чтобы получить свою ссылку и по ${money(1e6)} за каждого друга.</p>`; return; }
+  if(load || !refInfo){
+    if(!refInfo) box.innerHTML = `<div class="ph"><h2>Приглашай друзей</h2></div><p class="hint">Загружаем…</p>`;
+    let r; try{ r = await CL.db.action("ref", {action:"info"}) || {}; }catch(e){ r = {error:"Нет связи с сервером"}; }
+    if(r.error && !refInfo){ box = document.getElementById("ref-box"); if(!box) return; box.innerHTML = `<div class="ph"><h2>Приглашай друзей</h2></div><p class="hint err">${esc(r.error)}</p>`; return; }
+    if(r.code) refInfo = r;
+    if(!refInfo) return;
+  }
+  box = document.getElementById("ref-box"); if(!box) return;
+  const R = refInfo, L = refLinks(R.code), paid = R.list.filter(x=>x.paid).length;
+  box.innerHTML = `<div class="ph"><h2>Приглашай друзей</h2><span class="hint">+${money(R.bonus)} за каждого</span></div>
+    <p class="ref-how">Отправь другу ссылку. Когда он зарегистрируется и откроет <b>${R.need} кейсов</b>, тебе придёт <b class="price">${money(R.bonus)}</b>.</p>
+    <div class="ref-links">
+      <label>Ссылка на сайт<div class="ref-row"><input readonly value="${esc(L.web)}" id="ref-web"><button class="btn" data-copy="ref-web">Копировать</button></div></label>
+      <label>Ссылка для Telegram<div class="ref-row"><input readonly value="${esc(L.tg)}" id="ref-tg"><button class="btn" data-copy="ref-tg">Копировать</button></div></label>
+    </div>
+    <div class="ref-acts"><a class="btn primary" id="ref-share" href="https://t.me/share/url?url=${encodeURIComponent(L.tg)}&text=${encodeURIComponent("Залетай в ПиксельДроп — открываем кейсы вместе! 🎁")}" target="_blank" rel="noopener">Поделиться в Telegram</a><span class="hint" id="ref-msg"></span></div>
+    <div class="stats ref-stats">
+      <div class="stat"><small>Приглашено</small><b>${R.list.length}</b></div>
+      <div class="stat"><small>Засчитано</small><b>${paid}</b></div>
+      <div class="stat"><small>Заработано</small><b>${money(R.earned)}</b></div>
+    </div>
+    ${R.list.length ? `<div class="ref-list">${R.list.map(x=>`<a class="ref-it${x.paid?' ok':''}" href="${playerHref(x.id)}"><b></b><span>${x.paid ? `+${money(R.bonus)} получено` : `кейсов: ${Math.min(x.opened, R.need)} / ${R.need}`}</span><i class="qs-bar"><i style="width:${Math.min(100, x.opened/R.need*100).toFixed(0)}%"></i></i></a>`).join("")}</div>` : `<p class="hint">Пока никого. Первый друг — первый миллион!</p>`}`;
+  box.querySelectorAll(".ref-it b").forEach((el,i)=>{ el.textContent = R.list[i].nick; });
+  box.querySelectorAll("[data-copy]").forEach(b=>b.addEventListener("click", async ()=>{
+    const inp = box.querySelector("#"+b.dataset.copy), m = box.querySelector("#ref-msg");
+    try{ await navigator.clipboard.writeText(inp.value); }catch(e){ inp.select(); try{ document.execCommand("copy"); }catch(_){} }
+    m.className = "hint ok"; m.textContent = "Ссылка скопирована";
+  }));
+  const sh = box.querySelector("#ref-share");
+  sh.addEventListener("click", e=>{ try{ const w = window.Telegram && window.Telegram.WebApp; if(w && w.initData && w.openTelegramLink){ e.preventDefault(); w.openTelegramLink(sh.href); } }catch(err){} });
 }
 function drawPromoBox(){
   const box = document.getElementById("promo-box"); if(!box) return;
