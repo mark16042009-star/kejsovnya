@@ -37,7 +37,8 @@
   function call(method, url, body) {
     return fetch(API + url, {
       method: method,
-      headers: Object.assign({ "Content-Type": "application/json", "X-Tg-Init-Data": initData },
+      // заголовок Telegram отправляем только внутри Telegram: лишний заголовок ломает запросы к Cloudflare (CORS)
+      headers: Object.assign({ "Content-Type": "application/json" }, initData ? { "X-Tg-Init-Data": initData } : {},
         AUTH === "token" && getToken() ? { "Authorization": "Bearer " + getToken() } : {}),
       body: body ? JSON.stringify(body) : undefined
     }).then(function (r) {

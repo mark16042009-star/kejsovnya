@@ -119,7 +119,7 @@ function corsHeaders(req, env) {
   if (origin && allowed.includes(origin)) {
     h["Access-Control-Allow-Origin"] = origin;
     h["Access-Control-Allow-Methods"] = "GET, PUT, PATCH, DELETE, POST, OPTIONS";
-    h["Access-Control-Allow-Headers"] = "Content-Type, Authorization";
+    h["Access-Control-Allow-Headers"] = "Content-Type, Authorization, X-Tg-Init-Data";
     h["Access-Control-Max-Age"] = "86400";
   }
   return h;
