@@ -1110,10 +1110,10 @@ body.wide-case main{max-width:none}
 #adm-rtp{min-width:0;overflow:hidden}
 .rtp-table{max-width:100%}
 </style>
-<script>window.APP_BUILD="03.11 17:14";</script>
+<script>window.APP_BUILD="03.11 17:30";</script>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
-<script src="config.js?v=202611031514"></script>
-<script src="adapter.js?v=202611031514"></script>
+<script src="config.js?v=202611031530"></script>
+<script src="adapter.js?v=202611031530"></script>
 <link rel="icon" href="icon.png">
 </head>
 <body>
@@ -1227,9 +1227,9 @@ const CASES = [
   {id:"cosmos", name:"Космос", price:3999, accent:"#a78bfa",
    pal:[["#0b0b2b","#a78bfa"],["#070720","#38bdf8"],["#1a0b33","#f0abfc"],["#02020f","#818cf8"]],
    names:["Орбита","Метеор","Туманность","Квазар","Пульсар","Гравитация","Горизонт событий","Чёрная дыра","Сингулярность","Сверхмассив","Млечный путь","Андромеда","Большой взрыв"]},
-  {id:"carton", name:"Картон", price:19, accent:"#c8a273", isNew:true,
-   pal:[["#6b4f2e","#c8a273"],["#4a3a26","#a8865a"],["#8a6a43","#e2c79c"],["#3a2e22","#b08d5e"]],
-   names:["Гофра","Скотч","Коробка","Упаковка","Штамп","Бирка","Посылка","Склад","Палета","Курьер","Экспресс","Пломба","Печать"]},
+  {id:"carton", name:"Бомж", price:19, accent:"#a8865a", isNew:true,
+   pal:[["#4a3a26","#a8865a"],["#3a3f47","#9aa3ad"],["#5a4a3a","#c8a273"],["#2a2a1a","#6b5a3a"]],
+   names:["Картонка","Пакет","Бутылка","Мелочь","Дошик","Ушанка","Тележка","Теплотрасса","Подъезд","Помойка","Клад со свалки","Король помойки","Бомж-миллионер"]},
   {id:"chalk", name:"Мел", price:39, accent:"#cfe3d4", isNew:true,
    pal:[["#1f3b2c","#cfe3d4"],["#2a2f2c","#e8ece9"],["#163126","#9bc7a9"],["#3a403c","#f4f6f4"]],
    names:["Доска","Мелок","Тряпка","Линейка","Пенал","Звонок","Перемена","Дневник","Отличник","Контрольная","Медаль","Глобус","Аттестат"]},
@@ -1287,6 +1287,9 @@ const CASES = [
   {id:"chat", name:"Мессенджер", price:150000, accent:"#38bdf8", isNew:true,
    pal:[["#04223f","#38bdf8"],["#0c4a6e","#7dd3fc"],["#0c2a4a","#e0f2fe"],["#0369a1","#ffffff"]],
    names:["Стикер","Канал","Беседа","Бот","Голосовое","Кружок","Пересылка","Закреп","Реакция","Секретный чат","Премиум","Шифр","Облако"]},
+  {id:"frog", name:"Квак", price:50000000, accent:"#4ade80", isNew:true, elite:true,
+   pal:[["#14532d","#4ade80"],["#166534","#bbf7d0"],["#0b2a16","#a3b545"],["#1f5a2a","#fde68a"]],
+   names:["Головастик","Кувшинка","Болотце","Камыш","Ква-ква","Муха","Прыжок","Лилия","Изумрудная жаба","Царевна","Принц","Золотая жаба","Король болота"]},
   {id:"rickroll", name:"RickRoll", price:100000000, accent:"#ff4fa3", isNew:true, elite:true,
    pal:[["#1a0a2e","#ff4fa3"],["#0a1a3a","#22d3ee"],["#2a0a3a","#fde68a"],["#120024","#a78bfa"]],
    names:["Кликбейт","Ссылка","Подвох","Сюрприз","Ловушка","Кассета","Синтипоп","Диско","Видеоклип","Хит-парад 80-х","Розыгрыш","Мем века","Легенда интернета"]}
@@ -1338,7 +1341,7 @@ const COLLECTIONS = [
   {id:"space",    name:"Космос и тайны",  desc:"Для охотников за легендами",          cases:["cosmos","abyss","legend"]},
   {id:"treasure", name:"Сокровищница", desc:"Золото, бриллианты и власть",         cases:["gold","diamond","empire"]},
   {id:"social",   name:"Соцсети",         desc:"Стримы, ролики и переписки",          cases:["stream","blog","chat"]},
-  {id:"elite",    name:"Элита",           desc:"Самые дорогие кейсы сайта",            cases:["million","titan","tycoon","galaxy","rickroll"]}
+  {id:"elite",    name:"Элита",           desc:"Самые дорогие кейсы сайта",            cases:["million","titan","tycoon","galaxy","frog","rickroll"]}
 ];
 CASES.forEach(c=>{ const k = COLLECTIONS.find(x=>x.cases.includes(c.id)); c.coll = k ? k.id : COLLECTIONS[0].id; });
 const plural = (n, a, b, c) => { const m = n%100, k = n%10; return m>10 && m<20 ? c : k===1 ? a : k>=2 && k<=4 ? b : c; };
@@ -1815,6 +1818,7 @@ xxxxxxxxxxxxxxmmxxxxx..xxxxxxxxxxx......
 };
 /* узор каждого скина по смыслу названия: [узор, основной, второй, акцент] */
 const LOOK = {
+  frog:[["dots","#1f5a2a","#4ade80","#a7f3c4"],["leaf","#14532d","#4ade80","#86efac"],["camo","#2b3320","#4a5a2e","#14532d"],["vstripes","#6b7a2a","#a3b545","#3f4a1a"],["bubbles","#166534","#4ade80","#d9f99d"],["dots","#1a1a1a","#3a3a3a","#9ae6b4"],["stripes","#22c55e","#bbf7d0","#14532d"],["swirl","#4ade80","#fbcfe8","#ffffff"],["gem","#0f6b3f","#4ade80","#c8ffe0"],["royal","#14532d","#fde68a","#f9a8d4"],["royal","#166534","#ffd23a","#ffffff"],["gold","#a3b545","#fde68a","#ffffff"],["holo","#bbf7d0","#ffffff","#fde68a"]],
   rickroll:[["neon","#120a24","#ff4fa3","#22d3ee"],["lined","#0a1a3a","#22d3ee","#ff4fa3"],["glitch","#ff4fa3","#22d3ee","#120024"],["bubbles","#3a0a5a","#ff4fa3","#ffd1ec"],["check","#1a0a2e","#ff4fa3","#22d3ee"],["hstripes","#1a1a1a","#fde68a","#ff4fa3"],["synth","#2a0f4a","#ff4fa3","#22d3ee"],["gem","#c0c8d0","#ffffff","#ff3ea5"],["scan","#1a0a2e","#a78bfa","#ffffff"],["stripes","#ff4fa3","#fde68a","#22d3ee"],["holo","#ffd1ec","#ffffff","#a5f3fc"],["burst","#ff4fa3","#fde68a","#ffffff"],["gold","#ff4fa3","#fff3c4","#ffffff"]],
   stream:[["coins","#2a1a4a","#fde68a","#ffffff"],["lined","#1a1030","#8b5cf6","#c4b5fd"],["dots","#8b5cf6","#fde68a","#ffffff"],["stripes","#6d28d9","#c4b5fd","#ffffff"],["lightning","#1a0a3a","#a78bfa","#ffffff"],["solid","#5b21b6","#a78bfa","#ffffff"],["scan","#2a1a4a","#8b5cf6","#ffffff"],["spots","#4c1d95","#c4b5fd","#1a0a3a"],["gem","#6d28d9","#e9d5ff","#ffffff"],["laser","#120a24","#a855f7","#ffffff"],["gold","#8b5cf6","#fde68a","#ffffff"],["stars","#0a0618","#3b1a6a","#c4b5fd"],["holo","#c4b5fd","#ffffff","#a78bfa"]],
   blog:[["check","#1a1a1a","#ef4444","#ffffff"],["solid","#ef4444","#fca5a5","#ffffff"],["noise","#3a3a3a","#5a5a5a","#ef4444"],["stripes","#b91c1c","#ffffff","#ef4444"],["gold","#a16207","#fde68a","#ffffff"],["chart","#140a0a","#ef4444","#3a1a1a"],["vstripes","#ef4444","#1a1a1a","#ffffff"],["swirl","#ef4444","#ffffff","#3b82f6"],["scan","#1a1a1a","#ef4444","#ffffff"],["bubbles","#7f1d1d","#ef4444","#fecaca"],["holo","#fecaca","#ffffff","#ef4444"],["metal","#9aa3ad","#e0e6ee","#ffffff"],["gold","#d4a017","#fff3c4","#ffffff"]],
@@ -1828,7 +1832,7 @@ const LOOK = {
   neon:[["neon","#120f24","#ffd23a","#ff3ea5"],["digi","#ff3ea5","#22d3ee","#facc15"],["neon","#1a0a24","#ff3ea5","#ffffff"],["synth","#2a0f4a","#ff3ea5","#22d3ee"],["noise","#ff7ac8","#ffd1ec","#ffffff"],["glitch","#ff3ea5","#22d3ee","#101030"],["holo","#a0f0ff","#ffd1ff","#ffffff"],["solid","#2a0a5a","#a855f7","#e9d5ff"],["rain","#0a1030","#22d3ee","#a78bfa"],["circuit","#0a2a1a","#22ff88","#d0ffe0"],["neon","#140a1a","#ff2e4d","#22d3ee"],["burst","#2a0a3a","#ff7ad9","#ffffff"],["laser","#120a0a","#ff3030","#ffd0d0"]],
   volcano:[["noise","#5a5a5a","#8a8a8a","#2e2e2e"],["hex","#2e2e33","#16161a","#4a4a52"],["gem","#0a0a0f","#3a2a5a","#9a8acc"],["lava","#1a0a05","#ff5a1f","#ffd23a"],["lava","#3a0a00","#ff8a00","#fff3a0"],["noise","#d6c21f","#f5ea6b","#8a7a10"],["rings","#2a1a12","#ff6a1f","#ffd23a"],["flames","#3a0a05","#ff3d00","#ffd23a"],["noise","#1a1210","#ff6a1f","#ffd23a"],["flames","#7a0a0a","#ff6a00","#ffe46b"],["burst","#ff8a00","#fff3a0","#ffffff"],["scales","#ff6a00","#ffd23a","#a81f0a"],["burst","#ffb02e","#fff9e0","#ffffff"]],
   cosmos:[["rings","#0b0b2b","#5a6aff","#ffffff"],["stars","#0a0a20","#ff8a3d","#ffffff"],["nebula","#0b0b2b","#ff6ad5","#7ad0ff"],["burst","#0a1a5a","#5ad0ff","#ffffff"],["rings","#0a0a20","#7a8aff","#ffffff"],["waves","#140a3a","#6a4aff","#c8b8ff"],["void","#000000","#ff8a1f","#3a1a00"],["void","#000000","#a78bfa","#1a0a3a"],["void","#000000","#ffffff","#3a3a5a"],["void","#05000f","#c084fc","#2a0a5a"],["stars","#0a0a20","#4a3a8a","#fff6d0"],["nebula","#0a0a2a","#a855f7","#38bdf8"],["burst","#2a0a5a","#ffd23a","#ff3ea5"]],
-  carton:[["vstripes","#b08d5e","#8a6a43","#c8a273"],["tape","#b08d5e","#e8d8a8","#8a6a43"],["solid","#a8865a","#c8a273","#6b4f2e"],["bubbles","#c8d8e0","#f0f8ff","#ffffff"],["stamp","#c8a273","#c0262d","#e6d2b0"],["stamp","#e2c79c","#2a4a8a","#b08d5e"],["tape","#a8865a","#d0b080","#5a3b22"],["wood","#8a6a43","#a8865a","#4a3a26"],["wood","#c8a273","#e2c79c","#8a6a43"],["stripes","#ff8a1f","#1a1a1a","#ffffff"],["stripes","#e02d2d","#ffffff","#a01a1a"],["spots","#b08d5e","#a01a1a","#5a0a0a"],["stamp","#e2c79c","#6a2a8a","#b08d5e"]],
+  carton:[["vstripes","#b08d5e","#8a6a43","#c8a273"],["noise","#e0e0e0","#ffffff","#b0b0b0"],["solid","#2e7d32","#66bb6a","#c8e6c9"],["coins","#3a2a10","#c8902a","#fde68a"],["swirl","#f2c94c","#e24a4a","#ffffff"],["noise","#5a4a3a","#7a6a5a","#3a2a1a"],["grid","#9aa3ad","#3a3f47","#c0c8d0"],["metal","#7a4a2a","#a8765a","#d0a080"],["marble","#5a6a5a","#7a8a7a","#3a4a3a"],["camo","#3a4a2a","#6b5a3a","#2a2a1a"],["rust","#4a4f55","#b5562a","#ffd23a"],["royal","#3a3020","#d4a017","#a01a1a"],["gold","#d4a017","#fff3c4","#ffffff"]],
   chalk:[["chalk","#1f3b2c","#e8ece9","#2a4a38"],["solid","#f4f6f4","#ffd1ec","#c8e8ff"],["noise","#8a8f8a","#b0b5b0","#5a5f5a"],["ruler","#f2d16b","#3a2a10","#e0b84a"],["hstripes","#e24a4a","#4a8ae2","#f2c94c"],["gold","#b8862a","#f2c94c","#fff3c4"],["dots","#4ade80","#facc15","#f472b6"],["lined","#f4f4ee","#7fa8e0","#e24a4a"],["stamp","#ffffff","#e02d2d","#f0f0f0"],["grid","#f4f8ff","#9fc0e8","#ffffff"],["gold","#c8902a","#ffd23a","#ffffff"],["camo","#2a6ae0","#3fbf5a","#e8d8a8"],["royal","#f2ead2","#c8902a","#8a2a2a"]],
   sand:[["solid","#e02d2d","#ff6a5a","#a01a1a"],["hstripes","#2a7ae0","#f2c94c","#ffffff"],["dots","#d9b06a","#b08a4a","#f2d8a0"],["waves","#d9a85a","#f2d08a","#b0803a"],["waves","#c8782a","#f0a84a","#8a4a1a"],["holo","#f2e0b0","#c8f0ff","#ffffff"],["waves","#1fa89a","#7ae0a0","#f2d08a"],["vstripes","#2e8b3a","#5fbf5a","#d0f0a0"],["scales","#1a1208","#d98a1f","#ffc23a"],["stripes","#c89a4a","#a8783a","#e8c88a"],["noise","#e0a84a","#f5d08a","#b07a2a"],["solid","#c8a06a","#e0c08a","#8a6a3a"],["hstripes","#1a3a8a","#f2c94c","#1a3a8a"]],
   retro:[["hstripes","#1a1a1a","#f2c94c","#e24a4a"],["check","#b0b5bc","#2a2a2e","#ffffff"],["hstripes","#2a5ae0","#3a3f47","#c0c8d0"],["digi","#e24a1f","#2a7ae0","#f2c94c"],["check","#ff3ea5","#22d3ee","#facc15"],["dots","#1a1a1a","#e02d2d","#ffffff"],["rings","#0a0a0a","#2a2a2e","#e24a4a"],["polaroid","#f4f4ee","#e24a4a","#2a7ae0"],["neon","#0a1a0a","#5aff7a","#c8ffd0"],["scan","#1a2a3a","#4a6a8a","#a0d0ff"],["stripes","#e24a4a","#f2c94c","#2a7ae0"],["gem","#c0c8d0","#ffffff","#ff3ea5"],["keys","#f4f4f4","#1a1a1a","#8a8a8a"]],
@@ -1946,6 +1950,19 @@ function art(sk){ return pixelArt(sk); }
 /* ---------- Пиксельные иллюстрации кейсов ----------
  * Сундук в цветах кейса и своя эмблема на нём, без фона. */
 const EMB = {
+  frog:{p:{a:"#4ade80",w:"#ffffff",p:"#f9a8d4",y:"#fde68a"}, s:`
+..kkk....kkk..
+.kwwwk..kwwwk.
+.kwkwkkkkwkwk.
+.kwwwaaaawwwk.
+kaaaaaaaaaaaak
+kaaaaaaaaaaaak
+kapaaaaaaaapak
+kaakaaaaaakaak
+kaaakkkkkkaaak
+.kaaaaaaaaaak.
+..kkkkkkkkkk..
+..............`},
   rickroll:{p:{a:"#8a8aa8",b:"#1a1a2e",r:"#ff4fa3",y:"#fde68a"}, s:`
 ....kkkkkk....
 ..kkbbbbbbkk..
@@ -2037,19 +2054,19 @@ b..a.wwww.a..b
 ....a.....bb..
 .....aaaabb...
 ..............`},
-  carton:{p:{a:"#c8a273",b:"#8a6a43",c:"#e8d8a8"}, s:`
-..............
+  carton:{p:{a:"#9aa3ad",b:"#555b63",c:"#c8a273"}, s:`
+k.............
+kk............
 .kkkkkkkkkkkk.
-.kaaaaccaaaak.
-.kaaaaccaaaak.
-.kbbbbccbbbbk.
-.kaaaaccaaaak.
-.kaaaaccaaaak.
-.kaaaaccaaaak.
+.kacacacacack.
 .kaaaaaaaaaak.
-.kaaaaaabbbak.
-.kkkkkkkkkkkk.
-..............`},
+..kacacacack..
+..kaaaaaaaak..
+...kkkkkkkk...
+...k......k...
+..kkk....kkk..
+..kbk....kbk..
+..kkk....kkk..`},
   chalk:{p:{a:"#2a5a3c",b:"#8a5a2a",w:"#f4f6f4"}, s:`
 kkkkkkkkkkkkkk
 kbbbbbbbbbbbbk
