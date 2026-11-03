@@ -161,6 +161,27 @@ async function battleAction(st, uid, owner, b) {
   return { error: "Неизвестное действие" };
 }
 
+
+/* ---------------- Промокоды ----------------
+ * Создаёт и видит промокоды только админ (promos/КОД). Активация идёт через сервер:
+ * он проверяет срок, лимит активаций и что игрок ещё не вводил этот код. */
+async function promoActivate(st, uid, b) {
+  const code = String((b && b.code) || "").trim().toUpperCase().replace(/\s+/g, "");
+  if (!code) return { error: "Введите промокод" };
+  if (!/^[A-Z0-9_-]{2,32}$/.test(code)) return { error: "Такого промокода нет" };
+  const cur = await st.get("promos/" + code);
+  if (!cur || !cur.data) return { error: "Такого промокода нет" };
+  const d = cur.data;
+  if (d.off) return { error: "Промокод отключён" };
+  if (d.exp && Date.now() > Number(d.exp)) return { error: "Срок действия промокода истёк" };
+  const users = Array.isArray(d.users) ? d.users : [];
+  if (users.includes(uid)) return { error: "Вы уже активировали этот промокод" };
+  if (Number(d.max) > 0 && (Number(d.used) || 0) >= Number(d.max)) return { error: "Промокод закончился" };
+  d.used = (Number(d.used) || 0) + 1; users.push(uid); d.users = users;
+  await st.set("promos/" + code, d);
+  return { ok: true, code, reward: { type: d.type === "case" ? "case" : "money", amount: Math.max(0, Math.round(Number(d.amount) || 0)), caseId: String(d.caseId || ""), count: Math.max(1, Math.min(100, Number(d.count) | 0 || 1)) } };
+}
+
 /* ---------------- Правила доступа (как на VPS и claude.ai) ---------------- */
 function parsePath(p, wantDoc) {
   if (typeof p !== "string" || p.length > 1000) return null;
@@ -173,12 +194,13 @@ function canRead(s, uid, owner) {
   if (s[0] === "data" && s[1] === "users") return s[2] === uid;
   if (s[0] === "profiles" || s[0] === "config" || s[0] === "feed" || s[0] === "battles") return true;
   if (s[0] === "grants") return owner || (s.length > 1 && s[1] === uid);
+  if (s[0] === "promos") return owner;
   return false;
 }
 function canWrite(s, uid, owner) {
   if (s[0] === "data" && s[1] === "users") return s.length > 2 && s[2] === uid;
   if (s[0] === "profiles") return s.length > 1 && (owner || s[1] === uid);
-  if (s[0] === "config" || s[0] === "grants") return owner;
+  if (s[0] === "config" || s[0] === "grants" || s[0] === "promos") return owner;
   return false;
 }
 
@@ -324,6 +346,10 @@ export default {
         if (url.searchParams.get("ver") && url.searchParams.get("ver") === String(ver)) return json(200, { same: true, ver });
         const limit = Math.min(1000, Math.max(1, Number(url.searchParams.get("limit")) || 1000));
         return json(200, { docs: await st.list(parent, limit), ver });
+      }
+      if (route === "POST /api/promo") {
+        if (tooMany(writeTries, uid, 10, 60000)) return json(200, { error: "Слишком много попыток, подождите минуту" });
+        return json(200, await promoActivate(st, uid, await readBody(MAX_BODY)));
       }
       if (route === "POST /api/battle") {
         if (tooMany(writeTries, uid, 30, 10000)) return json(429, { error: "Слишком часто" });

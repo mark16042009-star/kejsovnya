@@ -735,6 +735,28 @@ input.dnc-rainbow{-webkit-text-fill-color:#ff7ac8;color:#ff7ac8!important;backgr
 .row .who small .dtitle{margin-left:2px}
 .pl-head{display:flex;gap:16px;align-items:center;flex-wrap:wrap;padding:14px;border-radius:12px;background:var(--panel2)}
 @media (prefers-reduced-motion: reduce){ .dfr-fire::before,.dfr-rainbow::before,.dfr-neon,.dbg-matrix,.dbg-gold,.dbg-rainbow,.dnc-rainbow{animation:none} }
+.promo-form{display:flex;gap:8px;flex-wrap:wrap}
+.promo-form input{flex:1 1 200px;min-width:0;background:var(--panel2);border:1px solid var(--line);color:var(--text);font:inherit;font-size:16px;padding:10px 12px;text-transform:uppercase;letter-spacing:.08em}
+.promo-form .btn{padding:10px 16px}
+.free-list{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.free-list:empty{display:none}
+.free-chip{display:inline-block;padding:5px 10px;background:color-mix(in srgb,var(--good) 16%,var(--panel2));border:1px solid color-mix(in srgb,var(--good) 50%,var(--line));color:var(--text);text-decoration:none;font-size:13px;clip-path:var(--notch2)}
+.free-tag{position:absolute;top:10px;right:10px;z-index:2;background:var(--good);color:#06210f;font-size:11px;padding:2px 7px;clip-path:var(--notch2)}
+.free-open{background:var(--good)!important;border-color:var(--good)!important;color:#06210f!important}
+.promo-adm{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;align-items:end}
+.promo-adm label{display:grid;gap:4px;font-size:13px;color:var(--muted)}
+.promo-adm label[hidden]{display:none}
+.promo-adm label small{font-size:11px}
+.promo-adm input,.promo-adm select{background:var(--panel2);border:1px solid var(--line);color:var(--text);font:inherit;padding:8px 10px;min-width:0}
+.promo-adm #pa-code{text-transform:uppercase;letter-spacing:.06em;flex:1}
+.pa-row{display:flex;gap:6px}
+.promo-adm .adm-row{grid-column:1/-1}
+.promo-list{display:grid;gap:6px;margin-top:6px}
+.pa-item{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center;padding:8px 10px;background:var(--panel2);clip-path:var(--notch2)}
+.pa-item .pa-code{font-size:16px;letter-spacing:.08em;color:var(--accent)}
+.pa-item .btn{padding:5px 10px;font-size:12px}
+.pa-item .btn:first-of-type{margin-left:auto}
+.pa-item.dead{opacity:.5}
 .rtp-chip{background:color-mix(in srgb, var(--accent) 14%, var(--panel));border-color:color-mix(in srgb, var(--accent) 40%, var(--line))}
 .adm-case{grid-template-columns:10px minmax(0,1fr) 80px 64px auto auto}
 .adm-case input[data-f=rtp]{grid-row:1/span 2;grid-column:4}
@@ -1045,7 +1067,7 @@ body.wide-case main{max-width:none}
 #adm-rtp{min-width:0;overflow:hidden}
 .rtp-table{max-width:100%}
 </style>
-<script>window.APP_BUILD="03.11 16:00";</script>
+<script>window.APP_BUILD="03.11 16:23";</script>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="adapter.js"></script>
 <link rel="icon" href="icon.png">
@@ -2462,7 +2484,7 @@ function drawCaseGrid(){
   }
   const list = CASES.filter(c=>!c.off && c.price>=lo && c.price<=hi && (!q || c.name.toLowerCase().includes(q))).sort(CASE_SORTS[S.caseSort][1]);
   const card = c => `<a class="case${c.elite?' elite':''}" href="#case-${c.id}" style="--ca:${c.accent}">
-        ${c.isNew?'<span class="new-tag">Новый</span>':''}
+        ${c.isNew?'<span class="new-tag">Новый</span>':''}${freeOf(c.id) ? `<span class="free-tag">🎁 ×${freeOf(c.id)}</span>` : ''}
         ${caseArt(c)}
         <div class="case-row"><h3>${c.name}</h3><span class="price">${money(c.price)}</span></div>
         <div class="top">от <b>${money(c.minP)}</b> до <b>${money(c.maxP)}</b></div>
@@ -2498,6 +2520,7 @@ function viewCase(c){
         </div>
         <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;justify-content:flex-end">
           <span class="hint" id="hint"></span>
+          <button class="btn primary open-btn free-open" id="open-free" hidden></button>
           <button class="btn primary open-btn" id="open"></button>
         </div>
       </div>
@@ -2522,10 +2545,13 @@ function viewCase(c){
   }));
   document.getElementById("fast").addEventListener("change",e=>{S.fast=e.target.checked;save();});
   document.getElementById("open").addEventListener("click",()=>openCases(c));
+  const fo = document.getElementById("open-free"); if(fo) fo.addEventListener("click",()=>openCases(c, true));
 }
 function updateOpenBtn(c){
   const btn = document.getElementById("open"), hint = document.getElementById("hint");
   if(!btn) return;
+  const fb = document.getElementById("open-free"), fr = freeOf(c.id);
+  if(fb){ fb.hidden = fr < 1; fb.disabled = spinning; fb.textContent = `🎁 Открыть бесплатно · осталось ${fr}`; }
   const cost = Math.round(c.price*S.n*100)/100;
   btn.textContent = `Открыть ${S.n>1?S.n+' шт. ':''}за ${money(cost)}`;
   const enough = S.bal >= cost - 1e-9;
@@ -2546,17 +2572,20 @@ function buildStrip(c, winner, len, winIdx, baitIdx){
   return cells.join("");
 }
 
-async function openCases(c){
+async function openCases(c, free){
   if(spinning) return;
-  const n = S.n, cost = Math.round(c.price*n*100)/100;
+  if(free && freeOf(c.id) < 1) return;
+  const n = free ? 1 : S.n, cost = free ? 0 : Math.round(c.price*n*100)/100;
   if(S.bal < cost - 1e-9){ updateOpenBtn(c); return; }
   spinning = true;
   audio();
+  if(free) S.free[c.id] = freeOf(c.id) - 1;
   S.bal = Math.round((S.bal-cost)*100)/100;
   S.stats.opened += n; S.stats.spent = Math.round((S.stats.spent+cost)*100)/100;
   const wins = Array.from({length:n},()=>roll(c));
   // сразу кладём в инвентарь, чтобы ничего не потерялось при уходе со страницы
-  const bc = S.stats.byCase[c.id] = S.stats.byCase[c.id] || [0,0,0]; // [открыто, потрачено, выпало]
+  // бесплатные открытия по промокоду не идут в статистику RTP кейса
+  const bc = free ? [0,0,0] : (S.stats.byCase[c.id] = S.stats.byCase[c.id] || [0,0,0]); // [открыто, потрачено, выпало]
   bc[0] += n; bc[1] = Math.round(bc[1] + cost);
   wins.forEach(it=>{
     S.inv.unshift(it);
@@ -3505,6 +3534,7 @@ function viewProfile(){
         <div class="sync" id="p-sync"></div>
       </div>
     </section>
+    <section class="panel promo-box" id="promo-box" style="margin-top:14px"></section>
     <section class="panel deco" id="deco" style="margin:14px 0 18px"></section>
     <div class="stats pstats">
       <div class="stat"><small>Состояние</small><b>${money(S.bal+value)}</b></div>
@@ -3525,7 +3555,7 @@ function viewProfile(){
       : `<div class="empty">Инвентарь пуст. <a href="#cases">Откройте кейс</a></div>`}
     <p style="margin-top:28px"><button class="btn" id="reset">Начать заново</button> <span class="hint">Сбросит баланс до ${money(START)}, инвентарь и статистику.</span></p>`;
 
-  drawDeco();
+  drawDeco(); drawPromoBox();
   // ник
   const inp = document.getElementById("p-nick"); inp.value = S.profile.nick;
   document.getElementById("p-form").addEventListener("submit", e=>{
@@ -3803,6 +3833,7 @@ function viewAdmin(){
         </div>
         <div class="adm-row"><button class="btn primary" id="e-save">Сохранить</button><button class="btn" id="e-def">По умолчанию</button><span class="hint" id="e-msg"></span></div>
       </section>
+      ${promoAdminHTML()}
       <section class="panel adm-wide"><div class="ph"><h2>RTP</h2><span class="hint">фактическая отдача по данным игроков в рейтинге</span></div>
         <div id="adm-rtp"></div>
       </section>
@@ -3871,6 +3902,7 @@ function viewAdmin(){
     catch(e){ b.disabled = false; b.textContent = "Ошибка, ещё раз"; }
   }));
   drawAdminPlayers();
+  bindPromoAdmin();
 }
 function drawAdminRtp(){
   const box = document.getElementById("adm-rtp"); if(!box) return;
@@ -4583,6 +4615,102 @@ function drawDeco(){
     }
     save(); renderHeader(); viewProfile(); const nb = document.getElementById("deco"); if(nb) nb.scrollIntoView({block:"nearest"});
   }));
+}
+
+/* ---------- Промокоды ----------
+ * Игрок вводит код в профиле; сервер проверяет лимиты и выдаёт награду: деньги на баланс или бесплатные кейсы. */
+const promoOn = () => !LOCAL_ONLY && !!CL.id && !!CL.db && typeof CL.db.action==="function";
+function freeOf(id){ if(!S.free || typeof S.free!=="object" || Array.isArray(S.free)) S.free = {}; return Math.max(0, S.free[id]|0); }
+function rewardText(r){
+  if(r.type==="case"){ const c = CASE_BY_ID[r.caseId]; return `${r.count} ${plural(r.count,"бесплатный кейс","бесплатных кейса","бесплатных кейсов")} «${c ? c.name : r.caseId}»`; }
+  return money(r.amount) + " на баланс";
+}
+async function promoRedeem(code, msg, btn){
+  code = String(code||"").trim().toUpperCase().replace(/\s+/g,"");
+  if(!code){ flash(msg, false, "Введите промокод"); return; }
+  btn.disabled = true;
+  let r; try{ r = await CL.db.action("promo", {code}) || {}; }catch(e){ r = {error:"Нет связи с сервером"}; }
+  btn.disabled = false;
+  if(r.error || !r.reward){ flash(msg, false, r.error || "Не получилось"); return; }
+  const w = r.reward;
+  if(w.type==="case" && CASE_BY_ID[w.caseId]){ freeOf(w.caseId); S.free[w.caseId] = (S.free[w.caseId]|0) + w.count; }
+  else S.bal = Math.round((S.bal + w.amount)*100)/100;
+  S.promoUsed = (Array.isArray(S.promoUsed) ? S.promoUsed : []).concat(r.code).slice(-50);
+  save(); renderHeader();
+  if(S.sound){ beep(660,.08,.05,"triangle"); setTimeout(()=>beep(990,.12,.05,"triangle"), 90); }
+  const inp = document.getElementById("promo-in"); if(inp) inp.value = "";
+  flash(msg, true, "Промокод активирован: " + rewardText(w));
+  drawFreeList();
+}
+function drawFreeList(){
+  const box = document.getElementById("free-list"); if(!box) return;
+  const ids = Object.keys(S.free||{}).filter(id=>freeOf(id)>0 && CASE_BY_ID[id]);
+  box.innerHTML = ids.length ? `<span class="hint">Бесплатные кейсы:</span>` + ids.map(id=>`<a class="free-chip" href="#case-${id}">🎁 ${CASE_BY_ID[id].name} ×${freeOf(id)}</a>`).join("") : "";
+}
+function drawPromoBox(){
+  const box = document.getElementById("promo-box"); if(!box) return;
+  if(!promoOn()){ box.innerHTML = `<div class="ph"><h2>Промокод</h2></div><p class="hint">${LOCAL_ONLY ? "Промокоды работают в версии сайта с сервером." : "Войдите в аккаунт, чтобы активировать промокод."}</p>`; return; }
+  box.innerHTML = `<div class="ph"><h2>Промокод</h2></div>
+    <form class="promo-form" id="promo-form"><input id="promo-in" maxlength="32" autocomplete="off" placeholder="Введите промокод" aria-label="Промокод"><button class="btn primary" type="submit" id="promo-go">Активировать</button></form>
+    <span class="hint" id="promo-msg"></span><div class="free-list" id="free-list"></div>`;
+  document.getElementById("promo-form").addEventListener("submit", e=>{ e.preventDefault(); promoRedeem(document.getElementById("promo-in").value, document.getElementById("promo-msg"), document.getElementById("promo-go")); });
+  drawFreeList();
+}
+
+/* --- админка: промокоды --- */
+const genCode = () => Array.from({length:8}, ()=>"ABCDEFGHJKLMNPQRSTUVWXYZ23456789"[Math.floor(Math.random()*32)]).join("");
+function promoAdminHTML(){
+  return `<section class="panel adm-wide" id="adm-promo"><div class="ph"><h2>Промокоды</h2><span class="hint">коды видит только админ</span></div>
+    <form class="promo-adm" id="pa-form">
+      <label>Код<span class="pa-row"><input id="pa-code" maxlength="32" autocomplete="off" placeholder="Например BONUS2026"><button type="button" class="btn" id="pa-gen">Случайный</button></span></label>
+      <label>Награда<select id="pa-type"><option value="money">Деньги на баланс</option><option value="case">Бесплатные кейсы</option></select></label>
+      <label id="pa-amount-l">Сумма, ₽<input id="pa-amount" type="number" min="1" step="1" value="10000"></label>
+      <label id="pa-case-l" hidden>Кейс<select id="pa-case">${CASES.slice().sort((a,b)=>a.price-b.price).map(c=>`<option value="${c.id}">${c.name} · ${money(c.price)}</option>`).join("")}</select></label>
+      <label id="pa-count-l" hidden>Сколько кейсов<input id="pa-count" type="number" min="1" max="100" step="1" value="1"></label>
+      <label>Активаций всего<small>0 — без ограничения</small><input id="pa-max" type="number" min="0" step="1" value="100"></label>
+      <label>Действует до<small>пусто — бессрочно</small><input id="pa-exp" type="date"></label>
+      <div class="adm-row"><button class="btn primary" type="submit">Создать промокод</button><span class="hint" id="pa-msg"></span></div>
+    </form>
+    <div class="promo-list" id="pa-list"><p class="hint">Загрузка…</p></div></section>`;
+}
+async function drawPromoAdmin(){
+  const box = document.getElementById("pa-list"); if(!box) return;
+  let list = [];
+  try{ const snap = await CL.db.collection("promos").get(); list = snap.docs.map(d=>Object.assign({code:d.id}, d.data())); }catch(e){ box.innerHTML = `<p class="hint">Не удалось загрузить промокоды.</p>`; return; }
+  list.sort((a,b)=>(b.ts||0)-(a.ts||0));
+  box.innerHTML = list.length ? list.map(p=>{ const exp = p.exp ? new Date(p.exp) : null, dead = (exp && Date.now()>p.exp) || (p.max>0 && p.used>=p.max);
+    const what = p.type==="case" ? `${p.count}× ${CASE_BY_ID[p.caseId] ? CASE_BY_ID[p.caseId].name : p.caseId}` : money(p.amount);
+    return `<div class="pa-item${dead?' dead':''}"><b class="pa-code"></b><span>${what}</span><span class="hint">${p.used||0} / ${p.max>0 ? p.max : "∞"} активаций${exp ? " · до " + exp.toLocaleDateString("ru-RU") : ""}${dead ? " · закончился" : ""}</span>
+      <button class="btn" type="button" data-copy="${esc(p.code)}">Копировать</button><button class="btn" type="button" data-del="${esc(p.code)}">Удалить</button></div>`; }).join("")
+    : `<p class="hint">Промокодов пока нет.</p>`;
+  box.querySelectorAll(".pa-item").forEach((el,i)=>{ el.querySelector(".pa-code").textContent = list[i].code; });
+  box.querySelectorAll("[data-copy]").forEach(b=>b.addEventListener("click", ()=>{ try{ navigator.clipboard.writeText(b.dataset.copy); b.textContent = "Скопирован"; }catch(e){} }));
+  box.querySelectorAll("[data-del]").forEach(b=>b.addEventListener("click", async ()=>{ b.disabled = true; try{ await CL.db.doc("promos/"+b.dataset.del).delete(); }catch(e){} drawPromoAdmin(); }));
+}
+function bindPromoAdmin(){
+  const f = document.getElementById("pa-form"); if(!f) return;
+  const type = document.getElementById("pa-type"), msg = document.getElementById("pa-msg");
+  const sync = ()=>{ const isCase = type.value==="case"; document.getElementById("pa-amount-l").hidden = isCase; document.getElementById("pa-case-l").hidden = !isCase; document.getElementById("pa-count-l").hidden = !isCase; };
+  type.addEventListener("change", sync); sync();
+  document.getElementById("pa-gen").addEventListener("click", ()=>{ document.getElementById("pa-code").value = genCode(); });
+  f.addEventListener("submit", async e=>{
+    e.preventDefault();
+    const code = document.getElementById("pa-code").value.trim().toUpperCase().replace(/\s+/g,"");
+    if(!/^[A-Z0-9_-]{2,32}$/.test(code)){ flash(msg, false, "Код: 2–32 символа, латинские буквы, цифры, _ и -"); return; }
+    const isCase = type.value==="case";
+    const amount = Math.round(Number(document.getElementById("pa-amount").value)), count = Math.round(Number(document.getElementById("pa-count").value));
+    const max = Math.max(0, Math.round(Number(document.getElementById("pa-max").value)||0)), ev = document.getElementById("pa-exp").value;
+    if(!isCase && !(amount>0 && amount<=1e9)){ flash(msg, false, "Сумма от 1 ₽"); return; }
+    if(isCase && !(count>=1 && count<=100)){ flash(msg, false, "Кейсов от 1 до 100"); return; }
+    const ref = CL.db.doc("promos/"+code);
+    try{
+      const ex = await ref.get(); if(ex.exists){ flash(msg, false, "Такой код уже есть"); return; }
+      await ref.set({type: isCase ? "case" : "money", amount: isCase ? 0 : amount, caseId: isCase ? document.getElementById("pa-case").value : "", count: isCase ? count : 0,
+        max, exp: ev ? new Date(ev+"T23:59:59").getTime() : 0, used:0, users:[], ts:Date.now()});
+      flash(msg, true, "Промокод " + code + " создан"); document.getElementById("pa-code").value = ""; drawPromoAdmin();
+    }catch(err){ flash(msg, false, "Не сохранилось. Попробуйте ещё раз."); }
+  });
+  drawPromoAdmin();
 }
 
 /* ---------- Маршрутизация ---------- */
