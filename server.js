@@ -146,6 +146,32 @@ function checkInitData(initData, botToken = BOT_TOKEN) {
   try { return JSON.parse(params.get("user") || "null"); } catch (e) { return null; }
 }
 
+
+/* ---------------- Общая лента дропов ----------------
+ * Сервер сам собирает последние дропы всех игроков в один небольшой документ feed/main,
+ * чтобы сайт мог часто проверять ленту, не скачивая все профили. */
+const FEED_MAX = 40;
+async function updateFeed(st, pid, prof) {
+  const cur = await st.get("feed/main");
+  const items = cur && Array.isArray(cur.data.items) ? cur.data.items : [];
+  const mine = [];
+  if (prof && Array.isArray(prof.drops)) {
+    for (const d of prof.drops.slice(0, 10)) {
+      if (!d || typeof d !== "object") continue;
+      mine.push({
+        pid, nick: String(prof.nick || "").slice(0, 20),
+        av: { g: (prof.av && prof.av.g) | 0, c: (prof.av && prof.av.c) | 0 },
+        d: { c: String(d.c || "").slice(0, 20), s: d.s | 0, w: d.w | 0, st: !!d.st, price: Number(d.price) || 0, fl: Number(d.fl) || 0, id: String(d.id || "").slice(0, 24), t: Number(d.t) || 0 }
+      });
+    }
+  }
+  const before = JSON.stringify(items.filter(x => x.pid === pid));
+  const others = items.filter(x => x.pid !== pid);
+  const next = others.concat(mine).sort((a, b) => b.d.t - a.d.t).slice(0, FEED_MAX);
+  if (before === JSON.stringify(next.filter(x => x.pid === pid)) && next.length === items.length) return; // дропы не менялись — не пишем
+  await st.set("feed/main", { items: next });
+}
+
 /* ---------------- Правила доступа (те же, что были на claude.ai) ---------------- */
 const SEG = /^[A-Za-z0-9_\-.~:@+]{1,200}$/;
 function parsePath(p, wantDoc) {
@@ -157,7 +183,7 @@ function parsePath(p, wantDoc) {
 }
 function canRead(s, uid, owner) {
   if (s[0] === "data" && s[1] === "users") return s[2] === uid;        // личные данные — только свои
-  if (s[0] === "profiles" || s[0] === "config") return true;            // рейтинг и настройки — всем
+  if (s[0] === "profiles" || s[0] === "config" || s[0] === "feed") return true; // рейтинг, настройки и лента — всем
   if (s[0] === "grants") return owner || (s.length > 1 && s[1] === uid); // почтовый ящик — свой, админу все
   return false;
 }
@@ -312,10 +338,15 @@ async function main() {
         if (!s) return send(res, 400, { error: "Неверный путь" });
         if (!canWrite(s, uid, owner)) return send(res, 403, { error: "Нет прав" });
         const p = s.join("/");
-        if (req.method === "DELETE") { await store.del(p); return send(res, 200, { ok: true }); }
+        if (req.method === "DELETE") {
+          await store.del(p);
+          if (s[0] === "profiles" && s.length === 2) await updateFeed(store, s[1], null);
+          return send(res, 200, { ok: true });
+        }
         if (!body.data || typeof body.data !== "object" || Array.isArray(body.data)) return send(res, 400, { error: "Нужен объект" });
         if (req.method === "PUT") await store.set(p, body.data);
         else if (!(await store.patch(p, body.data))) return send(res, 400, { error: "Документа нет" });
+        if (s[0] === "profiles" && s.length === 2) await updateFeed(store, s[1], (await store.get(p) || {}).data);
         return send(res, 200, { ok: true });
       }
       return send(res, 404, { error: "Нет такого адреса" });

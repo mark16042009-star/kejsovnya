@@ -691,8 +691,8 @@ button,a,input,select,label{-webkit-tap-highlight-color:transparent;touch-action
 .rtp-table{max-width:100%}
 </style>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
-<script src="config.js?v=202611031132"></script>
-<script src="adapter.js?v=202611031132"></script>
+<script src="config.js?v=202611030936"></script>
+<script src="adapter.js?v=202611030936"></script>
 <link rel="icon" href="icon.png">
 </head>
 <body>
@@ -1895,6 +1895,7 @@ async function initCloud(){
     document.getElementById("nav-admin").hidden = !CL.owner;
     subscribeConfig();
     subscribeTop();
+    subscribeFeed();
     const ref = db.collection("data/users/"+id).doc("game");
     let snap;
     try{
@@ -1945,6 +1946,18 @@ async function flushCloud(){
   }
   wBusy = false;
   if(wDirty) flushCloud();
+}
+function subscribeFeed(){
+  CL.db.doc("feed/main").onSnapshot(snap=>{
+    if(!snap.exists) return;
+    const d = snap.data(), n = v => { v = Number(v); return isFinite(v) && v>=0 ? v : 0; };
+    CL.feed = (Array.isArray(d.items) ? d.items : []).slice(0, 40).map(x=>{
+      if(!x || !x.d) return null;
+      const it = {c:String(x.d.c||""), s:x.d.s|0, w:x.d.w|0, st:!!x.d.st, price:n(x.d.price), fl:n(x.d.fl), t:n(x.d.t), id:String(x.d.id||"").replace(/[^a-z0-9]/gi,"").slice(0,24) || Math.random().toString(36).slice(2,8)};
+      return validItem(it) ? {pid:String(x.pid||""), nick:String(x.nick||"Игрок").slice(0,20), av:{g:(x.av&&x.av.g)|0, c:(x.av&&x.av.c)|0}, d:it} : null;
+    }).filter(Boolean);
+    renderFeed();
+  }, ()=>{});
 }
 function subscribeTop(){
   const timer = setTimeout(()=>{ if(!CL.loaded){ CL.slow = true; if(location.hash==="#top") drawBoard(); } }, 10000);
@@ -2132,7 +2145,10 @@ let feedSeen = null, feedSig = "";
 function feedItems(){
   const me = {id:CL.id||"me", nick:S.profile.nick, av:S.profile.av, img:S.profile.img};
   let all = S.recent.slice(0,10).map(it=>({it, who:me}));
-  if(CL.id){
+  if(CL.id && CL.feed){
+    // сервер ведёт общую ленту: берём из неё всех, кроме себя (свои дропы видны сразу)
+    CL.feed.forEach(x=>{ if(x.pid===CL.id) return; const p = CL.list.find(q=>q.id===x.pid); all.push({it:x.d, who: p || {id:x.pid, nick:x.nick, av:x.av}}); });
+  } else if(CL.id){
     CL.list.forEach(p=>{ if(p.id===CL.id) return; (p.drops||[]).forEach(it=>all.push({it, who:p})); });
   }
   all.sort((a,b)=>(b.it.t||0)-(a.it.t||0));

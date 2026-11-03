@@ -62,7 +62,7 @@
 
   // Опрос вместо живой подписки: документы раз в 3 с, коллекции раз в 5 с,
   // плюс сразу после собственной записи.
-  var POLL_DOC = CFG.pollDoc || 3000, POLL_COL = CFG.pollCol || 5000;
+  var POLL_DOC = CFG.pollDoc || 3000, POLL_COL = CFG.pollCol || 5000, POLL_FEED = CFG.pollFeed || 3000;
   var pollers = new Set();
   // пока вкладка свёрнута, не опрашиваем сервер; при возвращении — сразу обновляем
   document.addEventListener("visibilitychange", function () { if (!document.hidden) pollers.forEach(function (p) { p(); }); });
@@ -110,7 +110,7 @@
       onSnapshot: function (next, error) {
         return subscribe(function () {
           return call("GET", q).then(function (d) { return { ver: d.exists ? String(d.ver) : "none", d: d }; });
-        }, POLL_DOC, function (res) { next(docSnap(path, res.d)); }, error);
+        }, path === "feed/main" ? POLL_FEED : POLL_DOC, function (res) { next(docSnap(path, res.d)); }, error);
       },
       collection: function (sub) { return colRef(path + "/" + sub); }
     };

@@ -80,6 +80,32 @@ function sameHex(a, b) { // сравнение без утечки по врем
   return d === 0;
 }
 
+
+/* ---------------- Общая лента дропов ----------------
+ * Сервер сам собирает последние дропы всех игроков в один небольшой документ feed/main,
+ * чтобы сайт мог часто проверять ленту, не скачивая все профили. */
+const FEED_MAX = 40;
+async function updateFeed(st, pid, prof) {
+  const cur = await st.get("feed/main");
+  const items = cur && Array.isArray(cur.data.items) ? cur.data.items : [];
+  const mine = [];
+  if (prof && Array.isArray(prof.drops)) {
+    for (const d of prof.drops.slice(0, 10)) {
+      if (!d || typeof d !== "object") continue;
+      mine.push({
+        pid, nick: String(prof.nick || "").slice(0, 20),
+        av: { g: (prof.av && prof.av.g) | 0, c: (prof.av && prof.av.c) | 0 },
+        d: { c: String(d.c || "").slice(0, 20), s: d.s | 0, w: d.w | 0, st: !!d.st, price: Number(d.price) || 0, fl: Number(d.fl) || 0, id: String(d.id || "").slice(0, 24), t: Number(d.t) || 0 }
+      });
+    }
+  }
+  const before = JSON.stringify(items.filter(x => x.pid === pid));
+  const others = items.filter(x => x.pid !== pid);
+  const next = others.concat(mine).sort((a, b) => b.d.t - a.d.t).slice(0, FEED_MAX);
+  if (before === JSON.stringify(next.filter(x => x.pid === pid)) && next.length === items.length) return; // дропы не менялись — не пишем
+  await st.set("feed/main", { items: next });
+}
+
 /* ---------------- Правила доступа (как на VPS и claude.ai) ---------------- */
 function parsePath(p, wantDoc) {
   if (typeof p !== "string" || p.length > 1000) return null;
@@ -90,7 +116,7 @@ function parsePath(p, wantDoc) {
 }
 function canRead(s, uid, owner) {
   if (s[0] === "data" && s[1] === "users") return s[2] === uid;
-  if (s[0] === "profiles" || s[0] === "config") return true;
+  if (s[0] === "profiles" || s[0] === "config" || s[0] === "feed") return true;
   if (s[0] === "grants") return owner || (s.length > 1 && s[1] === uid);
   return false;
 }
@@ -207,7 +233,11 @@ export default {
         if (!s) return json(400, { error: "Неверный путь" });
         if (!canWrite(s, uid, owner)) return json(403, { error: "Нет прав" });
         const p = s.join("/");
-        if (req.method === "DELETE") { await st.del(p); return json(200, { ok: true }); }
+        if (req.method === "DELETE") {
+          await st.del(p);
+          if (s[0] === "profiles" && s.length === 2) await updateFeed(st, s[1], null);
+          return json(200, { ok: true });
+        }
         if (!body.data || typeof body.data !== "object" || Array.isArray(body.data)) return json(400, { error: "Нужен объект" });
         if (req.method === "PUT") await st.set(p, body.data);
         else {
@@ -215,6 +245,7 @@ export default {
           if (!cur) return json(400, { error: "Документа нет" });
           await st.set(p, deepMerge(cur.data, body.data));
         }
+        if (s[0] === "profiles" && s.length === 2) await updateFeed(st, s[1], (await st.get(p) || {}).data);
         return json(200, { ok: true });
       }
       return json(404, { error: "Нет такого адреса" });
