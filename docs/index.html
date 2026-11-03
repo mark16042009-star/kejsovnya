@@ -1183,10 +1183,10 @@ body.wide-case main{max-width:none}
 #adm-rtp{min-width:0;overflow:hidden}
 .rtp-table{max-width:100%}
 </style>
-<script>window.APP_BUILD="03.11 22:06";</script>
+<script>window.APP_BUILD="03.11 22:17";</script>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
-<script src="config.js?v=202611032006"></script>
-<script src="adapter.js?v=202611032006"></script>
+<script src="config.js?v=202611032017"></script>
+<script src="adapter.js?v=202611032017"></script>
 <link rel="icon" href="icon.png">
 </head>
 <body>
@@ -3292,16 +3292,47 @@ buildCatalog();
 let upLast = null, upSkip = false;
 /* плавная дуга шанса и докрутка стрелки при входе */
 let upShownCh = 0, arcTok = 0, needleTok = 0;
+const PXR = (()=>{ // клетки кольца, сердцевины и внешнего пунктира
+  const ring = [], core = [], dots = [];
+  for(let y=0;y<30;y++) for(let x=0;x<30;x++){
+    const cx = x*10+5-150, cy = y*10+5-150, r = Math.hypot(cx, cy);
+    let a = Math.atan2(cx, -cy)/(2*Math.PI); if(a < 0) a += 1;
+    if(r >= 103 && r <= 133) ring.push({x:x*10, y:y*10, a});
+    else if(r < 103) core.push({x:x*10, y:y*10, r});
+    else if(r >= 139 && r <= 147 && (x+y)%2===0) dots.push({x:x*10, y:y*10});
+  }
+  ring.sort((p,q)=>p.a-q.a);
+  return {ring, core, dots};
+})();
+const hexMix = (a, b, k) => { const A = hexRgb(a), B = hexRgb(b); return rgbHex(A.map((v,i)=>Math.round(v+(B[i]-v)*k))); };
+function paintRing(v){
+  const g = document.getElementById("up-ring"); if(!g) return;
+  const mode = g.dataset.mode, cells = g.children;
+  for(let i=0;i<cells.length;i++){
+    const a = PXR.ring[i].a, on = a < v;
+    const col = !on ? "#262626" : mode==="win" ? (a*7|0)%2 ? "#3ecf6e" : "#5fe08a" : mode==="lost" ? "#5a4a1a" : hexMix("#ffc800", "#ff7a1a", a);
+    if(cells[i].getAttribute("fill") !== col) cells[i].setAttribute("fill", col);
+  }
+}
+function setNeedle(deg){
+  const n = document.getElementById("needle"); if(!n) return;
+  const t = deg*Math.PI/180, dx = Math.sin(t), dy = -Math.cos(t), px = Math.cos(t), py = Math.sin(t);
+  const cell = (r, o) => [Math.floor((150 + dx*r + px*o)/10)*10, Math.floor((150 + dy*r + py*o)/10)*10];
+  const pts = [[cell(150,-10),"#b38c00"],[cell(150,0),"#ffc800"],[cell(150,10),"#b38c00"],[cell(140,0),"#ffc800"],[cell(130,0),"#f2f2f2"]];
+  const seen = new Set(), out = [];
+  pts.forEach(([[x,y],c])=>{ const k = x+","+y; if(seen.has(k)) return; seen.add(k); out.push(`<rect x="${x}" y="${y}" width="10" height="10" fill="${c}"/>`); });
+  n.innerHTML = out.join("");
+}
 const motionOK = () => !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 function tweenArc(to){
   const C = 2*Math.PI*118, from = upShownCh, tok = ++arcTok, t0 = performance.now();
   const d = motionOK() ? (from===0 ? 1100 : 550) : 0;
   function f(now){
     if(tok!==arcTok) return;
-    const arc = document.getElementById("up-arc"), txt = document.getElementById("up-pct");
+    const txt = document.getElementById("up-pct");
     const k = d ? Math.min(1, Math.max(0,(now-t0)/d)) : 1, e = 1-Math.pow(1-k,3), v = from + (to-from)*e;
     upShownCh = v;
-    if(arc) arc.setAttribute("stroke-dasharray", `${(C*v).toFixed(2)} ${C.toFixed(2)}`);
+    paintRing(v);
     if(txt) txt.textContent = pct(v);
     if(k<1) requestAnimationFrame(f);
   }
@@ -3315,7 +3346,7 @@ function introNeedle(){
     if(tok!==needleTok || upSpinning) return;
     const k = Math.min(1, Math.max(0,(now-t0)/d)), e = 1-Math.pow(1-k,4), a = from + (to-from)*e;
     const n = document.getElementById("needle");
-    if(n) n.setAttribute("transform", `rotate(${(((a%360)+360)%360).toFixed(2)} 150 150)`);
+    if(n) setNeedle((((a%360)+360)%360));
     const sg = Math.floor(a/30);
     if(sg!==lastSeg){ lastSeg = sg; if(ac && S.sound && k<0.97) beep(1300,.015,.012); }
     if(k<1) requestAnimationFrame(f);
@@ -3438,23 +3469,18 @@ function drawUpMid(){
     : `${GHOST}<div class="slot-empty"><b>Выберите скин</b><span>справа внизу или множителем</span></div>`;
   // шкала
   mid.innerHTML = `
-    <svg class="wheel" viewBox="0 0 300 300" role="img" aria-label="Шанс апгрейда ${pct(ch)}">
-      <defs><linearGradient id="arcg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="var(--accent)"/><stop offset="1" stop-color="var(--accent2)"/></linearGradient>
-        <radialGradient id="coreg"><stop offset="0" stop-color="#262626"/><stop offset="1" stop-color="#181818"/></radialGradient></defs>
-      <circle cx="150" cy="150" r="142" fill="none" stroke="#262626" stroke-width="1.5"/>
-      <circle cx="150" cy="150" r="${R}" fill="none" stroke="#262626" stroke-width="20"/>
-      <circle cx="150" cy="150" r="${R}" fill="none" stroke="${L&&L.win?'var(--good)':'url(#arcg)'}" stroke-width="20" opacity="${L&&!L.win?0.35:1}" id="up-arc" stroke-dasharray="${(C*upShownCh).toFixed(2)} ${C.toFixed(2)}" transform="rotate(-90 150 150)"/>
-      <circle cx="150" cy="150" r="96" fill="url(#coreg)"/>
+    <svg class="wheel" viewBox="-12 -12 324 324" role="img" aria-label="Шанс апгрейда ${pct(ch)}">
+      <g shape-rendering="crispEdges">${PXR.dots.map(d=>`<rect x="${d.x}" y="${d.y}" width="10" height="10" fill="#262626"/>`).join("")}
+      <g id="up-ring" data-mode="${L ? (L.win?'win':'lost') : ''}">${PXR.ring.map(c=>`<rect x="${c.x}" y="${c.y}" width="10" height="10" fill="#262626"/>`).join("")}</g>
+      ${PXR.core.map(c=>`<rect x="${c.x}" y="${c.y}" width="10" height="10" fill="${c.r > 86 ? '#121212' : '#1c1c1c'}"/>`).join("")}</g>
       ${L ? `<text x="150" y="122" text-anchor="middle" class="wheel-miss${L.win?' ok':''}">${L.win?'ЕСТЬ!':'МИМО'}</text>
       <text x="150" y="154" text-anchor="middle" class="wheel-lost">${L.win?'+'+money(L.got.price):'−'+money(L.st)}</text>
       <text x="150" y="180" text-anchor="middle" class="wheel-lbl">шанс был ${pct(L.ch)}</text>`
       : `<text x="150" y="138" text-anchor="middle" class="wheel-pct" id="up-pct">${pct(upShownCh)}</text>
       <text x="150" y="168" text-anchor="middle" class="wheel-lbl">${mult?'×'+mult.toFixed(2).replace(".",","):'шанс'}</text>`}
-      <g id="needle" transform="rotate(${(upAngle%360).toFixed(2)} 150 150)">
-        <path d="M150 20 L140 2 L160 2 Z" fill="var(--accent)" transform="translate(0 0)"/>
-        <rect x="148" y="20" width="4" height="22" rx="2" fill="var(--text)"/>
-      </g>
+      <g id="needle" shape-rendering="crispEdges"></g>
     </svg>`;
+  paintRing(upShownCh); setNeedle(upAngle % 360);
   tweenArc(ch);
   const sg = document.getElementById("up-sell-got");
   if(sg) sg.addEventListener("click", ()=>sell([L.got.id]));
@@ -3528,7 +3554,7 @@ async function doUpgrade(){
       if(upSkip){
         x = [...segs].reverse().find(g=>g.to!==undefined).to;
         const n = document.getElementById("needle");
-        if(n) n.setAttribute("transform", `rotate(${(x%360).toFixed(2)} 150 150)`);
+        if(n) setNeedle((x%360));
         const gm = document.getElementById("up-mid"); if(gm) gm.classList.remove("tense");
         upAngle = x; res(); return;
       }
@@ -3539,7 +3565,7 @@ async function doUpgrade(){
       if(g.hold){ if(el >= g.hold) doneSeg = true; }
       else { const k = Math.min(1, el/g.d); x = from + (g.to-from)*g.e(k); if(k>=1) doneSeg = true; }
       const n = document.getElementById("needle");
-      if(n) n.setAttribute("transform", `rotate(${(x%360).toFixed(2)} 150 150)`);
+      if(n) setNeedle((x%360));
       const speed = Math.abs(x-px)/dt*16.7;
       const gm = document.getElementById("up-mid");
       if(gm) gm.classList.toggle("tense", !plain && speed < 1.6 && seg < segs.length);
