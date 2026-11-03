@@ -129,11 +129,123 @@
   window.claude = {
     use: function (name) {
       return me().then(function (m) {
-        if (!m) return null;                 // не в Telegram и не в режиме разработки: игра работает локально
+        if (!m) return null;                 // не вошёл в аккаунт: игра работает локально в этом браузере
         if (name === "db") return db;
         if (name === "user") return user;
         return null;
       });
     }
   };
+
+  /* ---------------- Вход по логину и паролю (обычный сайт) ---------------- */
+  if (initData) return; // в Telegram вход автоматический
+  var LOCAL_KEY = "kejsovnya-rub-v1";
+  window.APP_CONFIG = Object.assign({}, window.APP_CONFIG, {
+    localNote: "Вы играете без аккаунта: прогресс хранится только в этом браузере. Войдите или зарегистрируйтесь, чтобы сохранить его и попасть в рейтинг.",
+    topNote: "Рейтинг видят все, а попадают в него игроки с аккаунтом. Войдите или зарегистрируйтесь — текущий прогресс перенесётся."
+  });
+
+  function el(tag, attrs, html) {
+    var e = document.createElement(tag);
+    Object.keys(attrs || {}).forEach(function (k) { e.setAttribute(k, attrs[k]); });
+    if (html) e.innerHTML = html;
+    return e;
+  }
+
+  function openAuth(mode) {
+    var old = document.getElementById("auth-ov"); if (old) old.remove();
+    var ov = el("div", { id: "auth-ov", class: "overlay show", role: "dialog", "aria-modal": "true", "aria-labelledby": "auth-title" });
+    ov.innerHTML =
+      '<form class="modal auth" id="auth-form" novalidate>' +
+        '<div class="tabs auth-tabs" role="tablist">' +
+          '<button type="button" role="tab" data-m="login">Вход</button>' +
+          '<button type="button" role="tab" data-m="register">Регистрация</button>' +
+        '</div>' +
+        '<h2 id="auth-title"></h2>' +
+        '<p class="hint" id="auth-sub"></p>' +
+        '<label class="auth-f" for="auth-login">Логин<input id="auth-login" name="login" autocomplete="username" maxlength="20" required></label>' +
+        '<label class="auth-f" for="auth-pass">Пароль<input id="auth-pass" name="password" type="password" maxlength="200" required></label>' +
+        '<label class="auth-f" id="auth-pass2-row" for="auth-pass2">Пароль ещё раз<input id="auth-pass2" type="password" maxlength="200" autocomplete="new-password"></label>' +
+        '<p class="hint err" id="auth-err" role="alert"></p>' +
+        '<div class="modal-actions"><button type="button" class="btn" id="auth-cancel">Отмена</button><button type="submit" class="btn primary" id="auth-go"></button></div>' +
+      '</form>';
+    document.body.appendChild(ov);
+    var f = ov.querySelector("form"), err = ov.querySelector("#auth-err");
+    function setMode(m) {
+      mode = m;
+      ov.querySelectorAll("[data-m]").forEach(function (b) { b.classList.toggle("on", b.dataset.m === m); b.setAttribute("aria-selected", b.dataset.m === m); });
+      ov.querySelector("#auth-title").textContent = m === "login" ? "Вход в аккаунт" : "Новый аккаунт";
+      ov.querySelector("#auth-sub").textContent = m === "login"
+        ? "Прогресс подтянется из аккаунта на любом устройстве."
+        : "Ваш текущий прогресс из этого браузера перенесётся в аккаунт.";
+      ov.querySelector("#auth-go").textContent = m === "login" ? "Войти" : "Создать аккаунт";
+      ov.querySelector("#auth-pass").setAttribute("autocomplete", m === "login" ? "current-password" : "new-password");
+      ov.querySelector("#auth-pass2-row").hidden = m === "login";
+      err.textContent = "";
+    }
+    ov.querySelectorAll("[data-m]").forEach(function (b) { b.addEventListener("click", function () { setMode(b.dataset.m); }); });
+    function close() { ov.remove(); }
+    ov.querySelector("#auth-cancel").addEventListener("click", close);
+    ov.addEventListener("click", function (e) { if (e.target === ov) close(); });
+    ov.addEventListener("keydown", function (e) { if (e.key === "Escape") close(); });
+    f.addEventListener("submit", function (e) {
+      e.preventDefault();
+      var login = f.login.value.trim(), pass = f.password.value;
+      if (!/^[A-Za-z0-9_]{3,20}$/.test(login)) { err.textContent = "Логин: от 3 до 20 символов — латинские буквы, цифры и _"; return; }
+      if (pass.length < 6) { err.textContent = "Пароль должен быть не короче 6 символов"; return; }
+      if (mode === "register" && pass !== ov.querySelector("#auth-pass2").value) { err.textContent = "Пароли не совпадают"; return; }
+      var go = ov.querySelector("#auth-go"); go.disabled = true; err.textContent = "";
+      fetch(API + "/" + mode, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ login: login, password: pass }) })
+        .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }); })
+        .then(function (r) {
+          if (!r.ok) { go.disabled = false; err.textContent = (r.j && r.j.error) || "Не получилось, попробуйте ещё раз"; return; }
+          if (mode === "login") { try { localStorage.removeItem(LOCAL_KEY); } catch (x) {} } // при входе берём прогресс из аккаунта
+          location.reload();
+        }, function () { go.disabled = false; err.textContent = "Нет связи с сервером"; });
+    });
+    setMode(mode || "login");
+    setTimeout(function () { f.login.focus(); }, 30);
+  }
+
+  function logout() {
+    fetch(API + "/logout", { method: "POST" }).finally(function () {
+      try { localStorage.removeItem(LOCAL_KEY); } catch (x) {}
+      location.replace(location.pathname + "#cases");
+      location.reload();
+    });
+  }
+
+  function mountAuthUI() {
+    var css = el("style", {}, "");
+    css.textContent =
+      ".auth{max-width:400px;gap:12px}.auth-tabs{width:100%;display:grid;grid-template-columns:1fr 1fr}" +
+      ".auth-f{display:grid;gap:6px;font-size:13px;color:var(--muted);font-weight:700}" +
+      ".auth-f input{background:var(--panel2);border:1px solid var(--line);color:var(--text);padding:11px 12px;border-radius:10px;font:inherit;font-size:16px}" +
+      ".auth-f[hidden]{display:none}#auth-err:empty{display:none}" +
+      ".auth-btn{padding:7px 14px}.acc-line{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:6px}" +
+      ".acc-line button{background:none;border:0;padding:0;color:var(--accent);text-decoration:underline;font:inherit;cursor:pointer}";
+    document.head.appendChild(css);
+    var right = document.querySelector(".right"), foot = document.querySelector("footer");
+    me().then(function (m) {
+      if (!m) {
+        var b = el("button", { class: "btn primary auth-btn", type: "button", id: "auth-open" });
+        b.textContent = "Войти";
+        b.addEventListener("click", function () { openAuth("login"); });
+        if (right) right.insertBefore(b, right.firstChild);
+        if (foot) {
+          var line = el("p", { class: "acc-line" });
+          line.innerHTML = '<span>Вы играете без аккаунта.</span><button type="button" data-a="register">Зарегистрироваться</button><button type="button" data-a="login">Войти</button>';
+          line.querySelectorAll("[data-a]").forEach(function (x) { x.addEventListener("click", function () { openAuth(x.dataset.a); }); });
+          foot.appendChild(line);
+        }
+      } else if (foot) {
+        var line2 = el("p", { class: "acc-line" });
+        line2.innerHTML = '<span></span><button type="button">Выйти</button>';
+        line2.querySelector("span").textContent = "Вы вошли как " + (m.name || "игрок") + ".";
+        line2.querySelector("button").addEventListener("click", logout);
+        foot.appendChild(line2);
+      }
+    });
+  }
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", mountAuthUI); else mountAuthUI();
 })();

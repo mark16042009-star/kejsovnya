@@ -692,6 +692,7 @@ button,a,input,select,label{-webkit-tap-highlight-color:transparent;touch-action
 </style>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="adapter.js"></script>
+<link rel="icon" href="icon.png">
 </head>
 <body>
 <header>
@@ -1909,6 +1910,11 @@ async function initCloud(){
         try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){}
       }catch(e){}
     }
+    if(!snap.exists){
+      // новый аккаунт: вместо случайного «Игрок-1234» ставим имя из аккаунта
+      try{ const m = user.me ? await user.me() : null; const nm = m && String(m.name||"").trim().slice(0,20);
+        if(nm && nm.length>=2 && /^Игрок-\d+$/.test(S.profile.nick)) S.profile.nick = nm; }catch(e){}
+    }
     setStatus("ok");
     renderHeader(); if(!spinning && !upSpinning) route();
     flushCloud();
@@ -2044,7 +2050,8 @@ function drawSync(){
   const M = {
     ok:["ok","Профиль привязан к вашему аккаунту: прогресс сохраняется на всех устройствах, и вы участвуете в рейтинге."],
     sync:["warn","Загружаем профиль из аккаунта…"],
-    local: LOCAL_ONLY
+    local: (window.APP_CONFIG && window.APP_CONFIG.localNote) ? ["warn", window.APP_CONFIG.localNote]
+      : LOCAL_ONLY
       ? ["warn","Прогресс хранится только на этом устройстве. Если очистить данные Telegram или зайти с другого телефона, игра начнётся заново."]
       : ["warn","Профиль хранится только в этом браузере. Чтобы сохранять прогресс в аккаунте и попасть в рейтинг, откройте страницу на claude.ai, войдя в аккаунт."],
     readonly:["warn","У вас доступ только на просмотр, поэтому профиль хранится в этом браузере и не попадает в рейтинг. Попросите владельца страницы дать вам доступ Contributor."],
@@ -2081,7 +2088,7 @@ function drawBoard(){
   const T = TABS[topTab];
   list.sort((a,b)=>T.val(b)-T.val(a));
   list = list.slice(0,100);
-  if(!CL.id) note.textContent = "Сейчас виден только ваш профиль: общий рейтинг работает, когда страница открыта на claude.ai с входом в аккаунт.";
+  if(!CL.id) note.textContent = (window.APP_CONFIG && window.APP_CONFIG.topNote) || "Сейчас виден только ваш профиль: общий рейтинг работает, когда страница открыта на claude.ai с входом в аккаунт.";
   else if(CL.status==="readonly") note.textContent = "Вы видите рейтинг, но ваш профиль в него не попадает: у вас доступ только на просмотр.";
   else if(CL.err) note.textContent = "Не удалось загрузить рейтинг. Обновите страницу позже.";
   else if(!CL.loaded) note.textContent = CL.slow ? "Рейтинг пока не загрузился, данные могут быть неполными." : "Загружаем рейтинг…";

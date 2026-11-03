@@ -33,3 +33,14 @@ assert.ok(!canRead(C("grants"), "tg2", false) && canRead(C("grants"), "tg1", tru
 assert.equal(P("../etc/passwd"), null, "опасный путь отклоняется");
 assert.equal(P("profiles"), null, "коллекция вместо документа отклоняется");
 console.log("Все тесты пройдены");
+
+// --- аккаунты сайта ---
+const { hashPassword, checkPassword, parseCookies } = require("./server.js");
+const acc = hashPassword("секрет123");
+assert.ok(checkPassword("секрет123", acc), "верный пароль подходит");
+assert.ok(!checkPassword("секрет124", acc), "неверный пароль отклоняется");
+assert.notEqual(acc.hash, hashPassword("секрет123").hash, "у каждого пароля своя соль");
+assert.equal(parseCookies("a=1; sid=abc").sid, "abc", "cookie читаются");
+assert.ok(!canRead(P("accounts/mark"), "u_mark", true) && !canWrite(P("accounts/mark"), "u_mark", true), "аккаунты недоступны через API даже админу");
+assert.ok(!canRead(P("sessions/x"), "u_mark", true), "сессии недоступны через API");
+console.log("Тесты аккаунтов пройдены");

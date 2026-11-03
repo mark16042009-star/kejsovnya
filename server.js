@@ -25,7 +25,10 @@ const {
   BOT_TOKEN = "", WEBAPP_URL = "", DATABASE_URL = "", ADMIN_IDS = "", DEV_USER = "",
   PORT = 3000, HOST = "0.0.0.0", DB_FILE = path.join(__dirname, "data.sqlite"), BUTTON_TEXT = "Играть"
 } = process.env;
-const ADMINS = new Set(ADMIN_IDS.split(/[\s,]+/).filter(Boolean).map(x => (/^\d+$/.test(x) ? "tg" + x : x)));
+const LOGIN_RE = /^[A-Za-z0-9_]{3,20}$/;
+const uidOf = login => "u_" + login.toLowerCase();
+// ADMIN_IDS: числа — Telegram ID, слова — логины аккаунтов на сайте
+const ADMINS = new Set(ADMIN_IDS.split(/[\s,]+/).filter(Boolean).map(x => (/^\d+$/.test(x) ? "tg" + x : x === DEV_USER ? x : LOGIN_RE.test(x) ? uidOf(x) : x)));
 const PUBLIC = path.join(__dirname, "public");
 
 /* ---------------- Хранилище ----------------
@@ -165,6 +168,37 @@ function canWrite(s, uid, owner) {
   return false;
 }
 
+/* ---------------- Аккаунты для обычного сайта ----------------
+ * Пароли хранятся как scrypt-хэш с солью. Сессия — случайный токен в HttpOnly-cookie на 30 дней.
+ * Документы accounts/* и sessions/* недоступны через API: их читает только сам сервер. */
+const SESSION_DAYS = 30;
+const SID_RE = /^[a-f0-9]{64}$/;
+function hashPassword(pw, salt = crypto.randomBytes(16).toString("hex")) {
+  return { salt, hash: crypto.scryptSync(pw, salt, 64).toString("hex") };
+}
+function checkPassword(pw, acc) {
+  const calc = crypto.scryptSync(pw, acc.salt, 64), saved = Buffer.from(acc.hash, "hex");
+  return saved.length === calc.length && crypto.timingSafeEqual(calc, saved);
+}
+function parseCookies(h) {
+  const out = {};
+  for (const part of String(h || "").split(/;\s*/)) {
+    const i = part.indexOf("=");
+    if (i > 0) { try { out[part.slice(0, i)] = decodeURIComponent(part.slice(i + 1)); } catch (e) {} }
+  }
+  return out;
+}
+function sessionCookie(req, token, maxAge) {
+  const secure = req.headers["x-forwarded-proto"] === "https" ? "; Secure" : "";
+  return `sid=${token}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${maxAge}${secure}`;
+}
+async function setAccountPassword(store, login, pw) {
+  const key = "accounts/" + login.toLowerCase();
+  const old = await store.get(key);
+  await store.set(key, Object.assign({ login, created: Date.now() }, old ? { login: old.data.login, created: old.data.created } : {}, hashPassword(pw)));
+  return !old;
+}
+
 /* ---------------- HTTP ---------------- */
 const MIME = { ".html": "text/html; charset=utf-8", ".js": "text/javascript; charset=utf-8", ".css": "text/css; charset=utf-8", ".json": "application/json", ".png": "image/png", ".svg": "image/svg+xml", ".ico": "image/x-icon", ".webp": "image/webp" };
 function send(res, code, obj) {
@@ -201,18 +235,59 @@ async function main() {
     return ++b.n > 30; // не больше 30 записей за 10 секунд на игрока
   };
 
+  const tries = new Map();
+  const tooManyLogins = ip => {
+    const now = Date.now(), b = tries.get(ip) || { n: 0, t: now };
+    if (now - b.t > 60000) { b.n = 0; b.t = now; }
+    tries.set(ip, b);
+    return ++b.n > 10; // не больше 10 попыток входа в минуту с одного адреса
+  };
+
   const server = http.createServer(async (req, res) => {
     const url = new URL(req.url, "http://localhost");
     if (!url.pathname.startsWith("/api/")) return serveStatic(req, res, url.pathname);
     try {
-      // кто это
+      const route = req.method + " " + url.pathname;
+
+      // регистрация и вход
+      if (route === "POST /api/register" || route === "POST /api/login") {
+        const ip = String(req.headers["x-forwarded-for"] || req.socket.remoteAddress || "").split(",")[0].trim();
+        if (tooManyLogins(ip)) return send(res, 429, { error: "Слишком много попыток. Подождите минуту." });
+        const body = await readBody(req, 4096);
+        const login = String(body.login || "").trim(), pw = String(body.password || "");
+        if (!LOGIN_RE.test(login)) return send(res, 400, { error: "Логин: от 3 до 20 символов — латинские буквы, цифры и _" });
+        if (pw.length < 6 || pw.length > 200) return send(res, 400, { error: "Пароль должен быть не короче 6 символов" });
+        const acc = await store.get("accounts/" + login.toLowerCase());
+        if (route === "POST /api/register") {
+          if (acc) return send(res, 409, { error: "Такой логин уже занят" });
+          await setAccountPassword(store, login, pw);
+        } else if (!acc || !checkPassword(pw, acc.data)) {
+          return send(res, 401, { error: "Неверный логин или пароль" });
+        }
+        const token = crypto.randomBytes(32).toString("hex");
+        await store.set("sessions/" + token, { uid: uidOf(login), login: acc ? acc.data.login : login, exp: Date.now() + SESSION_DAYS * 864e5 });
+        res.setHeader("Set-Cookie", sessionCookie(req, token, SESSION_DAYS * 86400));
+        return send(res, 200, { ok: true });
+      }
+      if (route === "POST /api/logout") {
+        const sid = parseCookies(req.headers.cookie).sid;
+        if (sid && SID_RE.test(sid)) await store.del("sessions/" + sid);
+        res.setHeader("Set-Cookie", sessionCookie(req, "", 0));
+        return send(res, 200, { ok: true });
+      }
+
+      // кто это: Telegram, аккаунт сайта или режим разработки
       const u = checkInitData(req.headers["x-tg-init-data"] || "");
       let uid, name;
       if (u && u.id) { uid = "tg" + u.id; name = u.username || [u.first_name, u.last_name].filter(Boolean).join(" "); }
-      else if (DEV_USER) { uid = DEV_USER; name = DEV_USER; }
-      else return send(res, 401, { error: "Откройте игру через Telegram" });
+      else {
+        const sid = parseCookies(req.headers.cookie).sid;
+        const sess = sid && SID_RE.test(sid) ? await store.get("sessions/" + sid) : null;
+        if (sess && sess.data.exp > Date.now()) { uid = sess.data.uid; name = sess.data.login; }
+        else if (DEV_USER) { uid = DEV_USER; name = DEV_USER; }
+        else return send(res, 401, { error: "Войдите в аккаунт" });
+      }
       const owner = ADMINS.has(uid);
-      const route = req.method + " " + url.pathname;
 
       if (route === "GET /api/me") return send(res, 200, { id: uid, owner, name: name || "" });
 
@@ -253,7 +328,7 @@ async function main() {
 
   server.listen(PORT, HOST, () => {
     console.log(`Кейсовня: http://${HOST === "0.0.0.0" ? "localhost" : HOST}:${PORT}  хранилище: ${store.kind}  админы: ${[...ADMINS].join(", ") || "не заданы"}`);
-    if (!BOT_TOKEN) console.log("BOT_TOKEN не задан: вход через Telegram работать не будет.");
+    if (!BOT_TOKEN) console.log("Telegram не подключён: вход по логину и паролю.");
     if (DEV_USER) console.log(`Режим разработки: запросы без Telegram идут от "${DEV_USER}". Не включайте его на боевом сервере!`);
   });
 
@@ -293,5 +368,23 @@ async function startBot() {
   }
 }
 
-if (require.main === module) main().catch(e => { console.error(e.message); process.exit(1); });
-module.exports = { checkInitData, canRead, canWrite, parsePath };
+if (require.main === module) {
+  if (process.argv[2] === "set-password") {
+    // Создать аккаунт или сменить пароль:  PASS=пароль node server.js set-password логин
+    (async () => {
+      const login = process.argv[3] || "", pw = process.env.PASS || "";
+      if (!LOGIN_RE.test(login) || pw.length < 6) {
+        console.error("Использование: PASS=пароль node server.js set-password логин\nЛогин: 3–20 символов латиницей, цифры и _. Пароль: от 6 символов.");
+        process.exit(1);
+      }
+      const store = await openStore();
+      const created = await setAccountPassword(store, login, pw);
+      await new Promise(r => setTimeout(r, 800)); // даём JSON-хранилищу записаться на диск
+      console.log((created ? "Аккаунт создан: " : "Пароль обновлён: ") + login);
+      process.exit(0);
+    })().catch(e => { console.error(e.message); process.exit(1); });
+  } else {
+    main().catch(e => { console.error(e.message); process.exit(1); });
+  }
+}
+module.exports = { checkInitData, canRead, canWrite, parsePath, hashPassword, checkPassword, parseCookies };
