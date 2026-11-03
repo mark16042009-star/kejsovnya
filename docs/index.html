@@ -1001,6 +1001,16 @@ h1,h2,h3{letter-spacing:.04em}
 .case-row .price{white-space:nowrap;margin-left:auto}
 @media (min-width:761px){.contents{grid-template-columns:repeat(auto-fill,minmax(190px,1fr))!important}}
 .price,.num{white-space:nowrap}
+/* страница кейса: окно прокрутки во всю ширину и крупнее */
+body.wide-case main{max-width:none}
+@media (min-width:761px){
+  .roll{height:176px}
+  .rolls:not(.vert) .cell{flex:0 0 158px;height:152px}
+  .rolls:not(.vert) .cell .art{top:16px;height:78px;left:10px;right:10px}
+  .rolls:not(.vert) .cell span{font-size:12px;bottom:8px;left:8px;right:8px}
+  .case-preview{height:176px}
+  .case-preview .case-art{height:150px;width:auto}
+}
 @media (min-width:761px){ nav a .nl,#nav-more .nl{white-space:nowrap!important} }
 @media (max-width:1460px) and (min-width:761px){ .logo b{display:none} }
 @media (max-width:1240px) and (min-width:761px){ .me-t{display:none} }
@@ -1035,10 +1045,10 @@ h1,h2,h3{letter-spacing:.04em}
 #adm-rtp{min-width:0;overflow:hidden}
 .rtp-table{max-width:100%}
 </style>
-<script>window.APP_BUILD="03.11 15:34";</script>
+<script>window.APP_BUILD="03.11 15:38";</script>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
-<script src="config.js?v=202611031334"></script>
-<script src="adapter.js?v=202611031334"></script>
+<script src="config.js?v=202611031338"></script>
+<script src="adapter.js?v=202611031338"></script>
 <link rel="icon" href="icon.png">
 </head>
 <body>
@@ -2470,6 +2480,7 @@ function drawCaseGrid(){
 /* ---------- Вид: кейс ---------- */
 let spinning = false;
 function viewCase(c){
+  document.body.classList.add("wide-case");
   const app = document.getElementById("app");
   if(c.off){ app.innerHTML = `<div class="view-head"><div><a class="back" href="#cases">← Все кейсы</a><h1 style="margin-top:6px">Кейс «${c.name}»</h1></div></div><div class="empty">Этот кейс сейчас недоступен.</div>`; return; }
   const contents = c.skins.slice().sort((a,b)=>b.rar-a.rar || b.basePrice-a.basePrice);
@@ -4578,6 +4589,7 @@ function drawDeco(){
 /* ---------- Маршрутизация ---------- */
 function route(){
   const h = location.hash.slice(1);
+  if(!h.startsWith("case-")) document.body.classList.remove("wide-case");
   document.getElementById("nav-cases").classList.toggle("on", h==="" || h==="cases" || h.startsWith("case-"));
   document.getElementById("nav-inv").classList.toggle("on", h==="inventory" || h==="profile");
   document.getElementById("nav-upg").classList.toggle("on", h==="upgrade");
