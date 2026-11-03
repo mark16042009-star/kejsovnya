@@ -1284,7 +1284,7 @@ body.wide-case main{max-width:none}
 #adm-rtp{min-width:0;overflow:hidden}
 .rtp-table{max-width:100%}
 </style>
-<script>window.APP_BUILD="04.11 00:05";</script>
+<script>window.APP_BUILD="04.11 00:08";</script>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="adapter.js"></script>
 <link rel="icon" href="icon.png">
@@ -2873,7 +2873,21 @@ function toast(msg){
   t.textContent = msg; t.classList.add("show"); clearTimeout(toastT); toastT = setTimeout(()=>t.classList.remove("show"), 3500);
 }
 
-const money = v => Math.round(v).toLocaleString("ru-RU") + "\u00a0₽";
+/* крупные суммы — с припиской: 1,25 млн · 130 млрд · 3,19 трлн */
+const NUM_UNITS = [[1e6,"млн"],[1e9,"млрд"],[1e12,"трлн"],[1e15,"квадрлн"],[1e18,"квинтлн"],[1e21,"секстлн"]];
+function bigNum(v){
+  v = Number(v) || 0; const a = Math.abs(v);
+  if(a < 1e6) return Math.round(v).toLocaleString("ru-RU");
+  let i = NUM_UNITS.length - 1; while(i > 0 && a < NUM_UNITS[i][0]) i--;
+  const fmt = k => { const x = v/NUM_UNITS[k][0], ax = Math.abs(x), d = ax < 10 ? 2 : ax < 100 ? 1 : 0; return x.toFixed(d); };
+  let t = fmt(i);
+  if(Math.abs(parseFloat(t)) >= 1000 && i < NUM_UNITS.length-1){ i++; t = fmt(i); }
+  if(t.includes(".")) t = t.replace(/\.?0+$/, "");
+  const [ip, fp] = t.split(".");
+  return Number(ip).toLocaleString("ru-RU") + (fp ? "," + fp : "") + "\u00a0" + NUM_UNITS[i][1];
+}
+const money = v => bigNum(v) + "\u00a0₽";
+const moneyFull = v => Math.round(v).toLocaleString("ru-RU") + "\u00a0₽";
 const esc = s => String(s).replace(/[&<>"]/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[ch]));
 const skinOf = it => CASE_BY_ID[it.c].skins[it.s];
 const title = sk => sk.knife ? `★ ${sk.weapon}` : sk.weapon;
@@ -2943,7 +2957,7 @@ function winSound(rar){ if(rar>=2) haptic('success'); [0,4,7,12].slice(0,2+Math.
 function renderHeader(){
   const me = document.getElementById("me");
   if(me){ const L = levelOf(xpOf(S)).lvl; me.innerHTML = `${framed(S.profile, avatarOf(S.profile,30))}<span class="me-t"><b class="${nickCls(S.profile)}"></b><small>ур. ${L} · ${CL.status==="ok"?"в рейтинге":CL.status==="sync"?"синхронизация…":"локально"}</small></span>`; me.querySelector("b").textContent = S.profile.nick; }
-  document.getElementById("balance").textContent = money(S.bal);
+  document.getElementById("balance").textContent = money(S.bal); document.getElementById("balance").title = moneyFull(S.bal);
   document.getElementById("inv-count").textContent = S.inv.length;
   const snd = document.getElementById("sound");
   snd.innerHTML = S.sound
@@ -4956,7 +4970,7 @@ function viewCrash(){
 /* ---------- Ежедневный подарок ----------
  * Раз в календарный день. Серия из 7 дней: награда растёт, пропуск дня сбрасывает серию на первый день. */
 const DAILY_MULT = [1, 1.5, 2, 3, 4, 6, 10];
-const shortNum = v => v>=1e9 ? (Math.round(v/1e8)/10+"млрд").replace(".",",") : v>=1e6 ? (Math.round(v/1e5)/10+"м").replace(".",",") : v>=1000 ? (Math.round(v/100)/10+"к").replace(".",",") : String(Math.round(v));
+const shortNum = v => v>=1e6 ? bigNum(v) : v>=1000 ? (Math.round(v/100)/10+"к").replace(".",",") : String(Math.round(v));
 const dayKey = d => d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
 function dailyState(){
   const d = S.daily && typeof S.daily==="object" ? S.daily : {last:"", streak:0};
