@@ -110,7 +110,7 @@
       onSnapshot: function (next, error) {
         return subscribe(function () {
           return call("GET", q).then(function (d) { return { ver: d.exists ? String(d.ver) : "none", d: d }; });
-        }, path === "feed/main" ? POLL_FEED : POLL_DOC, function (res) { next(docSnap(path, res.d)); }, error);
+        }, (path === "feed/main" || path.indexOf("battles/") === 0) ? POLL_FEED : POLL_DOC, function (res) { next(docSnap(path, res.d)); }, error);
       },
       collection: function (sub) { return colRef(path + "/" + sub); }
     };
@@ -137,12 +137,14 @@
       orderBy: function () { return q; },
       where: function () { return q; },
       get: function () { return load(false).then(function (r) { return r.snap; }); },
-      onSnapshot: function (next, error) { return subscribe(function () { return load(true); }, POLL_COL, function (r) { next(r.snap); }, error); }
+      onSnapshot: function (next, error) { return subscribe(function () { return load(true); }, path === "battles" ? POLL_FEED : POLL_COL, function (r) { next(r.snap); }, error); }
     };
     return q;
   }
 
-  var db = { doc: docRef, collection: function (p) { return colRef(p); } };
+  var db = { doc: docRef, collection: function (p) { return colRef(p); },
+    // действия, которые сервер выполняет сам (батлы)
+    action: function (name, body) { return call("POST", "/" + name, body); } };
   var user = {
     id: function () { return me().then(function (m) { return m ? m.id : null; }); },
     isOwner: function () { return me().then(function (m) { return !!(m && m.owner); }); },

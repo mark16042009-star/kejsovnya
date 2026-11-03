@@ -106,6 +106,61 @@ async function updateFeed(st, pid, prof) {
   await st.set("feed/main", { items: next });
 }
 
+
+/* ---------------- Батлы кейсов ----------------
+ * Все изменения батла идут через сервер: он проверяет очередь игроков и сам выдаёт случайное зерно,
+ * из которого у всех игроков одинаково считаются выпавшие предметы. */
+const BOT_NAMES = ["Бот Вася", "Бот Шустрый", "Бот Профи", "Бот Удачник", "Бот Сникерс", "Бот Кэп"];
+const bhex = n => [...crypto.getRandomValues(new Uint8Array(n))].map(b => b.toString(16).padStart(2, "0")).join("");
+async function battleAction(st, uid, owner, b) {
+  b = b && typeof b === "object" ? b : {};
+  const now = Date.now();
+  const nick = String(b.nick || "Игрок").slice(0, 20);
+  const av = { g: (b.av && b.av.g) | 0, c: (b.av && b.av.c) | 0 };
+  if (b.action === "create") {
+    const cases = Array.isArray(b.cases) ? b.cases.slice(0, 8).map(x => String(x)).filter(x => /^[a-z0-9_-]{1,20}$/i.test(x)) : [];
+    const size = [2, 3, 4].includes(b.size) ? b.size : 2;
+    const cost = Math.round(Number(b.cost));
+    if (!cases.length) return { error: "Выберите кейсы" };
+    if (!(cost > 0) || cost > 1e9) return { error: "Неверная цена" };
+    const all = await st.list("battles", 1000);
+    if (all.filter(x => x.data.by === uid && x.data.state === "open").length >= 3) return { error: "У вас уже 3 открытых батла" };
+    let cleaned = 0; // старые батлы (старше двух суток) убираем понемногу
+    for (const x of all) if (cleaned < 10 && now - (Number(x.data.ts) || 0) > 48 * 3600e3) { await st.del("battles/" + x.id); cleaned++; }
+    const id = now.toString(36) + bhex(3);
+    const d = { id, by: uid, cases, size, cost, players: [{ pid: uid, nick, av }], state: "open", ts: now };
+    await st.set("battles/" + id, d);
+    return { battle: d };
+  }
+  const id = String(b.id || "");
+  if (!/^[a-z0-9]{1,40}$/i.test(id)) return { error: "Батл не найден" };
+  const cur = await st.get("battles/" + id);
+  if (!cur) return { error: "Батл не найден" };
+  const d = cur.data;
+  if (b.action === "join" || b.action === "bots") {
+    if (d.state !== "open") return { error: "Батл уже начался", battle: d };
+    if (b.action === "join") {
+      if (d.players.some(p => p.pid === uid)) return { error: "Вы уже в этом батле", battle: d };
+      d.players.push({ pid: uid, nick, av });
+    } else {
+      if (d.by !== uid && !owner) return { error: "Позвать ботов может только создатель" };
+      let i = 0;
+      while (d.players.length < d.size) { i++; d.players.push({ pid: "bot" + d.players.length, nick: BOT_NAMES[(now + i) % BOT_NAMES.length], bot: true, av: { g: (now + i) % 12, c: (now + i * 3) % 8 } }); }
+    }
+    if (d.players.length >= d.size) { d.state = "done"; d.seed = bhex(8); d.started = now; }
+    await st.set("battles/" + id, d);
+    return { battle: d };
+  }
+  if (b.action === "cancel") {
+    if (d.by !== uid && !owner) return { error: "Отменить может только создатель" };
+    if (d.state !== "open") return { error: "Батл уже начался", battle: d };
+    d.state = "cancel"; d.ended = now;
+    await st.set("battles/" + id, d);
+    return { battle: d };
+  }
+  return { error: "Неизвестное действие" };
+}
+
 /* ---------------- Правила доступа (как на VPS и claude.ai) ---------------- */
 function parsePath(p, wantDoc) {
   if (typeof p !== "string" || p.length > 1000) return null;
@@ -116,7 +171,7 @@ function parsePath(p, wantDoc) {
 }
 function canRead(s, uid, owner) {
   if (s[0] === "data" && s[1] === "users") return s[2] === uid;
-  if (s[0] === "profiles" || s[0] === "config" || s[0] === "feed") return true;
+  if (s[0] === "profiles" || s[0] === "config" || s[0] === "feed" || s[0] === "battles") return true;
   if (s[0] === "grants") return owner || (s.length > 1 && s[1] === uid);
   return false;
 }
@@ -225,6 +280,10 @@ export default {
         if (url.searchParams.get("ver") && url.searchParams.get("ver") === String(ver)) return json(200, { same: true, ver });
         const limit = Math.min(1000, Math.max(1, Number(url.searchParams.get("limit")) || 1000));
         return json(200, { docs: await st.list(parent, limit), ver });
+      }
+      if (route === "POST /api/battle") {
+        if (tooMany(writeTries, uid, 30, 10000)) return json(429, { error: "Слишком часто" });
+        return json(200, await battleAction(st, uid, owner, await readBody(MAX_BODY)));
       }
       if (url.pathname === "/api/doc" && ["PUT", "PATCH", "DELETE"].includes(req.method)) {
         if (tooMany(writeTries, uid, 30, 10000)) return json(429, { error: "Слишком часто" });
