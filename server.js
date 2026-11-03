@@ -23,7 +23,7 @@ const path = require("path");
 })();
 const {
   BOT_TOKEN = "", WEBAPP_URL = "", DATABASE_URL = "", ADMIN_IDS = "", DEV_USER = "",
-  PORT = 3000, DB_FILE = path.join(__dirname, "data.sqlite"), BUTTON_TEXT = "Играть"
+  PORT = 3000, HOST = "0.0.0.0", DB_FILE = path.join(__dirname, "data.sqlite"), BUTTON_TEXT = "Играть"
 } = process.env;
 const ADMINS = new Set(ADMIN_IDS.split(/[\s,]+/).filter(Boolean).map(x => (/^\d+$/.test(x) ? "tg" + x : x)));
 const PUBLIC = path.join(__dirname, "public");
@@ -251,8 +251,8 @@ async function main() {
     }
   });
 
-  server.listen(PORT, () => {
-    console.log(`Кейсовня: http://localhost:${PORT}  хранилище: ${store.kind}  админы: ${[...ADMINS].join(", ") || "не заданы"}`);
+  server.listen(PORT, HOST, () => {
+    console.log(`Кейсовня: http://${HOST === "0.0.0.0" ? "localhost" : HOST}:${PORT}  хранилище: ${store.kind}  админы: ${[...ADMINS].join(", ") || "не заданы"}`);
     if (!BOT_TOKEN) console.log("BOT_TOKEN не задан: вход через Telegram работать не будет.");
     if (DEV_USER) console.log(`Режим разработки: запросы без Telegram идут от "${DEV_USER}". Не включайте его на боевом сервере!`);
   });
