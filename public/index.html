@@ -457,6 +457,7 @@ img,svg,canvas{-webkit-user-drag:none;user-drag:none}
 .wheel-lost{font-family:var(--mono);font-size:20px;fill:var(--text)}
 
 .case-result{display:grid;gap:10px}
+.ct-recipe{color:#ffd23a;font-family:var(--display)} .ct-recipe b{color:#fff3c4} .ct-recipe.dim{color:var(--muted);font-family:inherit;display:block;width:100%}
 .tr-banner{position:fixed;top:76px;right:16px;z-index:90;display:flex;align-items:center;gap:12px;max-width:min(380px,calc(100vw - 32px));padding:12px 14px;background:var(--panel);border:2px solid var(--accent);box-shadow:6px 6px 0 #000,0 0 24px rgba(255,200,0,.25);color:var(--text);text-decoration:none;animation:trIn .25s steps(4)}
 .tr-banner[hidden]{display:none}
 .tr-banner.out{animation:trOut .2s steps(3) forwards}
@@ -1238,6 +1239,9 @@ body.wide-case main{max-width:none}
 @media (min-width:761px){ nav a .nl,#nav-more .nl{white-space:nowrap!important} }
 @media (max-width:1460px) and (min-width:761px){ .logo b{display:none} }
 @media (min-width:761px){ body nav a span.nl{white-space:nowrap!important;overflow-wrap:normal!important} }
+@media (min-width:761px){ #nav-more{flex:none} body #nav-more span.nl{white-space:nowrap!important;overflow-wrap:normal!important} }
+@media (max-width:1440px) and (min-width:761px){ nav a,#nav-more{padding:0 8px!important;letter-spacing:.02em!important} }
+@media (max-width:1100px) and (min-width:761px){ nav a,#nav-more{padding:0 6px!important;font-size:11px!important} }
 .nl-s{display:none}
 @media (max-width:760px){ body nav a span.nl{white-space:nowrap!important;overflow-wrap:normal!important;font-size:9px!important;letter-spacing:0!important} nav a{min-width:0;padding-left:0!important;padding-right:0!important} .nl-f{display:none} .nl-s{display:inline} #nav-more .nl{font-size:9px!important;letter-spacing:0!important} }
 @media (max-width:380px){ body nav a span.nl,#nav-more .nl{font-size:8px!important} }
@@ -1276,7 +1280,7 @@ body.wide-case main{max-width:none}
 #adm-rtp{min-width:0;overflow:hidden}
 .rtp-table{max-width:100%}
 </style>
-<script>window.APP_BUILD="03.11 23:42";</script>
+<script>window.APP_BUILD="03.11 23:50";</script>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="adapter.js"></script>
 <link rel="icon" href="icon.png">
@@ -1465,6 +1469,11 @@ const CASES = [
   {id:"allin", name:"Всё или ничего", price:1000000, accent:"#ffd23a", isNew:true, elite:true,
    pal:[["#3a3f47","#9aa3ad"],["#d4a017","#fff3c4"]],
    fixed:{p:1e-8, items:[{weapon:"Складной нож", name:"Ничего", rar:1, price:100000}, {weapon:"Керамбит", name:"Всё", rar:4, price:100000000000}]}},
+  {id:"pickle", name:"Огурчик или сосиска", price:10000, accent:"#5fb83a", isNew:true,
+   pal:[["#8a3a2a","#d9735a"],["#2f6b1e","#7cc04f"],["#d4a017","#fff3c4"]],
+   fixed:{p:0.1, items:[{weapon:"Сосиска", name:"Молочная", rar:1, price:5000, knife:false},
+                        {weapon:"Огурец", name:"Огурчик", rar:4, price:50000, knife:false},
+                        {weapon:"Золотой огурец", name:"Золотой огурец", rar:4, price:0, knife:false, noDrop:true, priceless:true}]}},
   {id:"rickroll", name:"RickRoll", price:100000000, accent:"#ff4fa3", isNew:true, elite:true,
    pal:[["#1a0a2e","#ff4fa3"],["#0a1a3a","#22d3ee"],["#2a0a3a","#fde68a"],["#120024","#a78bfa"]],
    names:["Кликбейт","Ссылка","Подвох","Сюрприз","Ловушка","Кассета","Синтипоп","Диско","Видеоклип","Хит-парад 80-х","Розыгрыш","Мем века","Легенда интернета"]}
@@ -1481,7 +1490,7 @@ CASES.forEach(c=>{
   const pools = POOLS.map(p=>shuffle(p,r));
   const knives = shuffle(KNIVES,r);
   if(c.fixed){
-    c.skins = c.fixed.items.map((it,i)=>({i, rar:it.rar, weapon:it.weapon, type:"knife", knife:true, name:it.name, case:c.id, c:c.pal[i%c.pal.length], pt:"grad", blobs:[], f:1, fixedPrice:it.price}));
+    c.skins = c.fixed.items.map((it,i)=>({i, rar:it.rar, weapon:it.weapon, type:"knife", knife:it.knife!==false, name:it.name, case:c.id, c:c.pal[i%c.pal.length], pt:"grad", blobs:[], f:1, fixedPrice:it.price, noDrop:!!it.noDrop, priceless:!!it.priceless}));
     c.defPrice = c.price; c.defNew = !!c.isNew; c.off = false; return;
   }
   const allKn = c.knifeOnly ? KNIVES.concat(KNIVES_NEW) : null;
@@ -1502,8 +1511,9 @@ function recomputeCases(){
   CASES.forEach(c=>{
     if(c.fixed){ // цены и шансы заданы жёстко, RTP не подгоняется
       const big = c.fixed.p; c.m = 1;
-      c.skins.forEach(sk=>{ sk.basePrice = sk.fixedPrice; sk.chance = sk.rar===4 ? big : 1-big; });
-      c.maxP = Math.max(...c.skins.map(x=>x.basePrice)); c.minP = Math.min(...c.skins.map(x=>x.basePrice));
+      c.skins.forEach(sk=>{ sk.basePrice = sk.fixedPrice; sk.chance = sk.noDrop ? 0 : sk.rar===4 ? big : 1-big; });
+      const dr = c.skins.filter(x=>!x.noDrop);
+      c.maxP = Math.max(...dr.map(x=>x.basePrice)); c.minP = Math.min(...dr.map(x=>x.basePrice));
       return;
     }
     // множитель цены, чтобы средняя отдача кейса была RTP
@@ -1529,6 +1539,7 @@ const COLLECTIONS = [
   {id:"space",    name:"Космос и тайны",  desc:"Для охотников за легендами",          cases:["cosmos","abyss","legend"]},
   {id:"treasure", name:"Сокровищница", desc:"Золото, бриллианты и власть",         cases:["gold","diamond","empire"]},
   {id:"social",   name:"Соцсети",         desc:"Стримы, ролики и переписки",          cases:["stream","blog","chat"]},
+  {id:"special",  name:"Особые",          desc:"Странные кейсы с секретами",           cases:["pickle"]},
   {id:"elite",    name:"Элита",           desc:"Самые дорогие кейсы сайта",            cases:["million","titan","tycoon","galaxy","frog","rickroll","blades","allin"]}
 ];
 CASES.forEach(c=>{ const k = COLLECTIONS.find(x=>x.cases.includes(c.id)); c.coll = k ? k.id : COLLECTIONS[0].id; });
@@ -1544,6 +1555,57 @@ let uid = 0;
 const PX_W = 40, PX_H = 16;
 const SPR = s => s.trim().split(/\s+/).map(r=>(r.replace(/^\d+\|/,"") + ".".repeat(40)).slice(0,40));
 const WSPRITES = {
+"Огурец": SPR(`
+........................................
+........................................
+........................................
+........................................
+...........hhhhhhhhhhhhhhhh.............
+.......hhhhxxxxxhxxxxxhxxxxxhhhh........
+.....hxxxxxxxxxxxxxxxxxxxxxxxxxxxxh.....
+...mxxxxhxxxxxxxhxxxxxxxhxxxxxxxxxxx....
+...mxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx....
+.....xxxxxxxhxxxxxxxxhxxxxxxxxhxxxx.....
+.......xxxxxxxxxxxxxxxxxxxxxxxxxx.......
+...........xxxxxxxxxxxxxxxxxx...........
+........................................
+........................................
+........................................
+........................................`),
+"Сосиска": SPR(`
+........................................
+........................................
+........................................
+........................................
+.........xxxxxxxxxxxxxxxxxxxxxx.........
+....m..xxxhhhhhhhhhhhhhhhhhhhhxxx..m....
+.....mxxxxxxxxxxxxxxxxxxxxxxxxxxxxm.....
+......xxxxxxxxxxxxxxxxxxxxxxxxxxxx......
+......xxxxxxxxxxxxxxxxxxxxxxxxxxxx......
+.......xxxxxxxxxxxxxxxxxxxxxxxxxx.......
+.........xxxxxxxxxxxxxxxxxxxxxx.........
+........................................
+........................................
+........................................
+........................................
+........................................`),
+"Золотой огурец": SPR(`
+........................................
+........................................
+........................................
+........................................
+...........hhhhhhhhhhhhhhhh.............
+.......hhhhxxxxxhxxxxxhxxxxxhhhh........
+.....hxxxxxxxxxxxxxxxxxxxxxxxxxxxxh.....
+...mxxxxhxxxxxxxhxxxxxxxhxxxxxxxxxxx....
+...mxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx....
+.....xxxxxxxhxxxxxxxxhxxxxxxxxhxxxx.....
+.......xxxxxxxxxxxxxxxxxxxxxxxxxx.......
+...........xxxxxxxxxxxxxxxxxx...........
+........................................
+........................................
+........................................
+........................................`),
 "Коготь": SPR(`
 ........................................
 ........................................
@@ -2108,6 +2170,7 @@ xxxxxxxxxxxxxxmmxxxxx..xxxxxxxxxxx......
 };
 /* узор каждого скина по смыслу названия: [узор, основной, второй, акцент] */
 const LOOK = {
+  pickle:[["noise","#b5543f","#d9735a","#8a3a2a"],["dots","#2f6b1e","#5fb83a","#a3d977"],["gold","#d4a017","#fff3c4","#ffffff"]],
   allin:[["noise","#3a3f47","#5a6068","#2a2f35"],["gold","#d4a017","#fff3c4","#ffffff"]],
   blades:[["noise","#3a3a3a","#5a5a5a","#2a2a2a"],["metal","#8a929c","#c0c8d0","#ffffff"],["marble","#4a4f55","#9aa3ad","#2a2f35"],["camo","#a8865a","#c8a273","#6b5a3a"],["camo","#14301e","#2e5a3a","#0a1a10"],["burst","#f97316","#fde68a","#7c2d12"],["lightning","#1e1b4b","#818cf8","#e0e7ff"],["ice","#bae6fd","#ffffff","#38bdf8"],["lava","#450a0a","#ef4444","#fca5a5"],["nebula","#0f172a","#22d3ee","#a78bfa"],["gem","#9aa3ad","#ffffff","#7dd3fc"],["gold","#1a1a1a","#d4a017","#fff3c4"],["holo","#ffd1ec","#ffffff","#a5f3fc"]],
   frog:[["dots","#1f5a2a","#4ade80","#a7f3c4"],["leaf","#14532d","#4ade80","#86efac"],["camo","#2b3320","#4a5a2e","#14532d"],["vstripes","#6b7a2a","#a3b545","#3f4a1a"],["bubbles","#166534","#4ade80","#d9f99d"],["dots","#1a1a1a","#3a3a3a","#9ae6b4"],["stripes","#22c55e","#bbf7d0","#14532d"],["swirl","#4ade80","#fbcfe8","#ffffff"],["gem","#0f6b3f","#4ade80","#c8ffe0"],["royal","#14532d","#fde68a","#f9a8d4"],["royal","#166534","#ffd23a","#ffffff"],["gold","#a3b545","#fde68a","#ffffff"],["holo","#bbf7d0","#ffffff","#fde68a"]],
@@ -2242,6 +2305,19 @@ function art(sk){ return pixelArt(sk); }
 /* ---------- Пиксельные иллюстрации кейсов ----------
  * Сундук в цветах кейса и своя эмблема на нём, без фона. */
 const EMB = {
+  pickle:{p:{g:"#a3d977",a:"#4c9a2a",p:"#d9735a",q:"#f4a28c"}, s:`
+...kk....kkk..
+..kgak..kppk..
+..kgak.kpqpk..
+..kaak.kpppk..
+..kgak.kpqpk..
+..kaak.kpppk..
+..kgak.kpqpk..
+..kaak.kpppk..
+..kgak.kpqpk..
+..kaak..kppk..
+...kk....kk...
+..............`},
   allin:{p:{a:"#ffd23a",b:"#4a4f55",w:"#ffffff",d:"#1a1a1a"}, s:`
 ....kkkkkk....
 ..kkaaabbbkk..
@@ -2773,7 +2849,7 @@ function caseOdds(c){
 function fmtPct(p){ const v = p*100; if(v < 100 && v >= 99.99) return v.toFixed(Math.min(12, Math.ceil(-Math.log10(100-v)))) + "%"; if(v >= 0.01 || v === 0) return v.toFixed(v < 0.1 && v > 0 ? 3 : 2) + "%"; const d = Math.min(12, Math.ceil(-Math.log10(v))); return v.toFixed(d).replace(/0+$/,"") + "%"; }
 function pickRarity(c){ const p = c ? caseOdds(c).p : RAR.map(r=>r.p); let x=Math.random(), acc=0; for(let i=0;i<5;i++){ acc+=p[i]; if(x<acc) return i; } return 0; }
 function pickSkin(c, fair){
-  if(c.fixed){ const big = c.skins.find(x=>x.rar===4), small = c.skins.find(x=>x.rar!==4); return Math.random() < (fair ? c.fixed.p : 0.04) ? big : small; }
+  if(c.fixed){ const big = c.skins.find(x=>x.rar===4 && !x.noDrop), small = c.skins.find(x=>x.rar!==4 && !x.noDrop); return Math.random() < (fair ? c.fixed.p : Math.max(0.04, c.fixed.p/2)) ? big : small; }
   const rar=pickRarity(fair ? c : null); const list=c.skins.filter(s=>s.rar===rar); return list[Math.floor(Math.random()*list.length)]; }
 function roll(c){
   const sk = pickSkin(c, true);
@@ -2822,13 +2898,15 @@ function renderHeader(){
 }
 
 /* ---------- Карточки ---------- */
+const isPriceless = it => { const sk = it && skinOf(it); return !!(sk && sk.priceless); };
+const priceText = it => isPriceless(it) ? "Бесценен" : money(it.price);
 function itemCard(it, opts={}){
   const sk = skinOf(it), w = WEAR[it.w];
   return `<div class="item${opts.big?' big':''}${opts.lost?' lost':''}" style="--rc:${RAR[sk.rar].color}${opts.delay!=null?`;animation-delay:${opts.delay}ms`:''}">
     ${art(sk)}
     <div class="w">${it.st?'<span class="st">ST</span>':''}${esc(title(sk))}</div>
     <div class="n">${esc(sk.name)}</div>
-    <div class="meta"><span title="${w.n}">${w.s} · <span class="num">${it.fl.toFixed(4)}</span></span><span class="price">${money(it.price)}</span></div>
+    <div class="meta"><span title="${w.n}">${w.s} · <span class="num">${it.fl.toFixed(4)}</span></span><span class="price">${priceText(it)}</span></div>
     ${opts.sell?`<div class="item-acts"><button class="btn sell" data-sell="${it.id}">Продать</button><button class="btn sell" data-up="${it.id}" title="Отправить в апгрейд">Апгрейд</button></div>`:''}
   </div>`;
 }
@@ -2910,7 +2988,7 @@ function viewCase(c){
   document.body.classList.add("wide-case");
   const app = document.getElementById("app");
   if(c.off){ app.innerHTML = `<div class="view-head"><div><a class="back" href="#cases">← Все кейсы</a><h1 style="margin-top:6px">Кейс «${c.name}»</h1></div></div><div class="empty">Этот кейс сейчас недоступен.</div>`; return; }
-  const contents = c.skins.slice().sort((a,b)=>b.rar-a.rar || b.basePrice-a.basePrice);
+  const contents = c.skins.slice().sort((a,b)=>(b.priceless-a.priceless) || b.rar-a.rar || b.basePrice-a.basePrice);
   app.innerHTML = `
     <div class="view-head">
       <div><a class="back" href="#cases">← Все кейсы</a><h1 style="margin-top:6px">Кейс «${c.name}»</h1>
@@ -2932,7 +3010,7 @@ function viewCase(c){
       </div>
     </section>
     <div class="section-title"><h2>Содержимое кейса</h2>
-      <div class="odds"><span class="odd rtp-chip" title="Какая доля цены кейса в среднем возвращается предметами">RTP <span class="num">${Math.round(caseOdds(c).rtp*100)}%</span></span>${c.fixed ? c.skins.slice().reverse().map(sk=>`<span class="odd" style="--rc:${RAR[sk.rar].color}"><i></i>${esc(sk.name)} <span class="num">${fmtPct(sk.chance)}</span></span>`).join("") : RAR.map((r,k)=>`<span class="odd" style="--rc:${r.color}"><i></i>${r.name} <span class="num">${(caseOdds(c).p[k]*100).toFixed(2)}%</span></span>`).join("")}</div>
+      <div class="odds"><span class="odd rtp-chip" title="Какая доля цены кейса в среднем возвращается предметами">RTP <span class="num">${Math.round(caseOdds(c).rtp*100)}%</span></span>${c.fixed ? c.skins.filter(x=>!x.noDrop).reverse().map(sk=>`<span class="odd" style="--rc:${RAR[sk.rar].color}"><i></i>${esc(sk.name)} <span class="num">${fmtPct(sk.chance)}</span></span>`).join("") : RAR.map((r,k)=>`<span class="odd" style="--rc:${r.color}"><i></i>${r.name} <span class="num">${(caseOdds(c).p[k]*100).toFixed(2)}%</span></span>`).join("")}</div>
     </div>
     <div class="contents">${contents.map(sk=>{
       const lo = c.fixed ? sk.basePrice : sk.basePrice*WEAR[4].m, hi = c.fixed ? sk.basePrice : sk.basePrice*WEAR[0].m*ST_M;
@@ -2940,7 +3018,7 @@ function viewCase(c){
         ${art(sk)}
         <div class="w">${esc(title(sk))}</div>
         <div class="n">${esc(sk.name)}</div>
-        <div class="meta"><span class="num">${fmtPct(sk.chance)}</span><span class="price rng">${lo===hi ? `<span>${money(lo)}</span>` : `<span>${money(lo)}</span>–<wbr><span>${money(hi)}</span>`}</span></div>
+        <div class="meta"><span class="num">${sk.noDrop ? "только контракт" : fmtPct(sk.chance)}</span><span class="price rng">${sk.priceless ? `<span>Бесценен</span>` : lo===hi ? `<span>${money(lo)}</span>` : `<span>${money(lo)}</span>–<wbr><span>${money(hi)}</span>`}</span></div>
       </div>`}).join("")}
     </div>`;
   updateOpenBtn(c);
@@ -3014,15 +3092,15 @@ async function openCases(c, free){
     bc[2] = Math.round(bc[2] + it.price);
     S.stats.won = Math.round((S.stats.won+it.price)*100)/100;
     if(!S.stats.best || it.price > S.stats.best.price) S.stats.best = it;
-    if(skinOf(it).rar===4) S.stats.knives = (S.stats.knives||0) + 1;
+    if(skinOf(it).rar===4 && skinOf(it).knife) S.stats.knives = (S.stats.knives||0) + 1;
   });
   if(S.inv.length > INV_MAX){
     const fresh = new Set(wins.map(w=>w.id));
-    const extra = S.inv.filter(it=>!fresh.has(it.id)).sort((a,b)=>a.price-b.price).slice(0, S.inv.length - INV_MAX);
+    const extra = S.inv.filter(it=>!fresh.has(it.id) && !isPriceless(it)).sort((a,b)=>a.price-b.price).slice(0, S.inv.length - INV_MAX);
     if(extra.length){ sell(extra.map(it=>it.id), {quiet:true}); toast(`Инвентарь полон (${INV_MAX}): ${extra.length} самых дешёвых предметов продано за ${money(extra.reduce((a,it)=>a+it.price,0))}`); }
   }
   qsEvent("open", n); if(cost) qsEvent("spend", cost);
-  qsEvent("rare", wins.filter(w=>skinOf(w).rar>=3).length); qsEvent("knife", wins.filter(w=>skinOf(w).rar===4).length);
+  qsEvent("rare", wins.filter(w=>skinOf(w).rar>=3).length); qsEvent("knife", wins.filter(w=>skinOf(w).rar===4 && skinOf(w).knife).length);
   save(); renderHeader(); updateOpenBtn(c);
   document.querySelectorAll(".seg button").forEach(b=>b.disabled=true);
   if(wins.length > MASS_N){ await massReveal(wins, c); return; }
@@ -3190,12 +3268,12 @@ function epicDrop(it, c){
     return `<i style="left:${x.toFixed(1)}%;--d:${d.toFixed(2)}s;--t:${dur.toFixed(2)}s;--s:${sz}px;--c:${cc};--r:${Math.round(Math.random()*720-360)}deg;--x:${Math.round(Math.random()*160-80)}px"></i>`; }).join("");
   el.innerHTML = `<div class="epic-rays"></div><div class="epic-conf">${conf}</div>
     <div class="epic-box">
-      <div class="epic-tag">${sk.rar===4 ? "★ ЛЕГЕНДАРНЫЙ ДРОП ★" : "ОГРОМНЫЙ ДРОП"}</div>
+      <div class="epic-tag">${sk.priceless ? "★ БЕСЦЕННО ★" : sk.rar===4 ? "★ ЛЕГЕНДАРНЫЙ ДРОП ★" : "ОГРОМНЫЙ ДРОП"}</div>
       <div class="epic-art">${art(sk)}</div>
       <div class="epic-name"></div>
-      <div class="epic-price">${money(it.price)} <span>×${mult.toFixed(1).replace(".",",")}</span></div>
+      <div class="epic-price">${sk.priceless ? "Бесценен" : `${money(it.price)} <span>×${mult.toFixed(1).replace(".",",")}</span>`}</div>
     </div>`;
-  el.querySelector(".epic-name").textContent = (it.st?"StatTrak · ":"") + title(sk) + " | " + sk.name;
+  el.querySelector(".epic-name").textContent = sk.priceless ? sk.name : (it.st?"StatTrak · ":"") + title(sk) + " | " + sk.name;
   document.body.appendChild(el);
   document.body.classList.add("epic-shake"); setTimeout(()=>document.body.classList.remove("epic-shake"), 600);
   haptic("success");
@@ -3379,7 +3457,7 @@ let UP_EDGE = 0.95, UP_MAX = 0.90, CRASH_RTP = 0.95, CONTRACT_RTP = 0.95, MINES_
 const CATALOG = [];
 function buildCatalog(){
 CATALOG.length = 0;
-CASES.filter(c=>!c.off).forEach(c=>c.skins.forEach(sk=>WEAR.forEach((w,wi)=>c.fixed && wi>0 ? 0 : CATALOG.push({c:c.id, s:sk.i, w:wi, st:false,
+CASES.filter(c=>!c.off).forEach(c=>c.skins.forEach(sk=>WEAR.forEach((w,wi)=>(c.fixed && wi>0) || sk.noDrop ? 0 : CATALOG.push({c:c.id, s:sk.i, w:wi, st:false,
   price:c.fixed ? sk.basePrice : Math.max(2, Math.round(sk.basePrice*w.m)), text:(title(sk)+" "+sk.name+" "+c.name+" "+w.s).toLowerCase()}))));
 CATALOG.sort((a,b)=>a.price-b.price);
 CATALOG.forEach((t,i)=>t.k=i);
@@ -3458,7 +3536,7 @@ const pct = ch => (ch*100).toFixed(ch<0.1?2:1).replace(".",",") + "%";
 
 function mini(o, attrs, on){
   const sk = skinOf(o);
-  return `<button class="mini${on?' on':''}" style="--rc:${RAR[sk.rar].color}" ${attrs} aria-pressed="${!!on}"><span class="m-top"><span class="price">${money(o.price)}</span><span>${o.st?'ST · ':''}${WEAR[o.w].s}</span></span>${art(sk)}<small>${esc(title(sk))}</small><b>${esc(sk.name)}</b></button>`;
+  return `<button class="mini${on?' on':''}" style="--rc:${RAR[sk.rar].color}" ${attrs} aria-pressed="${!!on}"><span class="m-top"><span class="price">${o.id || o.price ? priceText(o) : money(o.price)}</span><span>${o.st?'ST · ':''}${WEAR[o.w].s}</span></span>${art(sk)}<small>${esc(title(sk))}</small><b>${esc(sk.name)}</b></button>`;
 }
 
 let upMin = "", upMax = "";
@@ -3519,7 +3597,7 @@ const upSortOf = k => { const v = S.upSort && S.upSort[k]; return v==="asc" || v
 function drawUpInv(){
   const box = document.getElementById("up-inv"); if(!box) return;
   const dir = upSortOf("inv")==="asc" ? 1 : -1;
-  const items = S.inv.slice().sort((a,b)=>(a.price-b.price)*dir);
+  const items = S.inv.filter(i=>!isPriceless(i)).sort((a,b)=>(a.price-b.price)*dir);
   document.getElementById("up-selinfo").textContent = `${upSel.size} / ${UP_SEL}`;
   box.innerHTML = items.length ? items.map(it=>mini(it, `data-id="${it.id}"${upSpinning?' disabled':''}`, upSel.has(it.id))).join("")
     : `<p class="empty-note">Инвентарь пуст. <a href="#cases">Откройте кейс</a></p>`;
@@ -3921,7 +3999,7 @@ const SRCS = ["case","up","ct","bt","tr"];
 const srcOf = v => SRCS.includes(v) ? v : "";
 function pubItem(it){ return it ? Object.assign({c:it.c, s:it.s, w:it.w, st:!!it.st, price:it.price, fl:it.fl}, it.src ? {src:srcOf(it.src)} : {}) : null; }
 function pubDrop(it){ return Object.assign(pubItem(it), {id:String(it.id||"").slice(0,24), t:+it.t||0}); }
-function showcase(st){ return st.inv.slice().sort((a,b)=>b.price-a.price).slice(0,3).map(pubItem); }
+function showcase(st){ return st.inv.slice().sort((a,b)=>(isPriceless(b)-isPriceless(a)) || b.price-a.price).slice(0,3).map(pubItem); }
 function worthOf(st){ return Math.round(st.bal + st.inv.reduce((a,i)=>a+i.price,0)); }
 function publicProfile(){
   const xp = xpOf(S), t = S.stats;
@@ -4153,7 +4231,7 @@ function viewProfile(){
   // инвентарь
   const sel = document.getElementById("sort"); sel.value = sortMode;
   sel.addEventListener("change",()=>{ sortMode=sel.value; viewProfile(); });
-  document.getElementById("sell-all").addEventListener("click",()=>sell(S.inv.map(i=>i.id)));
+  document.getElementById("sell-all").addEventListener("click",()=>sell(S.inv.filter(i=>!isPriceless(i)).map(i=>i.id)));
   app.querySelectorAll("[data-sell]").forEach(b=>b.addEventListener("click",()=>sell([b.dataset.sell])));
   app.querySelectorAll("[data-up]").forEach(b=>b.addEventListener("click",()=>{ if(upSpinning) return; upSel=new Set([b.dataset.up]); upTarget=null; location.hash="#upgrade"; }));
   const rs = document.getElementById("reset");
@@ -4339,7 +4417,7 @@ function renderFeed(){
         const [sa, sb] = srcLabel(it);
         return `<div class="drop${fresh?' enter':''}" tabindex="0" data-pid="${esc(x.who.id||"")}" style="--rc:${RAR[sk.rar].color}" aria-label="${esc(title(sk)+' | '+sk.name)} — ${money(it.price)}. Откуда: ${sa}${sb?' · '+sb:''}">
           <i class="d-src" aria-hidden="true"><small>Откуда</small><b>${sa}</b>${sb?`<small>${sb}</small>`:''}</i>
-          ${art(sk)}<em class="d-price">${money(it.price)}</em>
+          ${art(sk)}<em class="d-price">${priceText(it)}</em>
           <span><b>${esc(sk.name)}</b>${it.st?'ST ':''}${esc(title(sk))}</span>
           <i class="d-who">${avatarOf(x.who,14)}<span>${esc(x.who.nick)}</span></i></div>`;
       }).join("")
@@ -5048,7 +5126,7 @@ function drawQsMini(){
 const BT = {list:[], unsub:null, create:{cases:[], size:2}, anim:null, seen:new Set(), skip:false, wake:null, view:null};
 const btOn = () => !LOCAL_ONLY && !!CL.id && !!CL.db && typeof CL.db.action==="function";
 function rollWith(c, r){
-  if(c.fixed){ const sk = r() < c.fixed.p ? c.skins.find(x=>x.rar===4) : c.skins.find(x=>x.rar!==4); return {c:c.id, s:sk.i, w:0, fl:+(r()*0.07).toFixed(4), st:false, price:sk.basePrice}; }
+  if(c.fixed){ const sk = r() < c.fixed.p ? c.skins.find(x=>x.rar===4 && !x.noDrop) : c.skins.find(x=>x.rar!==4 && !x.noDrop); return {c:c.id, s:sk.i, w:0, fl:+(r()*0.07).toFixed(4), st:false, price:sk.basePrice}; }
   let x = r(), acc = 0, k = 0;
   for(; k<5; k++){ acc += RAR[k].p; if(x<acc) break; }
   if(k>4) k = 0;
@@ -5546,6 +5624,8 @@ function bindPromoAdmin(){
  * Игрок отдаёт от 3 до 10 предметов и получает один случайный.
  * Множитель к сумме вложенного: лог-равномерный, средний — RTP контрактов (× удача игрока). */
 const CT = {sel:new Set(), busy:false, last:null};
+const PICKLE = {c:"pickle", s:1}, GOLD_PICKLE = {c:"pickle", s:2};
+const ctRecipe = sel => sel.length === CT_MAX && sel.every(i=>i.c===PICKLE.c && i.s===PICKLE.s);
 const CT_MIN = 3, CT_MAX = 10, CT_LO = 0.25, CT_HI = 4;
 const CT_MEAN = (CT_HI-CT_LO)/Math.log(CT_HI/CT_LO); // среднее лог-равномерного распределения
 const ctK = () => Math.min(5, CONTRACT_RTP*myLuck()) / CT_MEAN;
@@ -5580,7 +5660,7 @@ function viewContract(){
   document.getElementById("ct-go").addEventListener("click", ctSign);
   document.getElementById("ct-clear").addEventListener("click", ()=>{ if(CT.busy) return; CT.sel.clear(); ctDraw(); });
   document.getElementById("ct-auto").addEventListener("click", ()=>{ if(CT.busy) return;
-    S.inv.slice().sort((a,b)=>a.price-b.price).forEach(it=>{ if(CT.sel.size < CT_MAX) CT.sel.add(it.id); }); ctDraw(); });
+    S.inv.filter(i=>!isPriceless(i)).sort((a,b)=>a.price-b.price).forEach(it=>{ if(CT.sel.size < CT_MAX) CT.sel.add(it.id); }); ctDraw(); });
   ctDraw();
   if(CT.last) ctShowResult(CT.last, false);
 }
@@ -5590,15 +5670,17 @@ function ctDraw(){
   slots.innerHTML = Array.from({length:CT_MAX}, (_,k)=>{ const it = sel[k]; if(!it) return `<div class="ct-slot empty"><span>${k+1}</span></div>`;
     const sk = skinOf(it); return `<button type="button" class="ct-slot" data-rm="${it.id}" style="--rc:${RAR[sk.rar].color}" title="Убрать">${art(sk)}<b class="num">${money(it.price)}</b></button>`; }).join("");
   slots.querySelectorAll("[data-rm]").forEach(b=>b.addEventListener("click",()=>{ if(CT.busy) return; CT.sel.delete(b.dataset.rm); ctDraw(); }));
-  const [lo, hi] = ctRange(sum);
-  document.getElementById("ct-info").innerHTML = sel.length
-    ? `<span>Вложено: <b class="num">${money(sum)}</b></span><span>Можно получить: <b class="num">${money(lo)}</b> — <b class="num" style="color:var(--good)">${money(hi)}</b></span>`
+  const [lo, hi] = ctRange(sum), pk = sel.filter(i=>i.c===PICKLE.c && i.s===PICKLE.s).length;
+  document.getElementById("ct-info").innerHTML = ctRecipe(sel)
+    ? `<span class="ct-recipe">Рецепт найден! 10 огурчиков → <b>Золотой огурец</b> · гарантированно</span>`
+    : sel.length
+    ? (pk && pk===sel.length ? `<span class="ct-recipe dim">Огурчиков: ${pk} / 10 — соберите 10, чтобы получить Золотой огурец</span>` : "") + `<span>Вложено: <b class="num">${money(sum)}</b></span><span>Можно получить: <b class="num">${money(lo)}</b> — <b class="num" style="color:var(--good)">${money(hi)}</b></span>`
     : `<span class="hint">Выберите предметы из инвентаря ниже — от ${CT_MIN} до ${CT_MAX} штук.</span>`;
   const go = document.getElementById("ct-go");
   go.disabled = CT.busy || sel.length < CT_MIN;
   go.textContent = sel.length < CT_MIN ? `Нужно ещё ${CT_MIN - sel.length}` : `Подписать контракт · ${sel.length} шт.`;
   document.getElementById("ct-sel").textContent = `${sel.length} / ${CT_MAX}`;
-  const inv = document.getElementById("ct-inv"), items = S.inv.slice().sort((a,b)=>b.price-a.price);
+  const inv = document.getElementById("ct-inv"), items = S.inv.filter(i=>!isPriceless(i)).sort((a,b)=>b.price-a.price);
   inv.innerHTML = items.length ? items.map(it=>mini(it, `data-id="${it.id}"${CT.busy?' disabled':''}`, CT.sel.has(it.id))).join("")
     : `<p class="empty-note">Инвентарь пуст. <a href="#cases">Откройте кейс</a></p>`;
   inv.querySelectorAll("[data-id]").forEach(b=>b.addEventListener("click",()=>{ if(CT.busy) return; const id = b.dataset.id;
@@ -5609,14 +5691,15 @@ async function ctSign(){
   const sel = S.inv.filter(i=>CT.sel.has(i.id)); if(sel.length < CT_MIN) return;
   CT.busy = true; audio();
   const sum = sel.reduce((a,i)=>a+i.price,0);
+  const recipe = ctRecipe(sel);
   const m = CT_LO*Math.pow(CT_HI/CT_LO, Math.random()) * ctK();   // лог-равномерный множитель
-  const t = ctPick(sum*m), w = WEAR[t.w];
+  const t = recipe ? {c:GOLD_PICKLE.c, s:GOLD_PICKLE.s, w:0, price:0} : ctPick(sum*m), w = WEAR[t.w];
   const got = {id:Date.now().toString(36)+Math.random().toString(36).slice(2,7), c:t.c, s:t.s, w:t.w, fl:+(w.min+Math.random()*(w.max-w.min)).toFixed(4), st:false, price:t.price, t:Date.now(), src:"ct"};
   // сразу записываем результат, чтобы ничего не потерялось при уходе со страницы
   S.inv = S.inv.filter(i=>!CT.sel.has(i.id)); S.inv.unshift(got);
   if(!S.stats.best || got.price > S.stats.best.price) S.stats.best = got;
-  if(skinOf(got).rar===4) S.stats.knives = (S.stats.knives||0) + 1;
-  const st = ctStats(); st.n++; st.put = Math.round(st.put + sum); st.got = Math.round(st.got + got.price); const x = got.price/sum; if(x > st.best) st.best = x;
+  if(skinOf(got).rar===4 && !recipe) S.stats.knives = (S.stats.knives||0) + 1;
+  const st = ctStats(); st.n++; if(!recipe){ st.put = Math.round(st.put + sum); st.got = Math.round(st.got + got.price); const x = got.price/sum; if(x > st.best) st.best = x; } else S.stats.goldPickle = (S.stats.goldPickle||0) + 1;
   S.recent = [got].concat(S.recent).slice(0,14);
   CT.sel.clear(); CT.last = {got, sum};
   qsEvent("ct", 1);
@@ -5641,8 +5724,8 @@ function ctShowResult(r, fresh){
   box.hidden = false;
   box.innerHTML = `<div class="ct-res${fresh?' pop':''}" style="--rc:${RAR[sk.rar].color}">${art(sk)}
     <div class="ct-res-t"><small>${esc(title(sk))} · ${WEAR[it.w].s}</small><b></b>
-      <span class="num">${money(it.price)} <i class="${x>=1?'pos':'neg'}">×${x.toFixed(2).replace(".",",")}</i></span></div>
-    ${have ? `<button class="btn" id="ct-sell">Продать · ${money(it.price)}</button>` : `<span class="hint">Продано</span>`}</div>`;
+      <span class="num">${isPriceless(it) ? `<span class="ct-recipe">Бесценен</span>` : `${money(it.price)} <i class="${x>=1?'pos':'neg'}">×${x.toFixed(2).replace(".",",")}</i>`}</span></div>
+    ${have ? (isPriceless(it) ? `<span class="hint">Лежит в инвентаре</span>` : `<button class="btn" id="ct-sell">Продать · ${money(it.price)}</button>`) : `<span class="hint">Продано</span>`}</div>`;
   box.querySelector(".ct-res-t b").textContent = sk.name;
   const sb = document.getElementById("ct-sell"); if(sb) sb.addEventListener("click", ()=>{ sell([it.id], {quiet:true}); ctDraw(); ctShowResult(r, false); });
   if(fresh){
