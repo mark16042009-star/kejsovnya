@@ -457,6 +457,10 @@ img,svg,canvas{-webkit-user-drag:none;user-drag:none}
 .wheel-lost{font-family:var(--mono);font-size:20px;fill:var(--text)}
 
 .case-result{display:grid;gap:10px}
+.foot-tg{display:inline-flex;align-items:center;gap:10px;margin:0 0 12px;padding:10px 14px;background:var(--panel);border:1px solid var(--line);border-left:3px solid #2aabee;color:var(--text);text-decoration:none;font-size:13px}
+.foot-tg:hover{border-color:#2aabee;color:#fff}
+.foot-tg svg{width:22px;height:22px;flex:none;fill:#2aabee}
+.foot-tg b{color:#2aabee}
 .ct-recipe{color:#ffd23a;font-family:var(--display)} .ct-recipe b{color:#fff3c4} .ct-recipe.dim{color:var(--muted);font-family:inherit;display:block;width:100%}
 .tr-banner{position:fixed;top:76px;right:16px;z-index:90;display:flex;align-items:center;gap:12px;max-width:min(380px,calc(100vw - 32px));padding:12px 14px;background:var(--panel);border:2px solid var(--accent);box-shadow:6px 6px 0 #000,0 0 24px rgba(255,200,0,.25);color:var(--text);text-decoration:none;animation:trIn .25s steps(4)}
 .tr-banner[hidden]{display:none}
@@ -1280,7 +1284,7 @@ body.wide-case main{max-width:none}
 #adm-rtp{min-width:0;overflow:hidden}
 .rtp-table{max-width:100%}
 </style>
-<script>window.APP_BUILD="03.11 23:50";</script>
+<script>window.APP_BUILD="03.11 23:59";</script>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="adapter.js"></script>
 <link rel="icon" href="icon.png">
@@ -1325,7 +1329,7 @@ body.wide-case main{max-width:none}
 <div class="col">
 <div class="announce" id="announce" hidden></div>
 <main id="app"></main>
-<footer><p>Все монеты и предметы виртуальные. Фанатский симулятор, не связан с Valve.</p></footer>
+<footer><a class="foot-tg" id="foot-tg" href="https://t.me/pixeldropsimulator" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21.5 4.2 2.9 11.4c-1 .4-1 1.6.1 1.9l4.7 1.5 1.8 5.6c.2.7 1.1.9 1.6.4l2.6-2.4 4.8 3.5c.6.4 1.4.1 1.6-.6l3.3-15.6c.2-1-.8-1.8-1.9-1.5zM9.4 14.6l8.4-7.4-6.6 8.3-.3 3.1z"/></svg><span>Наш Telegram-канал <b>@pixeldropsimulator</b></span></a><p>Все монеты и предметы виртуальные. Фанатский симулятор, не связан с Valve.</p></footer>
 </div>
 </div>
 
@@ -5425,6 +5429,7 @@ function moreToggle(open){
   if(open) drawMore();
   sh.hidden = !open; b.setAttribute("aria-expanded", String(open));
 }
+document.getElementById("foot-tg").addEventListener("click", e=>{ try{ const w = window.Telegram && window.Telegram.WebApp; if(w && w.initData && w.openTelegramLink){ e.preventDefault(); w.openTelegramLink("https://t.me/pixeldropsimulator"); } }catch(err){} });
 document.getElementById("nav-more").addEventListener("click", e=>{ e.stopPropagation(); moreToggle(); });
 document.addEventListener("click", e=>{ const sh = document.getElementById("more-sheet"); if(sh && !sh.hidden && !sh.contains(e.target)) moreToggle(false); });
 function navMoreState(){
