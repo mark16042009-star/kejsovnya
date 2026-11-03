@@ -32,6 +32,8 @@
   }
 
   // ---- Запросы к серверу ----
+  var lastError = "";
+  var hadToken = AUTH === "token" && !!getToken();
   function call(method, url, body) {
     return fetch(API + url, {
       method: method,
@@ -39,11 +41,15 @@
         AUTH === "token" && getToken() ? { "Authorization": "Bearer " + getToken() } : {}),
       body: body ? JSON.stringify(body) : undefined
     }).then(function (r) {
+      if (!r.ok) lastError = "сервер ответил кодом " + r.status + (r.status === 401 ? " (вход не найден: сессия истекла или база не подключена)" : "");
       if (r.status === 401 || r.status === 403 || r.status === 400 || r.status === 413) throw { code: "invalid_argument", message: "HTTP " + r.status };
       if (r.status === 429) throw { code: "resource_exhausted", message: "Слишком много запросов" };
       if (!r.ok) throw { code: "unavailable", message: "HTTP " + r.status };
       return r.json();
-    }, function () { throw { code: "unavailable", message: "Сервер недоступен" }; });
+    }, function () {
+      lastError = "нет связи с сервером " + API.replace(/\/api$/, "") + " (сервер недоступен, адрес неверный, не настроен ALLOWED_ORIGINS или сеть блокирует Cloudflare)";
+      throw { code: "unavailable", message: "Сервер недоступен" };
+    });
   }
 
   var mePromise = null;
@@ -214,14 +220,24 @@
       if (pass.length < 6) { err.textContent = "Пароль должен быть не короче 6 символов"; return; }
       if (mode === "register" && pass !== ov.querySelector("#auth-pass2").value) { err.textContent = "Пароли не совпадают"; return; }
       var go = ov.querySelector("#auth-go"); go.disabled = true; err.textContent = "";
-      fetch(API + "/" + mode, { method: "POST", headers: { "Content-Type": "application/json" }, credentials: AUTH === "token" ? "omit" : "same-origin", body: JSON.stringify({ login: login, password: pass }) })
-        .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }); })
+      var label = go.textContent; go.textContent = "Подождите…";
+      var ctl = window.AbortController ? new AbortController() : null;
+      var timer = setTimeout(function () { if (ctl) ctl.abort(); }, 15000);
+      fetch(API + "/" + mode, { method: "POST", headers: { "Content-Type": "application/json" }, credentials: AUTH === "token" ? "omit" : "same-origin", body: JSON.stringify({ login: login, password: pass }), signal: ctl ? ctl.signal : undefined })
+        .then(function (r) { return r.json().catch(function () { return {}; }).then(function (j) { return { ok: r.ok, status: r.status, j: j }; }); })
         .then(function (r) {
-          if (!r.ok) { go.disabled = false; err.textContent = (r.j && r.j.error) || "Не получилось, попробуйте ещё раз"; return; }
+          clearTimeout(timer); go.textContent = label;
+          if (!r.ok) { go.disabled = false; err.textContent = (r.j && r.j.error) || ("Сервер ответил кодом " + r.status); return; }
+          if (AUTH === "token" && !(r.j && r.j.token)) { go.disabled = false; err.textContent = "Сервер не вернул ключ входа. Проверьте, что в Cloudflare вставлен последний код worker.js."; return; }
           if (AUTH === "token") setToken(r.j && r.j.token);
           if (mode === "login") { try { localStorage.removeItem(LOCAL_KEY); } catch (x) {} } // при входе берём прогресс из аккаунта
           location.reload();
-        }, function () { go.disabled = false; err.textContent = "Нет связи с сервером"; });
+        }, function (e) {
+          clearTimeout(timer); go.textContent = label; go.disabled = false;
+          err.textContent = (e && e.name === "AbortError")
+            ? "Сервер не отвечает 15 секунд. Возможно, сеть или провайдер блокирует Cloudflare: попробуйте другую сеть или VPN."
+            : "Нет связи с сервером. Проверьте адрес в config.js и переменную ALLOWED_ORIGINS в Cloudflare.";
+        });
     });
     setMode(mode || "login");
     setTimeout(function () { f.login.focus(); }, 30);
@@ -244,7 +260,8 @@
       ".auth-f input{background:var(--panel2);border:1px solid var(--line);color:var(--text);padding:11px 12px;border-radius:10px;font:inherit;font-size:16px}" +
       ".auth-f[hidden]{display:none}#auth-err:empty{display:none}" +
       ".auth-btn{padding:7px 14px}.acc-line{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:6px}" +
-      ".acc-line button{background:none;border:0;padding:0;color:var(--accent);text-decoration:underline;font:inherit;cursor:pointer}";
+      ".acc-line button{background:none;border:0;padding:0;color:var(--accent);text-decoration:underline;font:inherit;cursor:pointer}" +
+      ".acc-diag{color:var(--bad)}.acc-diag.ok{color:var(--good)}";
     document.head.appendChild(css);
     var right = document.querySelector(".right"), foot = document.querySelector("footer");
     me().then(function (m) {
@@ -258,6 +275,22 @@
           line.innerHTML = '<span>Вы играете без аккаунта.</span><button type="button" data-a="register">Зарегистрироваться</button><button type="button" data-a="login">Войти</button>';
           line.querySelectorAll("[data-a]").forEach(function (x) { x.addEventListener("click", function () { openAuth(x.dataset.a); }); });
           foot.appendChild(line);
+          var diag = el("p", { class: "acc-line" });
+          diag.innerHTML = '<span class="acc-diag" id="acc-diag"></span><button type="button" id="acc-check">Проверить связь с сервером</button>';
+          foot.appendChild(diag);
+          var dEl = diag.querySelector("#acc-diag");
+          if (hadToken) dEl.textContent = "Вход не подтвердился: " + (lastError || "неизвестная ошибка") + ".";
+          diag.querySelector("#acc-check").addEventListener("click", function () {
+            dEl.className = "acc-diag"; dEl.textContent = "Проверяю…";
+            var t0 = Date.now();
+            fetch(API, { credentials: "omit" }).then(function (r) { return r.json(); }).then(function (j) {
+              dEl.className = "acc-diag ok";
+              dEl.textContent = j && j.ok ? "Сервер отвечает (" + (Date.now() - t0) + " мс), разрешение для сайта настроено." : "Сервер ответил, но не так, как ожидалось.";
+            }, function () {
+              dEl.className = "acc-diag";
+              dEl.textContent = "Сервер не отвечает этому сайту: " + API.replace(/\/api$/, "") + ". Проверьте адрес в config.js, ALLOWED_ORIGINS в Cloudflare (вкладка Production) или попробуйте другую сеть.";
+            });
+          });
         }
       } else if (foot) {
         var line2 = el("p", { class: "acc-line" });
