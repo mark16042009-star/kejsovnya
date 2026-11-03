@@ -446,6 +446,53 @@ img,svg,canvas{-webkit-user-drag:none;user-drag:none}
 .wheel-lost{font-family:var(--mono);font-size:20px;fill:var(--text)}
 
 .case-result{display:grid;gap:10px}
+.nav-num{position:static;display:inline-grid;place-items:center;min-width:16px;height:16px;padding:0 3px;margin-left:4px;font-style:normal;font-size:10px;line-height:1;color:#111;background:var(--good)}
+.nav-num[hidden]{display:none}
+.qs-season{display:grid;gap:12px;margin-bottom:14px;border-top:3px solid var(--accent)}
+.qs-sh{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.qs-lvl{display:grid;place-items:center;width:64px;height:64px;flex:none;background:var(--accent);color:#1a1400;line-height:1;box-shadow:inset -4px -4px 0 #b38c00}
+.qs-lvl small{font-size:10px;text-transform:uppercase}
+.qs-lvl b{font-size:28px;font-family:var(--display)}
+.qs-lvl.sm{width:44px;height:44px} .qs-lvl.sm b{font-size:18px}
+.qs-sh-t{flex:1 1 260px;display:grid;gap:4px;min-width:0}
+.qs-sh-t > b{font-family:var(--display);font-size:20px}
+.qs-sh-t > span{color:var(--muted);font-size:13px}
+.qs-bar{display:block;height:8px;background:var(--bg2);border:1px solid var(--line);position:relative;overflow:hidden}
+.qs-bar.big{height:12px}
+.qs-bar > i{position:absolute;inset:0 auto 0 0;background:repeating-linear-gradient(90deg,var(--accent) 0 8px,#e0b000 8px 10px);transition:width .5s}
+.qs-track{display:flex;gap:6px;overflow-x:auto;padding:4px 2px 8px;scroll-behavior:smooth}
+.qs-track{align-items:flex-start}
+.qs-tier{position:relative;flex:0 0 92px;min-height:104px;display:grid;justify-items:center;align-content:start;gap:4px;padding:6px 4px 8px;background:var(--bg2);border:1px solid var(--line);border-bottom:3px solid #333;opacity:.55}
+.qs-tier.ready{opacity:1;border-color:var(--accent);border-bottom-color:var(--accent);background:color-mix(in srgb,var(--accent) 10%,var(--bg2));animation:qsPulse 1.2s steps(2) infinite}
+@keyframes qsPulse{50%{box-shadow:0 0 0 2px var(--accent)}}
+.qs-tier.got{opacity:1;border-bottom-color:var(--good)}
+.qs-tier.qs-epic{border-bottom-color:#8b5cf6}
+.qs-tl{font-family:var(--display);font-size:13px;color:var(--muted)}
+.qs-tier.ready .qs-tl,.qs-tier.got .qs-tl{color:var(--text)}
+.qs-ti{display:grid;place-items:center;height:40px;width:100%}
+.qs-ti .qs-case{width:56px;display:block} .qs-ti .qs-case svg{width:100%;height:auto}
+.qs-ic.coin{font-style:normal;font-size:26px;color:var(--accent)}
+.qs-nick{font-size:20px;font-family:var(--display)}
+.qs-tier small{font-size:10px;text-align:center;color:var(--muted);line-height:1.2}
+.qs-check{position:absolute;top:2px;right:4px;font-style:normal;color:var(--good);font-size:12px}
+.qs-cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:14px}
+.qs-card{display:grid;gap:6px;padding:10px 12px;background:var(--panel2);border:1px solid var(--line);border-left:3px solid #444}
+.qs-card + .qs-card{margin-top:8px}
+.qs-card.ok{border-left-color:var(--accent)}
+.qs-card.got{border-left-color:var(--good);opacity:.6}
+.qs-t{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:baseline}
+.qs-t b{font-size:14px}
+.qs-rw{font-size:12px;color:var(--muted);white-space:nowrap}
+.qs-xp{color:#b48cff}
+.qs-foot{display:flex;justify-content:space-between;align-items:center;gap:8px;min-height:30px;font-size:13px;color:var(--muted)}
+.qs-foot .btn{padding:6px 14px;font-size:13px}
+.qs-mini{display:flex;align-items:center;gap:12px;margin:0 0 14px;padding:10px 12px;background:var(--panel);border:1px solid var(--line);border-left:3px solid #8b5cf6;color:var(--text);text-decoration:none}
+.qs-mini.hot{border-left-color:var(--accent);background:color-mix(in srgb,var(--accent) 8%,var(--panel))}
+.qs-mt{flex:1;display:grid;gap:4px;min-width:0}
+.qs-mt > span{font-size:12px;color:var(--muted)}
+.qs-mt .qs-bar{height:6px}
+.qs-mini > .btn{flex:none}
+@media (max-width:560px){.qs-mini > .btn{display:none}.qs-tier{flex-basis:78px}.qs-lvl{width:52px;height:52px}.qs-lvl b{font-size:22px}.qs-cols{grid-template-columns:1fr}}
 .lim-tag{position:absolute;top:10px;right:10px;z-index:2;font-size:10px;letter-spacing:.04em;text-transform:uppercase;padding:3px 7px;background:#2a0f12;color:#ffb4b4;border:1px solid var(--bad)}
 .lim-tag.out{background:#1a1a1a;color:var(--muted);border-color:var(--line)}
 .lim-line{display:grid;gap:6px;color:var(--muted);font-size:14px}
@@ -745,6 +792,10 @@ body.epic-shake #app{animation:eshake .55s}
 @keyframes dfire{to{filter:brightness(1.35) saturate(1.2);box-shadow:0 0 20px #ffc23a}}
 .dfr-rainbow::before{background:conic-gradient(#ff3e3e,#ffd23a,#3ecf6e,#22d3ee,#8b5cf6,#ff3ea5,#ff3e3e);box-shadow:0 0 12px rgba(255,255,255,.5);animation:dhue 3s linear infinite}
 @keyframes dhue{to{filter:hue-rotate(360deg)}}
+.dfr-season{box-shadow:0 0 0 3px #ffc800,0 0 0 6px #ff7a1a,0 0 0 9px #0b0b0e}
+.dfr-champ{box-shadow:0 0 0 3px #ffc800,0 0 0 6px #8b5cf6,0 0 0 9px #ffc800,0 0 18px 6px rgba(139,92,246,.6);animation:dchamp 1.2s steps(1) infinite}
+@keyframes dchamp{50%{box-shadow:0 0 0 3px #8b5cf6,0 0 0 6px #ffc800,0 0 0 9px #8b5cf6,0 0 18px 6px rgba(255,200,0,.55)}}
+.dnc-season{color:#ff9a3c!important;text-shadow:2px 2px 0 #5a2a00}
 .dnc-gold{color:#ffd23a!important}.dnc-red{color:#ff4d4d!important}.dnc-violet{color:#b48cff!important}.dnc-cyan{color:#5ae0ff!important}.dnc-green{color:#4ade80!important}.dnc-pink{color:#ff7ac8!important}
 .dnc-rainbow{background:linear-gradient(90deg,#ff3e3e,#ffd23a,#3ecf6e,#22d3ee,#8b5cf6,#ff3ea5,#ff3e3e);background-size:200% 100%;-webkit-background-clip:text;background-clip:text;color:transparent!important;-webkit-text-fill-color:transparent;animation:drain 3s linear infinite}
 input.dnc-rainbow{-webkit-text-fill-color:#ff7ac8;color:#ff7ac8!important;background:transparent}
@@ -772,6 +823,7 @@ input.dnc-rainbow{-webkit-text-fill-color:#ff7ac8;color:#ff7ac8!important;backgr
 .dtile.poor small{color:var(--bad)}
 .dtile.locked{opacity:.55;cursor:not-allowed}
 .dprev{display:grid;place-items:center;height:56px;width:100%}
+.dprev .dtitle{white-space:normal;text-align:center;max-width:100%}
 .dsw{display:block;width:100%;height:52px;border-radius:8px;border:1px solid rgba(255,255,255,.1)}
 .dnick{font-size:15px;font-weight:800}
 .row .dfr{margin:2px}
@@ -1183,7 +1235,7 @@ body.wide-case main{max-width:none}
 #adm-rtp{min-width:0;overflow:hidden}
 .rtp-table{max-width:100%}
 </style>
-<script>window.APP_BUILD="03.11 22:17";</script>
+<script>window.APP_BUILD="03.11 22:58";</script>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="adapter.js"></script>
 <link rel="icon" href="icon.png">
@@ -1200,6 +1252,7 @@ body.wide-case main{max-width:none}
       <a href="#upgrade" id="nav-upg"><svg class="ni" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4l7 8h-4v8H9v-8H5z"/></svg><span class="nl">Апгрейд</span></a>
       <a href="#battles" id="nav-bt"><svg class="ni" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4l9 9M4 4h4M4 4v4M20 4l-9 9M20 4h-4M20 4v4M7 14l3 3-3 3-3-3zM17 14l-3 3 3 3 3-3z"/></svg><span class="nl">Батлы</span></a>
       <a href="#crash" id="nav-crash"><svg class="ni" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 20h18M4 18c6 0 10-4 15-13"/><path d="M15 5h4v4"/></svg><span class="nl">Краш</span></a>
+      <a href="#quests" id="nav-qs" class="nav-x"><svg class="ni" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v18l-6-4-6 4z"/><path d="M9 9l2 2 4-4"/></svg><span class="nl">Задания</span><i class="nav-dot" id="nav-qs-dot" hidden></i></a>
       <a href="#trades" id="nav-tr" class="nav-x"><svg class="ni" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h14l-4-4M20 16H6l4 4"/></svg><span class="nl">Трейды</span><i class="nav-dot" id="nav-tr-dot" hidden></i></a>
       <a href="#mines" id="nav-mines" class="nav-x"><svg class="ni" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="14" r="6"/><path d="M15 9l3-3M18 3v2M21 6h-2"/></svg><span class="nl">Мины</span></a>
       <a href="#contract" id="nav-ct" class="nav-x"><svg class="ni" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h9l4 4v14H6z"/><path d="M15 3v4h4M9 11h7M9 15h7M9 19h4"/></svg><span class="nl">Контракты</span></a>
@@ -2754,6 +2807,7 @@ function viewCases(){
   queueMicrotask(()=>drawDaily());
   app.innerHTML = `
     <section class="daily" id="daily" aria-live="polite" hidden></section>
+    <div id="qs-mini"></div>
     <div class="view-head"><h1>Кейсы</h1>
       <form class="case-tools" id="case-tools" role="search">
         <input id="cf-q" type="search" placeholder="Поиск" value="${esc(f.q)}" aria-label="Поиск кейса по названию" autocomplete="off">
@@ -2926,6 +2980,8 @@ async function openCases(c, free){
     const extra = S.inv.filter(it=>!fresh.has(it.id)).sort((a,b)=>a.price-b.price).slice(0, S.inv.length - INV_MAX);
     if(extra.length){ sell(extra.map(it=>it.id), {quiet:true}); toast(`Инвентарь полон (${INV_MAX}): ${extra.length} самых дешёвых предметов продано за ${money(extra.reduce((a,it)=>a+it.price,0))}`); }
   }
+  qsEvent("open", n); if(cost) qsEvent("spend", cost);
+  qsEvent("rare", wins.filter(w=>skinOf(w).rar>=3).length); qsEvent("knife", wins.filter(w=>skinOf(w).rar===4).length);
   save(); renderHeader(); updateOpenBtn(c);
   document.querySelectorAll(".seg button").forEach(b=>b.disabled=true);
   if(wins.length > MASS_N){ await massReveal(wins, c); return; }
@@ -3019,6 +3075,7 @@ async function openCases(c, free){
   if(epic) epicDrop(epic, c); else winSound(Math.max(...wins.map(w=>skinOf(w).rar)));
   await new Promise(r=>setTimeout(r, reduce ? 0 : (S.fast ? 400 : 1000)));
   showCaseResult(wins, c);
+  qsFlushToasts();
   if(document.getElementById("open")){
     document.querySelectorAll(".seg button").forEach(b=>b.disabled=false);
     updateOpenBtn(c);
@@ -3504,9 +3561,9 @@ async function doUpgrade(){
       fl:+(w.min+Math.random()*(w.max-w.min)).toFixed(4), st:false, price:t.price, t:Date.now(), src:"up"};
     S.inv.unshift(got);
     if(!S.stats.best || got.price > S.stats.best.price) S.stats.best = got;
-    S.stats.upgWin++;
+    S.stats.upgWin++; qsEvent("upwin", 1);
   }
-  S.stats.upg++;
+  S.stats.upg++; qsEvent("up", 1);
   S.stats.upgStake = Math.round((S.stats.upgStake||0) + st);
   if(win) S.stats.upgGot = Math.round((S.stats.upgGot||0) + t.price);
   save();
@@ -3720,6 +3777,7 @@ function endGame(){
   S.bal = Math.round(S.bal + G.earned);
   S.stats.runs++; S.stats.runEarned += G.earned;
   if(G.score > S.stats.runBest) S.stats.runBest = G.score;
+  qsEvent("run", Math.floor(G.score));
   save(); renderHeader();
   const set=(id,v)=>{const el=document.getElementById(id); if(el) el.textContent=v;};
   set("run-best", Math.floor(S.stats.runBest)); set("run-n", S.stats.runs); set("run-earned", money(S.stats.runEarned));
@@ -4158,6 +4216,7 @@ function srcLabel(it){
     default:   return [c ? `Кейс «${esc(c.name)}»` : "Кейс", ""];
   }
 }
+function renderFeedQs(){ try{ qsBadge(); }catch(e){} }
 function renderFeed(){
   const feed = document.getElementById("feed"); if(!feed) return;
   const items = feedItems();
@@ -4180,6 +4239,7 @@ function renderFeed(){
       }).join("")
     : '<span class="feed-empty">Здесь появятся последние выпавшие предметы.</span>');
   feedSeen = new Set(keys);
+  renderFeedQs();
 }
 
 
@@ -4525,6 +4585,7 @@ function crCash(m){
   const won = Math.round(CR.bet*m);
   S.bal = Math.round((S.bal+won)*100)/100;
   const st = crStats(); st.got = Math.round(st.got + won); if(m > st.best) st.best = m;
+  if(m >= 2) qsEvent("crash2", 1); if(m >= 5) qsEvent("crash5", 1);
   crEnd();
   if(S.sound){ beep(880,.08,.05,"triangle"); setTimeout(()=>beep(1320,.12,.05,"triangle"), 90); }
 }
@@ -4654,7 +4715,7 @@ function viewCrash(){
 /* ---------- Ежедневный подарок ----------
  * Раз в календарный день. Серия из 7 дней: награда растёт, пропуск дня сбрасывает серию на первый день. */
 const DAILY_MULT = [1, 1.5, 2, 3, 4, 6, 10];
-const shortNum = v => v>=1e6 ? (Math.round(v/1e5)/10+"м").replace(".",",") : v>=1000 ? (Math.round(v/100)/10+"к").replace(".",",") : String(Math.round(v));
+const shortNum = v => v>=1e9 ? (Math.round(v/1e8)/10+"млрд").replace(".",",") : v>=1e6 ? (Math.round(v/1e5)/10+"м").replace(".",",") : v>=1000 ? (Math.round(v/100)/10+"к").replace(".",",") : String(Math.round(v));
 const dayKey = d => d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
 function dailyState(){
   const d = S.daily && typeof S.daily==="object" ? S.daily : {last:"", streak:0};
@@ -4670,7 +4731,8 @@ function claimDaily(){
   S.daily = {last: dayKey(new Date()), streak: st.day};
   S.bal = Math.round((S.bal + st.prize)*100)/100;
   S.stats.daily = Math.round((S.stats.daily||0) + st.prize);
-  save(); renderHeader();
+  qsAddXp(QS_GIFT_XP);
+  save(); renderHeader(); qsBadge();
   if(S.sound){ beep(660,.08,.05,"triangle"); setTimeout(()=>beep(990,.08,.05,"triangle"),90); setTimeout(()=>beep(1320,.14,.05,"triangle"),180); }
   drawDaily(true);
 }
@@ -4681,6 +4743,7 @@ function untilTomorrow(){
 }
 let dailyTimer = 0;
 function drawDaily(justGot){
+  drawQsMini();
   const box = document.getElementById("daily"); if(!box) return;
   if(DAILY_BASE<=0){ box.hidden = true; return; }
   box.hidden = false;
@@ -4696,6 +4759,179 @@ function drawDaily(justGot){
   const b = document.getElementById("daily-go"); if(b) b.addEventListener("click", claimDaily);
   clearInterval(dailyTimer);
   dailyTimer = setInterval(()=>{ if(!document.getElementById("daily")){ clearInterval(dailyTimer); return; } const r = dailyState().ready; if(r !== st.ready || !r) drawDaily(); }, 30000);
+}
+
+/* ---------- Задания и сезонный пропуск ----------
+ * Каждый день — 3 задания, каждую неделю — 3 больших. За них монеты и опыт пропуска.
+ * Сезон = календарный месяц, 30 уровней пропуска с наградами; на 10/20/30 — эксклюзивное оформление. */
+const QS_LVL_XP = 700, QS_MAX = 30, QS_GIFT_XP = 100;
+const QS_TYPES = {
+  open:   {t:n=>`Открыть ${n} ${plural(n,"кейс","кейса","кейсов")}`,               d:[[10,15000,110],[25,30000,150],[50,60000,200]], w:[[300,400000,700]]},
+  spend:  {t:n=>`Потратить на кейсы ${money(n)}`,                                   d:[[50000,10000,120],[250000,40000,170]], w:[[5000000,600000,700]]},
+  rare:   {t:n=>`Выбить ${n} ${plural(n,"предмет","предмета","предметов")} «Тайное» или ★`, d:[[1,25000,150],[3,60000,200]]},
+  knife:  {t:n=>`Выбить ${n} ${plural(n,"нож","ножа","ножей")} ★`,                   w:[[1,500000,800]]},
+  up:     {t:n=>`Сделать ${n} ${plural(n,"апгрейд","апгрейда","апгрейдов")}`,          d:[[5,20000,120]]},
+  upwin:  {t:n=>`${n} ${plural(n,"удачный апгрейд","удачных апгрейда","удачных апгрейдов")}`, d:[[1,20000,130],[3,50000,190]], w:[[10,350000,700]]},
+  crash2: {t:n=>`Забрать в краше на ×2 и выше — ${n} ${plural(n,"раз","раза","раз")}`, d:[[1,15000,120],[3,45000,180]]},
+  crash5: {t:()=>`Забрать в краше на ×5 и выше`,                                      w:[[1,300000,650]]},
+  ct:     {t:n=>`Подписать ${n} ${plural(n,"контракт","контракта","контрактов")}`,      d:[[1,20000,130],[2,40000,170]], w:[[5,300000,650]]},
+  mines:  {t:n=>`Забрать выигрыш в минах — ${n} ${plural(n,"раз","раза","раз")}`,      d:[[1,15000,120],[3,40000,170]], w:[[10,300000,650]]},
+  bt:     {t:n=>`Сыграть ${n} ${plural(n,"батл","батла","батлов")}`,                   d:[[1,25000,150]], net:true},
+  btwin:  {t:n=>`Выиграть ${n} ${plural(n,"батл","батла","батлов")}`,                  w:[[2,400000,700]], net:true},
+  run:    {t:n=>`Набрать ${n} очков за один забег`,                                    d:[[300,15000,120]], max:true}
+};
+/* награды уровней пропуска */
+const QS_REWARDS = Array.from({length:QS_MAX}, (_,i)=>{
+  const L = i+1;
+  if(L===10) return {deco:"frame:season", n:"Рамка «Сезонная»"};
+  if(L===20) return {deco:"color:season", n:"Цвет ника «Сезонный»"};
+  if(L===30) return {deco:"frame:champ", title:"season", n:"Рамка «Чемпион» и титул «Легенда сезона»"};
+  if(L===5)  return {cases:"tycoon", k:3, n:""};
+  if(L===15) return {cases:"frog", k:1, n:""};
+  if(L===25) return {cases:"blades", k:1, n:""};
+  const v = 52000 * L*L*L, e = Math.pow(10, Math.floor(Math.log10(v)) - 1); // монеты растут как L³, округляем до 2 значащих цифр
+  return {coins: Math.round(v/e)*e};
+});
+QS_REWARDS.forEach(r=>{ if(r.cases && !r.n){ const c = CASE_BY_ID[r.cases]; r.n = `${r.k} × кейс «${c ? c.name : r.cases}»`; } });
+function weekKey(d){ const t = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())); const day = t.getUTCDay() || 7; t.setUTCDate(t.getUTCDate() + 4 - day); const y0 = new Date(Date.UTC(t.getUTCFullYear(),0,1)); return t.getUTCFullYear() + "-W" + String(Math.ceil(((t - y0)/864e5 + 1)/7)).padStart(2,"0"); }
+const seasonKey = d => d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0");
+const MONTHS = ["Январь","Февраль","Март","Апрель","Май","Июнь","Июль","Август","Сентябрь","Октябрь","Ноябрь","Декабрь"];
+function qsPick(kind, seed, n, avoid){
+  const r = rng(hash(seed)), pool = [];
+  Object.entries(QS_TYPES).forEach(([id,q])=>{ if(!q[kind] || (q.net && !btOn()) || (avoid && avoid.includes(id))) return; q[kind].forEach((v,vi)=>pool.push({id, vi})); });
+  const out = [], used = new Set(), order = shuffle(pool, r);
+  if(kind==="d" && !avoid) order.sort((a,b)=>(b.id==="open")-(a.id==="open")); // в дне всегда есть простое задание на кейсы
+  for(const p of order){ if(used.has(p.id)) continue; used.add(p.id); const [goal, coins, xp] = QS_TYPES[p.id][kind][p.vi]; out.push({id:p.id, goal, coins, xp, n:0, ok:false, got:false}); if(out.length>=n) break; }
+  return out;
+}
+function qsState(){
+  let q = S.qs && typeof S.qs==="object" && !Array.isArray(S.qs) ? S.qs : (S.qs = {});
+  const now = new Date(), dk = dayKey(now), wk = weekKey(now), sk = seasonKey(now), who = "all"; // задания дня одинаковые у всех игроков
+  const okList = a => Array.isArray(a) && a.every(x=>x && QS_TYPES[x.id]);
+  if(q.day !== dk || !okList(q.d)){ q.day = dk; q.d = qsPick("d", dk+"|"+who, 3); q.rr = false; }
+  if(q.week !== wk || !okList(q.w)){ q.week = wk; q.w = qsPick("w", wk+"|"+who, 3); }
+  if(q.season !== sk){ q.season = sk; q.xp = 0; q.got = []; }
+  if(!Array.isArray(q.got)) q.got = [];
+  q.xp = Math.max(0, Number(q.xp)||0);
+  return q;
+}
+const qsLevel = xp => { const L = Math.min(QS_MAX, Math.floor(xp/QS_LVL_XP)); return {lvl:L, cur: L>=QS_MAX ? QS_LVL_XP : xp - L*QS_LVL_XP}; };
+const qsClaimable = () => { const q = qsState(), L = qsLevel(q.xp).lvl; let n = 0; for(let i=1;i<=L;i++) if(!q.got.includes(i)) n++; return n + q.d.concat(q.w).filter(x=>x.ok && !x.got).length; };
+let qsToasts = [], qsToastTimer = 0;
+function qsFlushToasts(){
+  clearTimeout(qsToastTimer);
+  if(spinning || upSpinning || (CT && CT.busy)){ qsToastTimer = setTimeout(qsFlushToasts, 600); return; }
+  const list = qsToasts; qsToasts = [];
+  list.forEach((t,i)=>setTimeout(()=>toast(t), i*1800));
+  if(list.length && S.sound){ beep(784,.08,.05,"triangle"); setTimeout(()=>beep(1175,.12,.05,"triangle"), 90); }
+}
+function qsEvent(type, amount){
+  if(!(amount > 0)) return;
+  const q = qsState(); let ch = false;
+  q.d.concat(q.w).forEach(x=>{
+    if(x.id !== type || x.ok) return;
+    x.n = QS_TYPES[type].max ? Math.max(x.n, amount) : x.n + amount; ch = true;
+    if(x.n >= x.goal){ x.n = x.goal; x.ok = true; qsToasts.push(`Задание выполнено: ${QS_TYPES[type].t(x.goal)} — заберите награду в «Заданиях»`); }
+  });
+  if(ch){ save(); qsBadge(); if(qsToasts.length) qsFlushToasts(); if(location.hash==="#quests") drawQuests(); }
+}
+function qsAddXp(v){
+  const q = qsState(), before = qsLevel(q.xp).lvl;
+  q.xp += v; const after = qsLevel(q.xp).lvl;
+  if(after > before){ qsToasts.push(`Новый уровень пропуска: ${after}! Награда ждёт в «Заданиях»`); qsFlushToasts(); }
+}
+function qsGive(r){
+  if(r.coins) S.bal = Math.round((S.bal + r.coins)*100)/100;
+  if(r.cases){ freeOf(r.cases); S.free[r.cases] = freeOf(r.cases) + (r.k||1); }
+  if(r.deco){ const d = myDeco(); if(!d.own.includes(r.deco)) d.own.push(r.deco); }
+  if(r.title){ const d = myDeco(); if(!d.own.includes("title:"+r.title)) d.own.push("title:"+r.title); }
+}
+const qsRewardLabel = r => r.coins ? money(r.coins) : r.n;
+function qsClaimQuest(kind, i){
+  const q = qsState(), x = q[kind][i]; if(!x || !x.ok || x.got) return;
+  x.got = true; S.bal = Math.round((S.bal + x.coins)*100)/100;
+  qsAddXp(x.xp);
+  save(); renderHeader(); qsBadge(); drawQuests();
+  if(S.sound){ beep(660,.08,.05,"triangle"); setTimeout(()=>beep(990,.12,.05,"triangle"), 90); }
+}
+function qsClaimLevels(){
+  const q = qsState(), L = qsLevel(q.xp).lvl; let n = 0;
+  for(let i=1;i<=L;i++) if(!q.got.includes(i)){ q.got.push(i); qsGive(QS_REWARDS[i-1]); n++; }
+  if(!n) return;
+  save(); renderHeader(); qsBadge(); drawQuests();
+  if(S.sound){ beep(660,.08,.05,"triangle"); setTimeout(()=>beep(990,.08,.05,"triangle"),90); setTimeout(()=>beep(1320,.14,.05,"triangle"),180); }
+  toast(`Получено наград пропуска: ${n}`);
+}
+function qsReroll(i){
+  const q = qsState(); if(q.rr) return; const x = q.d[i]; if(!x || x.ok) return;
+  const fresh = qsPick("d", q.day+"|rr"+i+"|"+Math.random(), 1, q.d.map(y=>y.id))[0]; if(!fresh) return;
+  q.d[i] = fresh; q.rr = true; save(); drawQuests();
+}
+function qsBadge(){
+  const n = qsClaimable(), dot = document.getElementById("nav-qs-dot");
+  if(dot) dot.hidden = !n;
+  const md = document.getElementById("nav-more-dot"); if(md) md.hidden = !(n || (()=>{ try{ return CL.id ? trIncoming().length : 0; }catch(e){ return 0; } })());
+  navMoreState && navMoreState();
+  const w = document.getElementById("qs-mini"); if(w) drawQsMini();
+}
+function seasonLeft(){ const now = new Date(), end = new Date(now.getFullYear(), now.getMonth()+1, 1); const d = Math.ceil((end-now)/864e5); return d > 1 ? `${d} ${plural(d,"день","дня","дней")}` : "последний день"; }
+function qsRewardIcon(r){
+  if(r.coins) return `<i class="qs-ic coin">₽</i>`;
+  if(r.cases){ const c = CASE_BY_ID[r.cases]; return c ? `<span class="qs-case">${caseArt(c)}</span>` : ""; }
+  if(r.deco && r.deco.startsWith("frame:")) return `<span class="dfr dfr-${r.deco.slice(6)}">${avatarOf({isMe:true, nick:S.profile.nick, av:S.profile.av, img:S.profile.img}, 30)}</span>`;
+  if(r.deco && r.deco.startsWith("color:")) return `<b class="dnc-${r.deco.slice(6)} qs-nick">Аа</b>`;
+  return "";
+}
+function qsCard(x, kind, i, q){
+  const T = QS_TYPES[x.id], p = Math.min(1, x.n/x.goal);
+  const prog = T.max ? `${fmtNum(x.n)} / ${fmtNum(x.goal)}` : x.goal >= 10000 ? `${shortNum(x.n)} / ${shortNum(x.goal)}` : `${x.n} / ${x.goal}`;
+  return `<div class="qs-card${x.ok?' ok':''}${x.got?' got':''}">
+    <div class="qs-t"><b>${esc(T.t(x.goal))}</b><span class="qs-rw"><span class="price">+${money(x.coins)}</span> · <span class="qs-xp">+${x.xp} XP</span></span></div>
+    <div class="qs-bar"><i style="width:${(p*100).toFixed(1)}%"></i></div>
+    <div class="qs-foot"><span class="num">${prog}</span>
+      ${x.got ? `<span class="hint">Получено</span>` : x.ok ? `<button class="btn primary" data-qc="${kind}:${i}">Забрать</button>` : kind==="d" && !q.rr ? `<button class="btn qs-rr" data-qr="${i}" title="Один раз в день можно заменить задание">Заменить</button>` : ``}</div>
+  </div>`;
+}
+function viewQuests(){
+  document.getElementById("app").innerHTML = `<div class="view-head"><div><h1>Задания</h1><p class="sub">Выполняйте задания — получайте монеты и опыт сезонного пропуска</p></div></div><div id="qs"></div>`;
+  drawQuests();
+}
+function drawQuests(){
+  const box = document.getElementById("qs"); if(!box) return;
+  const q = qsState(), lv = qsLevel(q.xp), mon = MONTHS[new Date().getMonth()];
+  const ready = []; for(let i=1;i<=lv.lvl;i++) if(!q.got.includes(i)) ready.push(i);
+  box.innerHTML = `
+    <section class="panel qs-season">
+      <div class="qs-sh">
+        <div class="qs-lvl"><small>ур.</small><b>${lv.lvl}</b></div>
+        <div class="qs-sh-t"><b>Сезон «${mon}»</b><span>${lv.lvl>=QS_MAX ? "Пропуск пройден полностью!" : `${fmtNum(lv.cur)} / ${fmtNum(QS_LVL_XP)} XP до ${lv.lvl+1} уровня`} · до конца сезона ${seasonLeft()}</span>
+          <div class="qs-bar big"><i style="width:${(lv.cur/QS_LVL_XP*100).toFixed(1)}%"></i></div></div>
+        ${ready.length ? `<button class="btn primary" id="qs-claim">Забрать ${ready.length} ${plural(ready.length,"награду","награды","наград")}</button>` : ``}
+      </div>
+      <div class="qs-track" id="qs-track">${QS_REWARDS.map((r,i)=>{ const L = i+1, got = q.got.includes(L), open = L<=lv.lvl;
+        return `<div class="qs-tier${got?' got':open?' ready':''}${r.deco?' qs-epic':''}" title="${esc(qsRewardLabel(r))}">
+          <span class="qs-tl">${L}</span><span class="qs-ti">${qsRewardIcon(r)}</span><small>${esc(r.coins ? shortNum(r.coins) : r.n)}</small>${got?'<i class="qs-check">✓</i>':''}</div>`; }).join("")}</div>
+      <p class="hint">Опыт пропуска дают задания и ежедневный подарок (+${QS_GIFT_XP} XP). В начале месяца стартует новый сезон: уровень обнуляется, а полученное оформление остаётся навсегда.</p>
+    </section>
+    <div class="qs-cols">
+      <section class="panel"><div class="ph"><h2>Ежедневные</h2><span class="hint">обновятся через ${untilTomorrow()}</span></div>${q.d.map((x,i)=>qsCard(x,"d",i,q)).join("")}</section>
+      <section class="panel"><div class="ph"><h2>Недельные</h2><span class="hint">обновятся в понедельник</span></div>${q.w.map((x,i)=>qsCard(x,"w",i,q)).join("")}</section>
+    </div>`;
+  const cl = document.getElementById("qs-claim"); if(cl) cl.addEventListener("click", qsClaimLevels);
+  box.querySelectorAll("[data-qc]").forEach(b=>b.addEventListener("click",()=>{ const [k,i] = b.dataset.qc.split(":"); qsClaimQuest(k, +i); }));
+  box.querySelectorAll("[data-qr]").forEach(b=>b.addEventListener("click",()=>qsReroll(+b.dataset.qr)));
+  const tr = document.getElementById("qs-track"), cur = tr && tr.children[Math.max(0, lv.lvl-2)];
+  if(tr && cur) tr.scrollLeft = cur.offsetLeft - 8;
+}
+/* мини-блок на главной */
+function drawQsMini(){
+  const box = document.getElementById("qs-mini"); if(!box) return;
+  const q = qsState(), lv = qsLevel(q.xp), n = qsClaimable(), done = q.d.filter(x=>x.ok).length;
+  box.innerHTML = `<a href="#quests" class="qs-mini${n?' hot':''}">
+    <span class="qs-lvl sm"><small>ур.</small><b>${lv.lvl}</b></span>
+    <span class="qs-mt"><b>Задания и пропуск</b><span>${n ? `Готово к получению: ${n}` : `Ежедневные: ${done} / ${q.d.length} · ${fmtNum(lv.cur)} / ${fmtNum(QS_LVL_XP)} XP`}</span>
+      <i class="qs-bar"><i style="width:${(lv.cur/QS_LVL_XP*100).toFixed(1)}%"></i></i></span>
+    <span class="btn${n?' primary':''}">${n ? "Забрать" : "Открыть"}</span></a>`;
 }
 
 /* ---------- Батлы кейсов ----------
@@ -4738,6 +4974,7 @@ function btSettle(d){
   if(d.state!=="done") return false;
   const res = btResults(d), w = btWinner(d, res);
   m.done = true;
+  qsEvent("bt", 1); if(d.players[w].pid===CL.id) qsEvent("btwin", 1);
   if(d.players[w].pid===CL.id){
     const now = Date.now(); let sum = 0;
     res.flat().filter(Boolean).forEach((it,i)=>{ const o = Object.assign({}, it, {id:now.toString(36)+i.toString(36)+Math.random().toString(36).slice(2,6), t:now, src:"bt"}); S.inv.unshift(o); sum += o.price; if(!S.stats.best || o.price > S.stats.best.price) S.stats.best = o; });
@@ -5017,9 +5254,10 @@ const DECO = {
   bg:[{id:"none",n:"Обычный",p:0},{id:"neon",n:"Неон",p:50000},{id:"sunset",n:"Закат",p:50000},{id:"ocean",n:"Океан",p:100000},{id:"jungle",n:"Джунгли",p:100000},
       {id:"space",n:"Космос",p:250000},{id:"lava",n:"Лава",p:250000},{id:"matrix",n:"Матрица",p:500000},{id:"gold",n:"Золото",p:2000000},{id:"rainbow",n:"Радуга",p:10000000}],
   frame:[{id:"none",n:"Без рамки",p:0},{id:"silver",n:"Серебро",p:25000},{id:"pixel",n:"Пиксельная",p:100000},{id:"neon",n:"Неоновая",p:250000},{id:"gold",n:"Золотая",p:500000},
-      {id:"ice",n:"Ледяная",p:1000000},{id:"fire",n:"Огненная",p:1000000},{id:"rainbow",n:"Радужная",p:25000000}],
+      {id:"ice",n:"Ледяная",p:1000000},{id:"fire",n:"Огненная",p:1000000},{id:"rainbow",n:"Радужная",p:25000000},
+      {id:"season",n:"Сезонная",p:0,pass:10},{id:"champ",n:"Чемпион",p:0,pass:30}],
   color:[{id:"def",n:"Белый",p:0},{id:"gold",n:"Золотой",p:10000},{id:"red",n:"Алый",p:10000},{id:"violet",n:"Фиолетовый",p:10000},{id:"cyan",n:"Голубой",p:10000},
-      {id:"green",n:"Зелёный",p:10000},{id:"pink",n:"Розовый",p:10000},{id:"rainbow",n:"Радужный",p:5000000}]
+      {id:"green",n:"Зелёный",p:10000},{id:"pink",n:"Розовый",p:10000},{id:"rainbow",n:"Радужный",p:5000000},{id:"season",n:"Сезонный",p:0,pass:20}]
 };
 const worthNow = () => S.bal + S.inv.reduce((a,i)=>a+i.price,0);
 const TITLES = [
@@ -5035,6 +5273,7 @@ const TITLES = [
   {id:"vet",    n:"Ветеран",             c:"#f5a524", req:"достичь 10 уровня",            ok:()=>levelOf(xpOf(S)).lvl>=10,     pr:()=>[levelOf(xpOf(S)).lvl,10]},
   {id:"lucky",  n:"Счастливчик",         c:"#ec4899", req:"дроп дороже 1 000 000 ₽",      ok:()=>S.stats.best && S.stats.best.price>=1e6},
   {id:"mill",   n:"Миллионер",           c:"#fde68a", req:"состояние от 1 000 000 ₽",     ok:()=>worthNow()>=1e6,             pr:()=>[Math.floor(worthNow()),1e6]},
+  {id:"season", n:"Легенда сезона",      c:"#ff7a1a", req:"30 уровень сезонного пропуска", ok:()=>!!(S.deco && Array.isArray(S.deco.own) && S.deco.own.includes("title:season"))},
   {id:"tycoon", n:"Магнат",              c:"#ffd23a", req:"состояние от 100 000 000 ₽",   ok:()=>worthNow()>=1e8,             pr:()=>[Math.floor(worthNow()),1e8]}
 ];
 const TITLE_BY = Object.fromEntries(TITLES.map(t=>[t.id,t]));
@@ -5072,7 +5311,8 @@ function drawDeco(){
         <span class="dprev">${t.id ? `<span class="dtitle" style="--tc:${t.c}">${esc(t.n)}</span>` : '<span class="hint">—</span>'}</span>
         <b>${esc(t.n)}</b><small>${on ? "Выбран" : ok ? (t.id ? "Выбрать" : "Убрать титул") : "🔒 " + esc(t.req) + (pr ? ` · ${shortNum(pr[0])} / ${shortNum(pr[1])}` : "")}</small></button>`; }).join("");
   } else {
-    tiles = DECO[decoTab].map(o=>{ const key = decoTab+":"+o.id, own = !o.p || d.own.includes(key), on = d[decoTab]===o.id, afford = S.bal >= o.p;
+    tiles = DECO[decoTab].map(o=>{ const key = decoTab+":"+o.id, own = (!o.p && !o.pass) || d.own.includes(key), on = d[decoTab]===o.id, afford = S.bal >= o.p;
+      if(o.pass && !own) return `<button type="button" class="dtile locked" disabled><span class="dprev">${decoTab==="frame" ? `<span class="dfr dfr-${o.id}">${avatarOf(me,40)}</span>` : `<span class="dnick dnc-${o.id}"></span>`}</span><b>${esc(o.n)}</b><small>🔒 Пропуск, ${o.pass} уровень</small></button>`;
       const prev = decoTab==="frame" ? `<span class="dfr dfr-${o.id}">${avatarOf(me,40)}</span>`
         : `<span class="dnick dnc-${o.id}"></span>`;
       return `<button type="button" class="dtile${on?' on':''}${!own && !afford?' poor':''}" data-k="${decoTab}" data-id="${o.id}" data-p="${o.p}">
@@ -5272,6 +5512,7 @@ async function ctSign(){
   const st = ctStats(); st.n++; st.put = Math.round(st.put + sum); st.got = Math.round(st.got + got.price); const x = got.price/sum; if(x > st.best) st.best = x;
   S.recent = [got].concat(S.recent).slice(0,14);
   CT.sel.clear(); CT.last = {got, sum};
+  qsEvent("ct", 1);
   save(); renderHeader();
   // анимация: предметы «сжигаются» в слотах, контракт штампуется
   const slots = document.getElementById("ct-slots");
@@ -5409,6 +5650,7 @@ function mnCash(){
   S.mnGame = null;
   S.bal = Math.round((S.bal + won)*100)/100;
   const st = mnStats(); st.got = Math.round(st.got + won); if(x > st.best) st.best = x;
+  qsEvent("mines", 1);
   save(); renderHeader();
   if(S.sound){ beep(880,.08,.05,"triangle"); setTimeout(()=>beep(1320,.12,.05,"triangle"), 90); }
   mnDraw({mines:g.mines, open:g.open, boom:-1});
@@ -5433,7 +5675,7 @@ async function trAct(body){ return await CL.db.action("trade", body) || {}; }
 const trIncoming = () => TR.list.filter(t=>t.to===CL.id && t.state==="pending");
 function trBadge(){
   const n = trIncoming().length, d = document.getElementById("nav-tr-dot"), m = document.getElementById("nav-more-dot");
-  if(d) d.hidden = !n; if(m) m.hidden = !n;
+  if(d) d.hidden = !n; if(m) m.hidden = !(n || qsClaimable());
 }
 function trSettle(){
   const mine = trMine(); let ch = false;
@@ -5640,6 +5882,7 @@ function route(){
   document.getElementById("nav-crash").classList.toggle("on", h==="crash");
   document.getElementById("nav-ct").classList.toggle("on", h==="contract");
   document.getElementById("nav-mines").classList.toggle("on", h==="mines");
+  document.getElementById("nav-qs").classList.toggle("on", h==="quests");
   document.getElementById("nav-tr").classList.toggle("on", h==="trades" || h.startsWith("trade-"));
   document.getElementById("nav-bt").classList.toggle("on", h==="battles" || h.startsWith("battle-"));
   document.getElementById("nav-top").classList.toggle("on", h==="top");
@@ -5653,6 +5896,7 @@ function route(){
   if(h==="crash"){ if(document.getElementById("crc")) return; return viewCrash(); }
   if(h==="battles") return viewBattles();
   if(h==="mines") return viewMines();
+  if(h==="quests") return viewQuests();
   if(h==="trades") return viewTrades();
   if(h.startsWith("trade-new-")) return viewTradeNew(h.slice(10));
   if(h.startsWith("trade-")) return viewTrade(h.slice(6));
