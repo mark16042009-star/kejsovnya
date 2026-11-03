@@ -695,6 +695,7 @@ button,a,input,select,label{-webkit-tap-highlight-color:transparent;touch-action
 #adm-rtp{min-width:0;overflow:hidden}
 .rtp-table{max-width:100%}
 </style>
+<script>window.APP_BUILD="03.11 12:02";</script>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="adapter.js"></script>
 <link rel="icon" href="icon.png">
@@ -2304,7 +2305,7 @@ function viewAdmin(){
   if(!CL.owner){ app.innerHTML = `<div class="view-head"><h1>Админ</h1></div><div class="empty">Админ-панель доступна только владельцу страницы.</div>`; return; }
   const pctv = v => Math.round(v*100);
   app.innerHTML = `
-    <div class="view-head"><h1>Админ</h1></div>
+    <div class="view-head"><h1>Админ</h1><span class="hint">версия ${esc(String(window.APP_BUILD||"—"))}</span></div>
     <div class="stats" id="adm-sum"></div>
     <div class="adm">
       <section class="panel"><div class="ph"><h2>Лучшие дропы</h2></div>
