@@ -990,6 +990,21 @@ svg.ava rect{rx:4px}
 .dfr{border-radius:0}
 .dfr-fire::before,.dfr-rainbow::before{border-radius:0;clip-path:var(--notch)}
 h1,h2,h3{letter-spacing:.04em}
+/* блоки растут под содержимое: статистика, кнопки карточек, цена кейса */
+.stats{display:flex!important;flex-wrap:wrap}
+.stats .stat{flex:1 1 150px;min-width:max-content}
+.stat b{white-space:nowrap}
+.stat small{white-space:nowrap}
+.item-acts{display:flex;flex-wrap:wrap;gap:6px}
+.item-acts .btn{flex:1 1 auto;white-space:nowrap}
+.case-row{flex-wrap:wrap!important;gap:2px 8px}
+.case-row .price{white-space:nowrap;margin-left:auto}
+@media (min-width:761px){.contents{grid-template-columns:repeat(auto-fill,minmax(190px,1fr))!important}}
+.price,.num{white-space:nowrap}
+@media (min-width:761px){ nav a .nl,#nav-more .nl{white-space:nowrap!important} }
+@media (max-width:1460px) and (min-width:761px){ .logo b{display:none} }
+@media (max-width:1240px) and (min-width:761px){ .me-t{display:none} }
+.minis{grid-template-columns:repeat(auto-fill,minmax(120px,1fr))!important}
 /* текст не обрезаем многоточием: блок растёт под текст */
 .cell span,.cell span b,.mini small,.mini b,.me-t b,.me-t small,.row .who b,.drop span,.drop span b,.stake-it span,.d-who span,.cr-t small,.cr-t b,.adm-pl .who b,.bt-pc span,.bt-p b,.bv-head b,.bv-mi small,.mus-name,.adm-case b,nav a .nl,#nav-more .nl,.coll-h .hint,.daily-t span{white-space:normal!important;overflow:visible!important;text-overflow:clip!important;max-width:none!important;overflow-wrap:anywhere}
 .me-t b,.me-t small{white-space:nowrap!important}
@@ -1020,7 +1035,7 @@ h1,h2,h3{letter-spacing:.04em}
 #adm-rtp{min-width:0;overflow:hidden}
 .rtp-table{max-width:100%}
 </style>
-<script>window.APP_BUILD="03.11 15:18";</script>
+<script>window.APP_BUILD="03.11 15:22";</script>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="adapter.js"></script>
 <link rel="icon" href="icon.png">
@@ -2327,7 +2342,7 @@ function itemCard(it, opts={}){
     <div class="w">${it.st?'<span class="st">ST</span>':''}${esc(title(sk))}</div>
     <div class="n">${esc(sk.name)}</div>
     <div class="meta"><span title="${w.n}">${w.s} · <span class="num">${it.fl.toFixed(4)}</span></span><span class="price">${money(it.price)}</span></div>
-    ${opts.sell?`<div style="display:flex;gap:6px"><button class="btn sell" style="flex:1" data-sell="${it.id}">Продать</button><button class="btn sell" data-up="${it.id}" title="Отправить в апгрейд">Апгрейд</button></div>`:''}
+    ${opts.sell?`<div class="item-acts"><button class="btn sell" data-sell="${it.id}">Продать</button><button class="btn sell" data-up="${it.id}" title="Отправить в апгрейд">Апгрейд</button></div>`:''}
   </div>`;
 }
 
