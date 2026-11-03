@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Кейсовня — симулятор кейсов CS2</title>
+<title>ПиксельДроп — пиксельный симулятор кейсов</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Tiny5+Duo&display=swap" rel="stylesheet">
@@ -862,32 +862,87 @@ button,a,input,select,label{-webkit-tap-highlight-color:transparent;touch-action
 }
 
 .adm .panel{grid-template-columns:minmax(0,1fr)}
+/* ===== ПиксельДроп: удобство ===== */
+#nav-more{display:none}
+.more-sheet{display:none}
+nav a .nav-dot,#nav-more .nav-dot{position:absolute;top:10px;right:2px;width:8px;height:8px;border-radius:50%;background:var(--good);box-shadow:0 0 0 2px var(--bg2)}
+.nav-vault .nl{white-space:nowrap}
+.coll-chips{scrollbar-width:none}.coll-chips::-webkit-scrollbar{display:none}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.btn{transition:filter .15s,background .15s,border-color .15s}
+.btn:active:not(:disabled){transform:translateY(1px)}
+.case{transition:transform .15s,border-color .15s}
+@media (hover:hover){ .case:hover{transform:translateY(-2px)} }
+@media (max-width:1180px){ nav a{padding:0 9px;letter-spacing:.03em} }
+@media (max-width:1420px){ nav a.nav-vault{display:none} }
+@media (max-width:1180px) and (min-width:761px){ .logo b{display:none} .me-t{max-width:110px} }
+@media (max-width:960px) and (min-width:761px){ .me-t{display:none} nav a{padding:0 7px;font-size:12px} }
+.daily-days .sh{display:none}
+@media (max-width:1240px) and (min-width:981px){ .daily{grid-template-columns:auto 1fr auto} .daily-days{grid-column:1/-1;order:5} .daily-days li{flex:1} }
+@media (max-width:400px){ nav a .nl,#nav-more .nl{font-size:9px;letter-spacing:0} }
+@media (max-width:760px){ .daily-days .fl{display:none} .daily-days .sh{display:inline} .daily-days li{min-width:0;padding:5px 2px} }
+@media (max-width:760px){
+  nav a.nav-x{display:none!important}
+  nav a.nav-vault{display:none}
+  #nav-more{display:flex;flex:1;min-width:0;flex-direction:column;align-items:center;justify-content:center;gap:3px;height:62px;position:relative;background:none;border:0;color:var(--muted);font:inherit;font-size:10px;font-weight:800;letter-spacing:.02em;text-transform:uppercase;cursor:pointer}
+  #nav-more .ni{display:block}
+  #nav-more.on,#nav-more[aria-expanded="true"]{color:var(--accent)}
+  #nav-more .nav-dot{top:8px;right:calc(50% - 16px)}
+  nav a .nav-dot{top:8px;right:calc(50% - 16px)}
+  .more-sheet{position:fixed;left:8px;right:8px;bottom:calc(70px + env(safe-area-inset-bottom));z-index:41;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;padding:8px;background:rgba(24,24,24,.98);border:1px solid var(--line);border-radius:14px;box-shadow:0 -10px 40px rgba(0,0,0,.5);animation:sheetin .16s ease-out}
+  .more-sheet[hidden]{display:none}
+  .more-sheet a{position:relative;display:flex;align-items:center;gap:10px;padding:12px;border-radius:10px;background:var(--panel2);color:var(--text);text-decoration:none;font-weight:800;font-size:13px;text-transform:uppercase;letter-spacing:.03em}
+  .more-sheet a.on{color:var(--accent);outline:1px solid var(--accent)}
+  .more-sheet a .ni{display:block;flex:none}
+  .more-sheet .nav-dot{position:static;margin-left:auto}
+  /* шапка: только значок логотипа, чтобы влезли баланс и кнопки */
+  .logo b{display:none}
+  .logo svg{width:32px;height:32px}
+  .auth-btn{padding:6px 10px;font-size:13px}
+  nav a .nl,#nav-more .nl{font-size:10px}
+  /* коллекции — лентой с прокруткой пальцем */
+  .coll-chips{flex-wrap:nowrap;overflow-x:auto;margin:-4px -12px 14px;padding:0 12px}
+  .coll-chip{flex:none}
+  .coll-h h2{font-size:17px}
+  /* подарок, когда уже забран — компактной строкой */
+  .daily:not(.ready){padding:8px 12px;gap:10px}
+  .daily:not(.ready) .daily-days{display:none}
+  .daily:not(.ready) .daily-ic{width:24px;height:24px}
+  .daily,.vault-bar{margin-bottom:12px}
+  .vault-bar{padding:8px 12px;gap:10px}
+  .vault-bar .vb-ic{width:24px;height:24px}
+}
+@keyframes sheetin{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@media (min-width:761px){ .logo b{white-space:nowrap} }
 #adm-rtp{min-width:0;overflow:hidden}
 .rtp-table{max-width:100%}
 </style>
-<script>window.APP_BUILD="03.11 14:25";</script>
+<script>window.APP_BUILD="03.11 14:31";</script>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
-<script src="config.js?v=202611031225"></script>
-<script src="adapter.js?v=202611031225"></script>
+<script src="config.js?v=202611031231"></script>
+<script src="adapter.js?v=202611031231"></script>
 <link rel="icon" href="icon.png">
 </head>
 <body>
 <header>
   <div class="bar">
-    <a class="logo" href="#cases" aria-label="Кейсовня, на главную">
+    <a class="logo" href="#cases" aria-label="ПиксельДроп, на главную">
       <svg width="34" height="34" viewBox="0 0 34 34" aria-hidden="true"><rect x="3" y="9" width="28" height="20" rx="4" fill="#ffc800"/><rect x="3" y="9" width="28" height="6" rx="3" fill="#c99a00"/><rect x="13" y="5" width="8" height="5" rx="2" fill="none" stroke="#ffc800" stroke-width="2"/><rect x="14" y="14" width="6" height="6" rx="1" fill="#1a1204"/></svg>
-      <b>КЕЙСО<span>ВНЯ</span></b>
+      <b>ПИКСЕЛЬ<span>ДРОП</span></b>
     </a>
     <nav>
       <a href="#cases" id="nav-cases"><svg class="ni" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="8" width="18" height="12" rx="2"/><path d="M9 8V5h6v3M3 13h18"/></svg><span class="nl">Кейсы</span></a>
       <a href="#upgrade" id="nav-upg"><svg class="ni" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4l7 8h-4v8H9v-8H5z"/></svg><span class="nl">Апгрейд</span></a>
       <a href="#battles" id="nav-bt"><svg class="ni" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4l9 9M4 4h4M4 4v4M20 4l-9 9M20 4h-4M20 4v4M7 14l3 3-3 3-3-3zM17 14l-3 3 3 3 3-3z"/></svg><span class="nl">Батлы</span></a>
       <a href="#crash" id="nav-crash"><svg class="ni" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 20h18M4 18c6 0 10-4 15-13"/><path d="M15 5h4v4"/></svg><span class="nl">Краш</span></a>
-      <a href="#runner" id="nav-run"><svg class="ni" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 7v10M9.5 9.5h4a1.5 1.5 0 010 3h-3a1.5 1.5 0 000 3h4"/></svg><span class="nl">Заработать</span></a>
-      <a href="#top" id="nav-top"><svg class="ni" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 20V11M12 20V5M17 20v-6"/></svg><span class="nl">Рейтинг</span></a>
-      <a href="#admin" id="nav-admin" hidden><svg class="ni" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1"/></svg><span class="nl">Админ</span></a>
+      <a href="#runner" id="nav-run" class="nav-x"><svg class="ni" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 7v10M9.5 9.5h4a1.5 1.5 0 010 3h-3a1.5 1.5 0 000 3h4"/></svg><span class="nl">Заработать</span></a>
+      <a href="#top" id="nav-top" class="nav-x"><svg class="ni" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 20V11M12 20V5M17 20v-6"/></svg><span class="nl">Рейтинг</span></a>
+      <a href="#admin" id="nav-admin" class="nav-x" hidden><svg class="ni" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1"/></svg><span class="nl">Админ</span></a>
+      <a href="#vault" id="nav-vault" class="nav-x nav-vault"><svg class="ni" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="12" cy="12" r="4.5"/><path d="M12 7.5v2M12 14.5v2M7.5 12h2M14.5 12h2"/></svg><span class="nl">Хранилище</span><i class="nav-dot" id="nav-vault-dot" hidden></i></a>
       <a href="#profile" id="nav-inv"><svg class="ni" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4-6 8-6s7 2 8 6"/></svg><span class="nl">Профиль</span> <span class="cnt" id="inv-count">0</span></a>
+      <button type="button" id="nav-more" aria-expanded="false" aria-controls="more-sheet"><svg class="ni" viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg><span class="nl">Ещё</span><i class="nav-dot" id="nav-more-dot" hidden></i></button>
     </nav>
+    <div class="more-sheet" id="more-sheet" hidden></div>
     <div class="right">
     <a class="me" href="#profile" id="me" aria-label="Мой профиль"></a>
     <div class="wallet">
@@ -3571,6 +3626,7 @@ function viewCrash(){
 /* ---------- Ежедневный подарок ----------
  * Раз в календарный день. Серия из 7 дней: награда растёт, пропуск дня сбрасывает серию на первый день. */
 const DAILY_MULT = [1, 1.5, 2, 3, 4, 6, 10];
+const shortNum = v => v>=1e6 ? (Math.round(v/1e5)/10+"м").replace(".",",") : v>=1000 ? (Math.round(v/100)/10+"к").replace(".",",") : String(Math.round(v));
 const dayKey = d => d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
 function dailyState(){
   const d = S.daily && typeof S.daily==="object" ? S.daily : {last:"", streak:0};
@@ -3608,7 +3664,7 @@ function drawDaily(justGot){
     <svg class="daily-ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="9" width="18" height="12" rx="2"/><path d="M3 13h18M12 9v12M12 9c-2-4-7-4-7-1s4 1 7 1zm0 0c2-4 7-4 7-1s-4 1-7 1z"/></svg>
     <div class="daily-t"><b>Ежедневный подарок</b>
       <span>${st.ready ? `День ${st.day} из 7 — заходите каждый день, награда растёт` : justGot ? `Получено ${money(Math.round(DAILY_BASE*DAILY_MULT[(st.day-1)%7]))}! Следующий — через ${untilTomorrow()}` : `Следующий подарок через ${untilTomorrow()}`}</span></div>
-    <ol class="daily-days" aria-label="Серия дней">${DAILY_MULT.map((m,i)=>`<li class="${i<done?'got':''}${st.ready && i===st.day-1?' now':''}"><small>Д${i+1}</small>${money(DAILY_BASE*m).replace(/\s₽$/,"")}</li>`).join("")}</ol>
+    <ol class="daily-days" aria-label="Серия дней">${DAILY_MULT.map((m,i)=>`<li class="${i<done?'got':''}${st.ready && i===st.day-1?' now':''}"><small>Д${i+1}</small><span class="fl">${money(DAILY_BASE*m).replace(/\s₽$/,"")}</span><span class="sh">${shortNum(DAILY_BASE*m)}</span></li>`).join("")}</ol>
     ${st.ready ? `<button class="btn primary daily-go" id="daily-go">Забрать ${money(st.prize)}</button>` : ``}`;
   const b = document.getElementById("daily-go"); if(b) b.addEventListener("click", claimDaily);
   clearInterval(dailyTimer);
@@ -3948,7 +4004,7 @@ function vaultNext(){
   v.season++; v.claimed = 0; v.f = 0; v.last = null; save(); viewVault();
 }
 function vaultBadge(){
-  const b = document.getElementById("nav-vault-dot"); if(b) b.hidden = !vaultReady();
+  const b = document.getElementById("nav-vault-dot"); if(b) b.hidden = !vaultReady(); navMoreState();
   const box = document.getElementById("vault-bar"); if(box) drawVaultBar();
 }
 const fr = n => Math.floor(n).toLocaleString("ru-RU");
@@ -4013,6 +4069,27 @@ function viewVault(justClaimed){
   const n = document.getElementById("vault-next"); if(n) n.addEventListener("click", vaultNext);
 }
 
+
+/* ---------- Меню «Ещё» на телефоне ---------- */
+function drawMore(){
+  const sh = document.getElementById("more-sheet"); if(!sh) return;
+  const links = [...document.querySelectorAll("nav a.nav-x")].filter(a=>!a.hidden);
+  sh.innerHTML = links.map(a=>`<a href="${a.getAttribute("href")}" class="${a.classList.contains("on")?'on':''}">${a.querySelector("svg").outerHTML}<span>${a.querySelector(".nl").textContent}</span>${a.querySelector(".nav-dot") && !a.querySelector(".nav-dot").hidden ? '<i class="nav-dot"></i>' : ''}</a>`).join("");
+}
+function moreToggle(open){
+  const sh = document.getElementById("more-sheet"), b = document.getElementById("nav-more"); if(!sh || !b) return;
+  if(open===undefined) open = sh.hidden;
+  if(open) drawMore();
+  sh.hidden = !open; b.setAttribute("aria-expanded", String(open));
+}
+document.getElementById("nav-more").addEventListener("click", e=>{ e.stopPropagation(); moreToggle(); });
+document.addEventListener("click", e=>{ const sh = document.getElementById("more-sheet"); if(sh && !sh.hidden && !sh.contains(e.target)) moreToggle(false); });
+function navMoreState(){
+  const b = document.getElementById("nav-more"); if(!b) return;
+  b.classList.toggle("on", [...document.querySelectorAll("nav a.nav-x")].some(a=>a.classList.contains("on")));
+  const vd = document.getElementById("nav-vault-dot"), md = document.getElementById("nav-more-dot");
+  if(md && vd) md.hidden = vd.hidden;
+}
 /* ---------- Маршрутизация ---------- */
 function route(){
   const h = location.hash.slice(1);
@@ -4024,6 +4101,8 @@ function route(){
   document.getElementById("nav-bt").classList.toggle("on", h==="battles" || h.startsWith("battle-"));
   document.getElementById("nav-top").classList.toggle("on", h==="top");
   document.getElementById("nav-admin").classList.toggle("on", h==="admin");
+  document.getElementById("nav-vault").classList.toggle("on", h==="vault");
+  moreToggle(false); navMoreState();
   if(h==="admin") return viewAdmin();
   if(h==="profile") return viewProfile();
   if(h==="top" && LOCAL_ONLY){ location.replace("#cases"); return; }

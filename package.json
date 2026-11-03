@@ -1,7 +1,7 @@
 {
   "name": "kejsovnya-telegram",
   "version": "1.0.0",
-  "description": "Кейсовня — симулятор кейсов как Telegram Mini App",
+  "description": "ПиксельДроп — симулятор кейсов как Telegram Mini App",
   "main": "server.js",
   "private": true,
   "scripts": {

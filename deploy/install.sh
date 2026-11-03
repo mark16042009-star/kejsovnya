@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Установка «Кейсовни» как обычного сайта на Ubuntu/Debian VPS одной командой:
+# Установка «ПиксельДропа» как обычного сайта на Ubuntu/Debian VPS одной командой:
 #   curl -fsSL https://raw.githubusercontent.com/mark16042009-star/kejsovnya/main/deploy/install.sh | sudo bash
 # Повторный запуск безопасен: обновит код и настройки, данные игроков не трогает.
 set -euo pipefail

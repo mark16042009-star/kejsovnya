@@ -1,5 +1,5 @@
 /*
- * Сервер «Кейсовни» для Telegram Mini App. Без сторонних пакетов: нужен только Node.js 22+.
+ * Сервер «ПиксельДропа» для Telegram Mini App. Без сторонних пакетов: нужен только Node.js 22+.
  * - отдаёт сайт из папки public
  * - проверяет подпись Telegram (initData) и узнаёт игрока
  * - хранит данные: PostgreSQL (если задан DATABASE_URL и установлен пакет pg),
@@ -417,7 +417,7 @@ async function main() {
   });
 
   server.listen(PORT, HOST, () => {
-    console.log(`Кейсовня: http://${HOST === "0.0.0.0" ? "localhost" : HOST}:${PORT}  хранилище: ${store.kind}  админы: ${[...ADMINS].join(", ") || "не заданы"}`);
+    console.log(`ПиксельДроп: http://${HOST === "0.0.0.0" ? "localhost" : HOST}:${PORT}  хранилище: ${store.kind}  админы: ${[...ADMINS].join(", ") || "не заданы"}`);
     if (!BOT_TOKEN) console.log("Telegram не подключён: вход по логину и паролю.");
     if (DEV_USER) console.log(`Режим разработки: запросы без Telegram идут от "${DEV_USER}". Не включайте его на боевом сервере!`);
   });
@@ -446,7 +446,7 @@ async function startBot() {
         if (m && m.text && m.text.startsWith("/start")) {
           await tgApi("sendMessage", {
             chat_id: m.chat.id,
-            text: "Добро пожаловать в Кейсовню! Открывайте кейсы, делайте апгрейды и попадайте в рейтинг. Все деньги и предметы виртуальные.",
+            text: "Добро пожаловать в ПиксельДроп! Открывайте кейсы, делайте апгрейды и попадайте в рейтинг. Все деньги и предметы виртуальные.",
             reply_markup: { inline_keyboard: [[{ text: BUTTON_TEXT, web_app: { url: WEBAPP_URL } }]] }
           });
         }

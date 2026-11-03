@@ -1,5 +1,5 @@
 /*
- * «Кейсовня» — сервер на Cloudflare Workers + D1 (бесплатный тариф).
+ * «ПиксельДроп» — сервер на Cloudflare Workers + D1 (бесплатный тариф).
  * Делает то же, что server.js на VPS: аккаунты, сохранения, рейтинг, лента дропов, админка.
  *
  * Настройка в панели Cloudflare (Worker → Settings):
@@ -214,7 +214,7 @@ export default {
 
     const url = new URL(req.url);
     if (url.pathname === "/" || url.pathname === "/api" || url.pathname === "/api/") {
-      return json(200, { ok: true, name: "Кейсовня", hint: "Сервер работает. Игра открывается с GitHub Pages." });
+      return json(200, { ok: true, name: "ПиксельДроп", hint: "Сервер работает. Игра открывается с GitHub Pages." });
     }
     if (!env.DB) return json(500, { error: "База D1 не подключена: добавьте привязку с именем DB" });
 
