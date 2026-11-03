@@ -192,6 +192,45 @@ function tooMany(map, key, limit, windowMs) {
   return ++b.n > limit;
 }
 
+
+/* ---------------- Проверка подписки на канал (Telegram) ----------------
+ * Сайт присылает initData из Telegram. Проверяем подпись токеном бота (BOT_TOKEN),
+ * затем спрашиваем у Telegram, состоит ли игрок в канале TG_CHANNEL. */
+async function hmacRaw(key, msg) {
+  const k = await crypto.subtle.importKey("raw", typeof key === "string" ? new TextEncoder().encode(key) : key, { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+  return new Uint8Array(await crypto.subtle.sign("HMAC", k, new TextEncoder().encode(msg)));
+}
+async function tgUser(initData, token) {
+  if (!initData || !token) return null;
+  const params = new URLSearchParams(initData), hash = params.get("hash");
+  if (!hash) return null;
+  params.delete("hash");
+  const dataCheck = [...params.entries()].sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0)).map(([k, v]) => `${k}=${v}`).join("\n");
+  const secret = await hmacRaw("WebAppData", token);
+  const calc = [...await hmacRaw(secret, dataCheck)].map(b => b.toString(16).padStart(2, "0")).join("");
+  if (calc !== hash) return null;
+  if (Date.now() / 1000 - (Number(params.get("auth_date")) || 0) > 7 * 24 * 3600) return null;
+  try { return JSON.parse(params.get("user") || "null"); } catch (e) { return null; }
+}
+async function tgSubscription(env, body) {
+  const token = String(env.BOT_TOKEN || "").trim(), channel = String(env.TG_CHANNEL || "").trim();
+  if (!token || !channel) return { enabled: false };
+  const chat = /^-?\d+$/.test(channel) ? channel : "@" + channel.replace(/^@/, "").replace(/^https?:\/\/t\.me\//, "");
+  const link = /^-?\d+$/.test(channel) ? "" : "https://t.me/" + chat.slice(1);
+  const user = await tgUser(body && body.initData, token);
+  if (!user || !user.id) return { enabled: true, ok: false, link, channel: chat, error: "Не удалось подтвердить вход через Telegram. Откройте игру через бота." };
+  try {
+    const r = await fetch(`https://api.telegram.org/bot${token}/getChatMember?chat_id=${encodeURIComponent(chat)}&user_id=${user.id}`);
+    const j = await r.json();
+    if (!j.ok) return { enabled: true, ok: true, link, channel: chat, warn: "Telegram: " + (j.description || "ошибка") + ". Проверьте, что бот — администратор канала." };
+    const m = j.result || {}, st = m.status;
+    const ok = st === "creator" || st === "administrator" || st === "member" || (st === "restricted" && m.is_member);
+    return { enabled: true, ok, link, channel: chat };
+  } catch (e) {
+    return { enabled: true, ok: true, link, channel: chat, warn: "Telegram недоступен" }; // не блокируем игру из-за сбоя связи
+  }
+}
+
 /* ---------------- HTTP ---------------- */
 function corsHeaders(req, env) {
   const origin = req.headers.get("Origin") || "";
@@ -215,6 +254,11 @@ export default {
     const url = new URL(req.url);
     if (url.pathname === "/" || url.pathname === "/api" || url.pathname === "/api/") {
       return json(200, { ok: true, name: "ПиксельДроп", hint: "Сервер работает. Игра открывается с GitHub Pages." });
+    }
+    if (url.pathname === "/api/tgcheck" && req.method === "POST") {
+      let body = {};
+      try { body = JSON.parse((await req.text()).slice(0, 10000) || "{}"); } catch (e) {}
+      return json(200, await tgSubscription(env, body));
     }
     if (!env.DB) return json(500, { error: "База D1 не подключена: добавьте привязку с именем DB" });
 

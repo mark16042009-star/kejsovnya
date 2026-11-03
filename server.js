@@ -331,6 +331,21 @@ async function main() {
       const route = req.method + " " + url.pathname;
 
       // регистрация и вход
+      if (route === "POST /api/tgcheck") {
+        const body = await readBody(req).catch(() => ({}));
+        const channel = String(process.env.TG_CHANNEL || "").trim();
+        if (!BOT_TOKEN || !channel) return send(res, 200, { enabled: false });
+        const chat = /^-?\d+$/.test(channel) ? channel : "@" + channel.replace(/^@/, "");
+        const link = /^-?\d+$/.test(channel) ? "" : "https://t.me/" + chat.slice(1);
+        const u = checkInitData(body.initData);
+        if (!u || !u.id) return send(res, 200, { enabled: true, ok: false, link, channel: chat, error: "Откройте игру через бота." });
+        try {
+          const j = await (await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/getChatMember?chat_id=${encodeURIComponent(chat)}&user_id=${u.id}`)).json();
+          if (!j.ok) return send(res, 200, { enabled: true, ok: true, link, channel: chat, warn: j.description || "ошибка" });
+          const st = j.result.status;
+          return send(res, 200, { enabled: true, link, channel: chat, ok: st === "creator" || st === "administrator" || st === "member" || (st === "restricted" && j.result.is_member) });
+        } catch (e) { return send(res, 200, { enabled: true, ok: true, link, channel: chat, warn: "Telegram недоступен" }); }
+      }
       if (route === "POST /api/register" || route === "POST /api/login") {
         const ip = String(req.headers["x-forwarded-for"] || req.socket.remoteAddress || "").split(",")[0].trim();
         if (tooManyLogins(ip)) return send(res, 429, { error: "Слишком много попыток. Подождите минуту." });

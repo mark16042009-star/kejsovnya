@@ -166,6 +166,46 @@
     }
   };
 
+  /* ---------------- Проверка подписки на канал (только внутри Telegram) ---------------- */
+  if (initData) (function () {
+    var gate = null;
+    function hide() { if (gate) { gate.remove(); gate = null; } }
+    function show(j, manual) {
+      if (!gate) {
+        gate = document.createElement("div");
+        gate.id = "sub-gate";
+        gate.setAttribute("role", "dialog");
+        gate.style.cssText = "position:fixed;inset:0;z-index:9999;display:grid;place-items:center;padding:20px;background:#0f0f0f;font-family:inherit;color:#f2f2f2";
+        document.body.appendChild(gate);
+      }
+      var ch = String(j.channel || "");
+      gate.innerHTML =
+        '<div style="max-width:380px;width:100%;text-align:center;display:grid;gap:14px;background:#1c1c1c;padding:24px 20px;border:2px solid #2c2c2c;box-shadow:inset 0 -4px 0 rgba(0,0,0,.4)">' +
+        '<div style="font-size:44px;line-height:1">📢</div>' +
+        '<div style="font-size:22px">Подпишитесь на канал,<br>чтобы играть</div>' +
+        '<div style="color:#8e8e8e;font-size:14px;line-height:1.5">Новости, обновления и раздачи — в нашем канале<br><b style="color:#ffc800" id="sg-ch"></b></div>' +
+        (j.link ? '<button type="button" id="sg-open" style="font:inherit;font-size:16px;padding:14px;border:0;background:#ffc800;color:#1a1400;cursor:pointer;box-shadow:inset 0 -4px 0 rgba(0,0,0,.25)">Открыть канал</button>' : '') +
+        '<button type="button" id="sg-check" style="font:inherit;font-size:15px;padding:12px;border:2px solid #3a3a3a;background:#242424;color:#f2f2f2;cursor:pointer">Я подписался — проверить</button>' +
+        '<div id="sg-msg" style="min-height:18px;font-size:13px;color:#ef5350"></div></div>';
+      gate.querySelector("#sg-ch").textContent = ch;
+      var msg = gate.querySelector("#sg-msg");
+      if (j.error) msg.textContent = j.error;
+      else if (manual) msg.textContent = "Подписка пока не найдена. Подпишитесь и нажмите ещё раз.";
+      var o = gate.querySelector("#sg-open");
+      if (o) o.addEventListener("click", function () { try { if (tg && tg.openTelegramLink) tg.openTelegramLink(j.link); else window.open(j.link, "_blank"); } catch (e) { window.open(j.link, "_blank"); } });
+      gate.querySelector("#sg-check").addEventListener("click", function () { msg.style.color = "#8e8e8e"; msg.textContent = "Проверяю…"; check(true); });
+    }
+    function check(manual) {
+      return fetch(API + "/tgcheck", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ initData: initData }) })
+        .then(function (r) { return r.json(); })
+        .then(function (j) { if (!j || !j.enabled || j.ok) hide(); else show(j, manual); })
+        .catch(function () { hide(); }); // нет связи с сервером — не мешаем играть
+    }
+    document.addEventListener("visibilitychange", function () { if (!document.hidden && gate) check(true); });
+    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", function () { check(false); });
+    else check(false);
+  })();
+
   /* ---------------- Вход по логину и паролю (обычный сайт) ---------------- */
   if (initData && AUTH !== "token") return; // на VPS в Telegram вход автоматический, в Cloudflare-версии — по логину и паролю
   var LOCAL_KEY = "kejsovnya-rub-v1";
