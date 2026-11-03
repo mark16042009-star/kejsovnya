@@ -519,6 +519,27 @@ img,svg,canvas{-webkit-user-drag:none;user-drag:none}
 .adm-luck{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--muted)}
 .adm-luck select{background:var(--panel2);color:var(--text);border:1px solid var(--line);border-radius:8px;padding:6px 8px;font:inherit}
 .adm-pl.lucky .adm-luck select{border-color:var(--good);color:var(--good)} .adm-pl.unlucky .adm-luck select{border-color:var(--bad);color:var(--bad)}
+.cr-hist{display:flex;gap:6px;overflow:hidden;margin-bottom:10px;min-height:28px;align-items:center}
+.cr-chip{flex:none;font-family:var(--mono);font-size:13px;padding:4px 9px;border-radius:8px;background:var(--panel2);color:var(--muted);border:1px solid var(--line)}
+.cr-chip.hi{color:var(--good)} .cr-chip.gold{color:var(--accent);border-color:color-mix(in srgb,var(--accent) 40%,var(--line))}
+.cr-stage{position:relative;padding:0;overflow:hidden;margin-bottom:12px}
+.cr-stage canvas{display:block;width:100%;height:340px}
+.cr-over{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;gap:4px;padding-bottom:20px}
+.cr-big{font-size:64px;line-height:1;color:var(--text);font-family:var(--mono);text-shadow:0 2px 16px rgba(0,0,0,.6)}
+.cr-big.bad{color:var(--bad)} .cr-big.good{color:var(--good)}
+#cr-small{color:var(--muted);font-size:15px;text-shadow:0 1px 8px rgba(0,0,0,.8)}
+.cr-ctl{grid-template-columns:1fr 1fr auto;align-items:end;gap:14px}
+.cr-field{display:grid;gap:6px;min-width:0}
+.cr-field label{color:var(--muted);font-size:13px}
+.cr-row{display:flex;gap:6px;min-width:0}
+.cr-row input{flex:1;min-width:70px;background:var(--panel2);border:1px solid var(--line);border-radius:10px;color:var(--text);font:inherit;padding:8px 10px}
+.cr-q{display:flex;gap:4px;flex:none}
+.cr-q .btn{padding:6px 9px;font-size:13px}
+.cr-go{min-width:200px;padding:14px 18px;font-size:17px}
+.btn.primary.cr-go.cash{background:var(--good);border-color:var(--good);color:#06210f;box-shadow:0 0 24px rgba(62,207,110,.35)}
+#cr-msg{grid-column:1/-1}
+#cr-msg:empty{display:none}
+@media (max-width:820px){ .cr-ctl{grid-template-columns:1fr} .cr-go{width:100%} .cr-stage canvas{height:260px} .cr-big{font-size:48px} }
 .rtp-chip{background:color-mix(in srgb, var(--accent) 14%, var(--panel));border-color:color-mix(in srgb, var(--accent) 40%, var(--line))}
 .adm-case{grid-template-columns:10px minmax(0,1fr) 80px 64px auto auto}
 .adm-case input[data-f=rtp]{grid-row:1/span 2;grid-column:4}
@@ -695,7 +716,7 @@ button,a,input,select,label{-webkit-tap-highlight-color:transparent;touch-action
 #adm-rtp{min-width:0;overflow:hidden}
 .rtp-table{max-width:100%}
 </style>
-<script>window.APP_BUILD="03.11 12:02";</script>
+<script>window.APP_BUILD="03.11 12:53";</script>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="adapter.js"></script>
 <link rel="icon" href="icon.png">
@@ -710,6 +731,7 @@ button,a,input,select,label{-webkit-tap-highlight-color:transparent;touch-action
     <nav>
       <a href="#cases" id="nav-cases"><svg class="ni" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="8" width="18" height="12" rx="2"/><path d="M9 8V5h6v3M3 13h18"/></svg><span class="nl">Кейсы</span></a>
       <a href="#upgrade" id="nav-upg"><svg class="ni" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4l7 8h-4v8H9v-8H5z"/></svg><span class="nl">Апгрейд</span></a>
+      <a href="#crash" id="nav-crash"><svg class="ni" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 20h18M4 18c6 0 10-4 15-13"/><path d="M15 5h4v4"/></svg><span class="nl">Краш</span></a>
       <a href="#runner" id="nav-run"><svg class="ni" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 7v10M9.5 9.5h4a1.5 1.5 0 010 3h-3a1.5 1.5 0 000 3h4"/></svg><span class="nl">Заработать</span></a>
       <a href="#top" id="nav-top"><svg class="ni" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 20V11M12 20V5M17 20v-6"/></svg><span class="nl">Рейтинг</span></a>
       <a href="#admin" id="nav-admin" hidden><svg class="ni" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1"/></svg><span class="nl">Админ</span></a>
@@ -1388,7 +1410,7 @@ function topups(){ return S.top||0; }
 
 
 /* ---------- Вид: апгрейд ---------- */
-let UP_EDGE = 0.95, UP_MAX = 0.90; const UP_SEL = 6;
+let UP_EDGE = 0.95, UP_MAX = 0.90, CRASH_RTP = 0.95; const UP_SEL = 6;
 const CATALOG = [];
 function buildCatalog(){
 CATALOG.length = 0;
@@ -1899,7 +1921,7 @@ function publicProfile(){
   const xp = xpOf(S), t = S.stats;
   return {nick:S.profile.nick, av:{g:S.profile.av.g|0, c:S.profile.av.c|0}, img:validImg(S.profile.img)?S.profile.img:"", xp, lvl:levelOf(xp).lvl, worth:worthOf(S), bal:Math.round(S.bal),
     opened:t.opened, upg:t.upg, upgWin:t.upgWin, runs:t.runs, runBest:Math.floor(t.runBest), runEarned:t.runEarned,
-    rtp:{c:t.byCase, us:t.upgStake||0, ug:t.upgGot||0},
+    rtp:{c:t.byCase, us:t.upgStake||0, ug:t.upgGot||0, cs:(t.crash&&t.crash.bet)||0, cg:(t.crash&&t.crash.got)||0},
     best:pubItem(t.best), show:showcase(S), drops:S.recent.slice(0,10).map(pubDrop)};
 }
 function cleanProfile(id, d){
@@ -1910,7 +1932,7 @@ function cleanProfile(id, d){
     worth:n(d.worth), bal:n(d.bal), opened:n(d.opened), upg:n(d.upg), upgWin:n(d.upgWin), runs:n(d.runs), runBest:n(d.runBest), runEarned:n(d.runEarned),
     rtp:(()=>{ const r = d.rtp && typeof d.rtp==="object" ? d.rtp : {}; const c = {};
       if(r.c && typeof r.c==="object") Object.entries(r.c).forEach(([k,v])=>{ if(CASE_BY_ID[k] && Array.isArray(v)) c[k] = [n(v[0]), n(v[1]), n(v[2])]; });
-      return {c, us:n(r.us), ug:n(r.ug)}; })(),
+      return {c, us:n(r.us), ug:n(r.ug), cs:n(r.cs), cg:n(r.cg)}; })(),
     best:item(d.best), show:Array.isArray(d.show) ? d.show.map(item).filter(Boolean).slice(0,3) : [],
     drops:Array.isArray(d.drops) ? d.drops.slice(0,10).map(x=>{ const it=item(x); if(!it) return null; it.id=String(x.id||"").replace(/[^a-z0-9]/gi,"").slice(0,24)||Math.random().toString(36).slice(2,8); it.t=n(x.t); return it; }).filter(Boolean) : []};
 }
@@ -2211,17 +2233,17 @@ function renderFeed(){
 
 
 /* ---------- Общие настройки (их меняет владелец) ---------- */
-let CFG = {rtp:0.95, runRate:0.5, upMax:0.90, upEdge:0.95, start:4000, cases:{}, luck:{}, announce:{text:"", on:false, ts:0}, hidden:{}};
+let CFG = {rtp:0.95, runRate:0.5, upMax:0.90, upEdge:0.95, crashRtp:0.95, start:4000, cases:{}, luck:{}, announce:{text:"", on:false, ts:0}, hidden:{}};
 function applyConfig(raw){
   const c = raw || {};
   const n = (v,lo,hi,d)=>{ v = Number(v); return isFinite(v) ? Math.min(hi, Math.max(lo, v)) : d; };
   const obj = v => v && typeof v==="object" && !Array.isArray(v) ? v : {};
   const an = obj(c.announce);
-  CFG = {rtp:n(c.rtp,.3,.99,.95), runRate:n(c.runRate,.05,10,.5), upMax:n(c.upMax,.05,.95,.90), upEdge:n(c.upEdge,.3,1,.95),
+  CFG = {rtp:n(c.rtp,.3,.99,.95), runRate:n(c.runRate,.05,10,.5), upMax:n(c.upMax,.05,.95,.90), upEdge:n(c.upEdge,.3,1,.95), crashRtp:n(c.crashRtp,.3,.99,.95),
     start:Math.round(n(c.start,0,1e7,4000)), cases:obj(c.cases), hidden:obj(c.hidden),
     luck:Object.fromEntries(Object.entries(obj(c.luck)).filter(([k,v])=>typeof k==="string" && isFinite(Number(v)) && Number(v)>0 && Number(v)!==1).map(([k,v])=>[k, Math.min(5, Math.max(0.1, Number(v)))])),
     announce:{text:String(an.text||"").slice(0,300), on:!!an.on, ts:Number(an.ts)||0}};
-  RTP = CFG.rtp; RUB_PER_POINT = CFG.runRate; UP_MAX = CFG.upMax; UP_EDGE = CFG.upEdge; START = CFG.start;
+  RTP = CFG.rtp; RUB_PER_POINT = CFG.runRate; UP_MAX = CFG.upMax; UP_EDGE = CFG.upEdge; CRASH_RTP = CFG.crashRtp; START = CFG.start;
   CASES.forEach(cs=>{ const o = obj(CFG.cases[cs.id]); cs.price = Math.round(n(o.price,1,1e7,cs.defPrice)); cs.off = !!o.off; cs.isNew = o.isNew===undefined ? cs.defNew : !!o.isNew; const r = Number(o.rtp); cs.rtp = isFinite(r) && r>=0.3 && r<=0.99 ? r : null; });
   recomputeCases(); buildCatalog();
 }
@@ -2275,7 +2297,7 @@ function subscribeGrants(){
         toast("Ваш профиль снова в рейтинге");
       }
     });
-    if(changed){ S.applied = S.applied.slice(-100); save(); renderHeader(); if(!spinning && !upSpinning && location.hash!=="#runner") route(); }
+    if(changed){ S.applied = S.applied.slice(-100); save(); renderHeader(); if(!spinning && !upSpinning && location.hash!=="#runner" && location.hash!=="#crash") route(); }
   }, ()=>{});
 }
 
@@ -2322,6 +2344,7 @@ function viewAdmin(){
           <label for="e-run">Рублей за 1 очко забега<small>сейчас: ${rateText()}</small></label><input id="e-run" type="number" min="0.05" max="10" step="0.05" value="${CFG.runRate}">
           <label for="e-upmax">Макс. шанс апгрейда, %</label><input id="e-upmax" type="number" min="5" max="95" step="1" value="${pctv(CFG.upMax)}">
           <label for="e-upedge">RTP апгрейда, %<small>шанс = ставка × отдача ÷ цена цели</small></label><input id="e-upedge" type="number" min="30" max="100" step="1" value="${pctv(CFG.upEdge)}">
+          <label for="e-crash">RTP краша, %<small>шанс дожить до ×x = RTP ÷ x</small></label><input id="e-crash" type="number" min="30" max="99" step="1" value="${pctv(CFG.crashRtp)}">
           <label for="e-start">Стартовый баланс, ₽<small>для новых игроков и при сбросе</small></label><input id="e-start" type="number" min="0" step="100" value="${CFG.start}">
         </div>
         <div class="adm-row"><button class="btn primary" id="e-save">Сохранить</button><button class="btn" id="e-def">По умолчанию</button><span class="hint" id="e-msg"></span></div>
@@ -2356,13 +2379,13 @@ function viewAdmin(){
   // экономика
   document.getElementById("e-save").addEventListener("click", async ()=>{
     const v = id => Number(document.getElementById(id).value), m = document.getElementById("e-msg");
-    const patch = {rtp:v("e-rtp")/100, runRate:v("e-run"), upMax:v("e-upmax")/100, upEdge:v("e-upedge")/100, start:Math.round(v("e-start"))};
+    const patch = {rtp:v("e-rtp")/100, runRate:v("e-run"), upMax:v("e-upmax")/100, upEdge:v("e-upedge")/100, crashRtp:v("e-crash")/100, start:Math.round(v("e-start"))};
     if(Object.values(patch).some(x=>!isFinite(x) || x<0)){ flash(m, false, "Проверьте числа: нужны положительные значения."); return; }
     try{ await saveConfig(patch); drawAdminRtp(); flash(m, true, "Сохранено, уже действует у всех"); }catch(e){ flash(m, false, "Не сохранилось. Попробуйте ещё раз."); }
   });
   document.getElementById("e-def").addEventListener("click", ()=>{
     document.getElementById("e-rtp").value = 95; document.getElementById("e-run").value = 0.5; document.getElementById("e-upmax").value = 90;
-    document.getElementById("e-upedge").value = 95; document.getElementById("e-start").value = 4000;
+    document.getElementById("e-upedge").value = 95; document.getElementById("e-crash").value = 95; document.getElementById("e-start").value = 4000;
     flash(document.getElementById("e-msg"), true, "Значения по умолчанию подставлены, нажмите «Сохранить»");
   });
   // кейсы
@@ -2397,18 +2420,19 @@ function viewAdmin(){
 }
 function drawAdminRtp(){
   const box = document.getElementById("adm-rtp"); if(!box) return;
-  const agg = {}; let us = 0, ug = 0;
-  CL.list.forEach(p=>{ const r = p.rtp || {c:{}}; Object.entries(r.c||{}).forEach(([k,v])=>{ const a = agg[k] = agg[k] || [0,0,0]; a[0]+=v[0]; a[1]+=v[1]; a[2]+=v[2]; }); us += r.us||0; ug += r.ug||0; });
+  const agg = {}; let us = 0, ug = 0, cs = 0, cg = 0;
+  CL.list.forEach(p=>{ const r = p.rtp || {c:{}}; Object.entries(r.c||{}).forEach(([k,v])=>{ const a = agg[k] = agg[k] || [0,0,0]; a[0]+=v[0]; a[1]+=v[1]; a[2]+=v[2]; }); us += r.us||0; ug += r.ug||0; cs += r.cs||0; cg += r.cg||0; });
   const tot = Object.values(agg).reduce((a,v)=>[a[0]+v[0],a[1]+v[1],a[2]+v[2]],[0,0,0]);
   const pc = (w,sp)=> sp ? Math.round(w/sp*1000)/10 : null;
   const tgtCases = tot[1] ? Object.entries(agg).reduce((a,[k,v])=>a + (CASE_BY_ID[k].rtp||RTP)*v[1], 0)/tot[1] : RTP;
   const cell = (act, tgt, n) => act===null ? `<span class="hint">нет данных</span>`
     : `<b class="${act>=tgt*100?'pos':'neg'}">${String(act).replace(".",",")}%</b>${n<50?' <span class="hint">мало данных</span>':''}`;
-  const allSpent = tot[1] + us, allGot = tot[2] + ug;
+  const allSpent = tot[1] + us + cs, allGot = tot[2] + ug + cg;
   box.innerHTML = `
     <div class="stats" style="margin:0 0 12px">
       <div class="stat"><small>Кейсы: цель / факт</small><b>${Math.round(tgtCases*100)}% / ${pc(tot[2],tot[1])===null?'—':String(pc(tot[2],tot[1])).replace(".",",")+'%'}</b></div>
       <div class="stat"><small>Апгрейд: цель / факт</small><b>≤${Math.round(UP_EDGE*100)}% / ${pc(ug,us)===null?'—':String(pc(ug,us)).replace(".",",")+'%'}</b></div>
+      <div class="stat"><small>Краш: цель / факт</small><b>${Math.round(CRASH_RTP*100)}% / ${pc(cg,cs)===null?'—':String(pc(cg,cs)).replace(".",",")+'%'}</b></div>
       <div class="stat"><small>Всего: поставлено → вернулось</small><b>${money(allSpent)} → ${money(allGot)}</b></div>
       <div class="stat"><small>Общий RTP сайта</small><b>${allSpent ? String(pc(allGot,allSpent)).replace(".",",")+'%' : '—'}</b></div>
     </div>
@@ -2498,6 +2522,168 @@ function drawAdminPlayers(){
   });
 }
 
+/* ---------- Вид: краш ----------
+ * Множитель растёт от 1,00×, пока не «крашнется». Точка краша выбирается в начале раунда:
+ * P(краш ≥ x) = RTP / x, поэтому при любой стратегии средняя отдача равна RTP краша (× удача игрока). */
+const CR_K = 0.1; // скорость роста: ×2 примерно за 7 секунд, ×10 — за 23
+const crMult = ms => Math.floor(Math.exp(CR_K*ms/1000)*100)/100;
+const crTime = m => Math.log(m)/CR_K*1000;
+const fx = m => m.toFixed(2).replace(".",",")+"×";
+const CR = {state:"idle", bet:0, point:0, t0:0, auto:0, at:0, loop:0};
+function crashPoint(){
+  const R = Math.min(5, CRASH_RTP*myLuck()), u = Math.random();
+  return Math.min(10000, Math.max(1, Math.floor(R/(1-u)*100)/100));
+}
+function crStats(){ S.stats.crash = Object.assign({n:0, bet:0, got:0, best:0}, S.stats.crash||{}); return S.stats.crash; }
+function crHist(){ if(!Array.isArray(S.crHist)) S.crHist = []; return S.crHist; }
+function crStart(){
+  if(CR.state==="run") return;
+  const inp = document.getElementById("cr-bet"), ain = document.getElementById("cr-auto");
+  const bet = Math.floor(Number(String(inp.value).replace(",", ".")));
+  const auto = Number(String(ain.value).replace(",", "."));
+  const msg = document.getElementById("cr-msg");
+  if(!(bet>=1)){ msg.textContent = "Введите ставку от 1 ₽"; return; }
+  if(bet > S.bal){ msg.textContent = "Не хватает денег на балансе"; return; }
+  msg.textContent = "";
+  audio();
+  S.crBet = bet; S.crAuto = auto>1 ? Math.round(auto*100)/100 : 0;
+  S.bal = Math.round((S.bal-bet)*100)/100;
+  const st = crStats(); st.n++; st.bet = Math.round(st.bet + bet);
+  Object.assign(CR, {state:"run", bet, point:crashPoint(), t0:performance.now(), auto:S.crAuto, at:0});
+  save(); renderHeader(); crButtons();
+}
+function crCash(m){
+  if(CR.state!=="run" || !(m>1) || m>=CR.point) return;
+  CR.state = "cashed"; CR.at = m;
+  const won = Math.round(CR.bet*m);
+  S.bal = Math.round((S.bal+won)*100)/100;
+  const st = crStats(); st.got = Math.round(st.got + won); if(m > st.best) st.best = m;
+  crEnd();
+  if(S.sound){ beep(880,.08,.05,"triangle"); setTimeout(()=>beep(1320,.12,.05,"triangle"), 90); }
+}
+function crBust(){
+  if(CR.state!=="run") return;
+  CR.state = "crashed"; crEnd();
+  if(S.sound) beep(110,.35,.07,"sawtooth");
+}
+function crEnd(){
+  const h = crHist(); h.unshift(CR.point); S.crHist = h.slice(0,14);
+  save(); renderHeader(); crButtons(); crDrawHist();
+}
+/* если игрок ушёл со страницы посреди раунда: автовывод срабатывает, иначе ставка сгорает */
+function crLeave(){
+  if(CR.state!=="run") return;
+  if(CR.auto>1 && CR.auto<CR.point) crCash(CR.auto); else crBust();
+}
+function crButtons(){
+  const b = document.getElementById("cr-go"); if(!b) return;
+  const run = CR.state==="run";
+  b.classList.toggle("cash", run);
+  if(!run) b.textContent = "Поставить";
+  document.querySelectorAll("#cr-bet, #cr-auto, .cr-q button").forEach(x=>x.disabled = run);
+  const st = crStats();
+  const set = (id, v) => { const e = document.getElementById(id); if(e) e.textContent = v; };
+  set("cr-n", st.n); set("cr-best", st.best ? fx(st.best) : "—"); set("cr-rtp", st.bet ? Math.round(st.got/st.bet*100)+"%" : "—");
+}
+function crDrawHist(){
+  const box = document.getElementById("cr-hist"); if(!box) return;
+  const h = crHist();
+  box.innerHTML = h.length ? h.map(x=>`<span class="cr-chip${x>=10?' gold':x>=2?' hi':''}">${fx(x)}</span>`).join("") : `<span class="hint">Здесь будут последние раунды</span>`;
+}
+function crDraw(cv, now){
+  const dpr = window.devicePixelRatio||1, W = cv.clientWidth, H = cv.clientHeight;
+  if(cv.width !== Math.round(W*dpr) || cv.height !== Math.round(H*dpr)){ cv.width = Math.round(W*dpr); cv.height = Math.round(H*dpr); }
+  const g = cv.getContext("2d"); g.setTransform(dpr,0,0,dpr,0,0); g.clearRect(0,0,W,H);
+  const run = CR.state==="run";
+  const tNow = run ? now-CR.t0 : CR.state==="idle" ? 0 : crTime(CR.state==="cashed" ? Math.max(CR.at, 1) : CR.point);
+  const tEnd = CR.state==="idle" ? 0 : run ? tNow : crTime(CR.point);
+  const mShow = run ? Math.min(crMult(tNow), CR.point) : CR.state==="crashed" ? CR.point : CR.state==="cashed" ? CR.at : 1;
+  const tMax = Math.max(8000, tEnd*1.15), mMax = Math.max(2, Math.exp(CR_K*tEnd/1000)*1.2);
+  const L = 44, B = 26, T = 14, Rr = 14, pw = W-L-Rr, ph = H-B-T;
+  const X = t => L + t/tMax*pw, Y = m => T + ph - (m-1)/(mMax-1)*ph;
+  // сетка
+  g.font = "11px monospace"; g.fillStyle = "#6b6b6b"; g.strokeStyle = "#262626"; g.lineWidth = 1;
+  const step = mMax<=3 ? 0.5 : mMax<=6 ? 1 : mMax<=15 ? 2 : Math.pow(10, Math.floor(Math.log10(mMax)))/2;
+  for(let m = 1; m <= mMax; m += step){ const y = Y(m); g.beginPath(); g.moveTo(L,y); g.lineTo(W-Rr,y); g.stroke(); g.fillText(m.toFixed(m%1?1:0)+"×", 4, y+4); }
+  const ts = tMax<=12000 ? 2000 : tMax<=30000 ? 5000 : 10000;
+  for(let t = ts; t < tMax; t += ts){ g.fillText(Math.round(t/1000)+"с", X(t)-8, H-8); }
+  // кривая
+  if(CR.state!=="idle"){
+    const col = CR.state==="crashed" ? "#ef5350" : CR.state==="cashed" ? "#3ecf6e" : "#ffc800";
+    const N = 80, pts = [];
+    for(let i=0;i<=N;i++){ const t = tEnd*i/N; pts.push([X(t), Y(Math.exp(CR_K*t/1000))]); }
+    const grd = g.createLinearGradient(0,T,0,T+ph); grd.addColorStop(0, col+"55"); grd.addColorStop(1, col+"00");
+    g.beginPath(); g.moveTo(X(0), Y(1)); pts.forEach(p=>g.lineTo(p[0],p[1])); g.lineTo(pts[N][0], Y(1)); g.closePath(); g.fillStyle = grd; g.fill();
+    g.beginPath(); pts.forEach((p,i)=>i?g.lineTo(p[0],p[1]):g.moveTo(p[0],p[1])); g.strokeStyle = col; g.lineWidth = 3; g.lineJoin = "round"; g.stroke();
+    g.beginPath(); g.arc(pts[N][0], pts[N][1], 6, 0, Math.PI*2); g.fillStyle = col; g.fill();
+    if(CR.state==="cashed" && CR.at>1){ const x = X(crTime(CR.at)), y = Y(CR.at); g.beginPath(); g.arc(x,y,5,0,Math.PI*2); g.fillStyle="#fff"; g.fill(); }
+  }
+  // надпись
+  const big = document.getElementById("cr-big"), small = document.getElementById("cr-small");
+  if(big){
+    big.textContent = fx(mShow);
+    big.className = "cr-big" + (CR.state==="crashed" ? " bad" : CR.state==="cashed" ? " good" : "");
+    small.textContent = CR.state==="crashed" ? "Краш!" : CR.state==="cashed" ? `Забрали на ${fx(CR.at)} · +${money(Math.round(CR.bet*CR.at))}` : run ? (CR.auto>1 ? `автовывод на ${fx(CR.auto)}` : "") : "Сделайте ставку";
+  }
+}
+function viewCrash(){
+  const app = document.getElementById("app");
+  if(S.crBet===undefined) S.crBet = 100;
+  const st = crStats();
+  app.innerHTML = `
+    <div class="view-head">
+      <div><h1>Краш</h1><p class="sub">Множитель растёт, пока не «крашнется». Заберите выигрыш раньше. RTP ${Math.round(Math.min(5, CRASH_RTP*myLuck())*100)}%.</p></div>
+      <div class="run-stats">
+        <div class="stat"><small>Раундов</small><b class="num" id="cr-n">${st.n}</b></div>
+        <div class="stat"><small>Лучший вывод</small><b class="num" id="cr-best">${st.best ? fx(st.best) : "—"}</b></div>
+        <div class="stat"><small>Ваш RTP</small><b class="num" id="cr-rtp">${st.bet ? Math.round(st.got/st.bet*100)+"%" : "—"}</b></div>
+      </div>
+    </div>
+    <div class="cr-hist" id="cr-hist"></div>
+    <section class="panel cr-stage">
+      <canvas id="crc" aria-label="График множителя"></canvas>
+      <div class="cr-over"><b class="cr-big" id="cr-big">1,00×</b><span id="cr-small"></span></div>
+    </section>
+    <section class="panel cr-ctl">
+      <div class="cr-field"><label for="cr-bet">Ставка, ₽</label>
+        <div class="cr-row"><input id="cr-bet" type="number" min="1" step="1" inputmode="numeric" value="${esc(String(S.crBet||100))}">
+          <span class="cr-q"><button class="btn" data-b="half">½</button><button class="btn" data-b="x2">×2</button><button class="btn" data-b="max">Макс</button></span></div></div>
+      <div class="cr-field"><label for="cr-auto">Автовывод на</label>
+        <div class="cr-row"><input id="cr-auto" type="number" min="1.01" step="0.01" inputmode="decimal" placeholder="выкл." value="${S.crAuto>1 ? S.crAuto : ""}">
+          <span class="cr-q">${[1.5,2,5,10].map(x=>`<button class="btn" data-a="${x}">${String(x).replace(".",",")}×</button>`).join("")}</span></div></div>
+      <button class="btn primary cr-go" id="cr-go">Поставить</button>
+      <span class="hint" id="cr-msg"></span>
+    </section>`;
+  const bet = document.getElementById("cr-bet"), auto = document.getElementById("cr-auto");
+  app.querySelectorAll("[data-b]").forEach(b=>b.addEventListener("click",()=>{
+    const v = Math.floor(Number(bet.value)||0), k = b.dataset.b;
+    bet.value = Math.max(1, Math.floor(k==="half" ? v/2 : k==="x2" ? Math.min(v*2, S.bal) : S.bal));
+  }));
+  app.querySelectorAll("[data-a]").forEach(b=>b.addEventListener("click",()=>{ auto.value = auto.value===b.dataset.a ? "" : b.dataset.a; }));
+  document.getElementById("cr-go").addEventListener("click", ()=>{
+    if(CR.state==="run") crCash(crMult(performance.now()-CR.t0)); else crStart();
+  });
+  if(CR.state!=="run") CR.state = "idle";
+  crButtons(); crDrawHist();
+  const cv = document.getElementById("crc"), id = ++CR.loop;
+  let lastTick = 0;
+  function frame(now){
+    if(id!==CR.loop || !document.body.contains(cv)){ crLeave(); return; }
+    if(CR.state==="run"){
+      const t = now-CR.t0, m = crMult(t);
+      if(CR.auto>1 && CR.auto<CR.point && m>=CR.auto) crCash(CR.auto);
+      else if(m>=CR.point) crBust();
+      else {
+        const b = document.getElementById("cr-go"); if(b) b.textContent = `Забрать ${money(Math.round(CR.bet*m))}`;
+        if(S.sound && t-lastTick > 500){ lastTick = t; beep(400+Math.min(800, m*60), .02, .015); }
+      }
+    }
+    crDraw(cv, now);
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+}
+
 /* ---------- Маршрутизация ---------- */
 function route(){
   const h = location.hash.slice(1);
@@ -2505,6 +2691,7 @@ function route(){
   document.getElementById("nav-inv").classList.toggle("on", h==="inventory" || h==="profile");
   document.getElementById("nav-upg").classList.toggle("on", h==="upgrade");
   document.getElementById("nav-run").classList.toggle("on", h==="runner");
+  document.getElementById("nav-crash").classList.toggle("on", h==="crash");
   document.getElementById("nav-top").classList.toggle("on", h==="top");
   document.getElementById("nav-admin").classList.toggle("on", h==="admin");
   if(h==="admin") return viewAdmin();
@@ -2512,6 +2699,7 @@ function route(){
   if(h==="top" && LOCAL_ONLY){ location.replace("#cases"); return; }
   if(h==="top") return viewTop();
   if(h==="runner"){ if(document.getElementById("rc")) return; return viewRunner(); }
+  if(h==="crash"){ if(document.getElementById("crc")) return; return viewCrash(); }
   if(h==="upgrade"){ if(upSpinning && document.getElementById("needle")) return; return viewUpgrade(); }
   if(h==="inventory") return viewInventory();
   if(h.startsWith("case-") && CASE_BY_ID[h.slice(5)]){
