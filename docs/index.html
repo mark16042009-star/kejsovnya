@@ -1077,7 +1077,9 @@ body.wide-case main{max-width:none}
 @media (min-width:761px){ nav a .nl,#nav-more .nl{white-space:nowrap!important} }
 @media (max-width:1460px) and (min-width:761px){ .logo b{display:none} }
 @media (max-width:1240px) and (min-width:761px){ .me-t{display:none} }
-.minis{grid-template-columns:repeat(auto-fill,minmax(120px,1fr))!important}
+.minis{grid-template-columns:repeat(auto-fill,minmax(140px,1fr))!important}
+.mini .m-top{flex-wrap:wrap;gap:0 6px}
+@media (max-width:420px){ .minis{grid-template-columns:repeat(2,minmax(0,1fr))!important} }
 /* текст не обрезаем многоточием: блок растёт под текст */
 .cell span,.cell span b,.mini small,.mini b,.me-t b,.me-t small,.row .who b,.drop span,.drop span b,.stake-it span,.d-who span,.cr-t small,.cr-t b,.adm-pl .who b,.bt-pc span,.bt-p b,.bv-head b,.bv-mi small,.mus-name,.adm-case b,nav a .nl,#nav-more .nl,.coll-h .hint,.daily-t span{white-space:normal!important;overflow:visible!important;text-overflow:clip!important;max-width:none!important;overflow-wrap:anywhere}
 .me-t b,.me-t small{white-space:nowrap!important}
@@ -1108,10 +1110,10 @@ body.wide-case main{max-width:none}
 #adm-rtp{min-width:0;overflow:hidden}
 .rtp-table{max-width:100%}
 </style>
-<script>window.APP_BUILD="03.11 16:53";</script>
+<script>window.APP_BUILD="03.11 17:14";</script>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
-<script src="config.js?v=202611031453"></script>
-<script src="adapter.js?v=202611031453"></script>
+<script src="config.js?v=202611031514"></script>
+<script src="adapter.js?v=202611031514"></script>
 <link rel="icon" href="icon.png">
 </head>
 <body>
@@ -1284,7 +1286,10 @@ const CASES = [
    names:["Превью","Лайк","Дизлайк","Подписка","Колокольчик","Тренды","Шортс","Коллаб","Монтаж","Вирусное","Миллион просмотров","Серебро","Золотая кнопка"]},
   {id:"chat", name:"Мессенджер", price:150000, accent:"#38bdf8", isNew:true,
    pal:[["#04223f","#38bdf8"],["#0c4a6e","#7dd3fc"],["#0c2a4a","#e0f2fe"],["#0369a1","#ffffff"]],
-   names:["Стикер","Канал","Беседа","Бот","Голосовое","Кружок","Пересылка","Закреп","Реакция","Секретный чат","Премиум","Шифр","Облако"]}
+   names:["Стикер","Канал","Беседа","Бот","Голосовое","Кружок","Пересылка","Закреп","Реакция","Секретный чат","Премиум","Шифр","Облако"]},
+  {id:"rickroll", name:"RickRoll", price:100000000, accent:"#ff4fa3", isNew:true, elite:true,
+   pal:[["#1a0a2e","#ff4fa3"],["#0a1a3a","#22d3ee"],["#2a0a3a","#fde68a"],["#120024","#a78bfa"]],
+   names:["Кликбейт","Ссылка","Подвох","Сюрприз","Ловушка","Кассета","Синтипоп","Диско","Видеоклип","Хит-парад 80-х","Розыгрыш","Мем века","Легенда интернета"]}
 ];
 const LAYOUT = [0,0,0,1,1,1,2,2,2,3,3,4,4]; // редкость для каждого из 13 предметов кейса
 
@@ -1333,7 +1338,7 @@ const COLLECTIONS = [
   {id:"space",    name:"Космос и тайны",  desc:"Для охотников за легендами",          cases:["cosmos","abyss","legend"]},
   {id:"treasure", name:"Сокровищница", desc:"Золото, бриллианты и власть",         cases:["gold","diamond","empire"]},
   {id:"social",   name:"Соцсети",         desc:"Стримы, ролики и переписки",          cases:["stream","blog","chat"]},
-  {id:"elite",    name:"Элита",           desc:"Скины стоимостью до 100 миллионов",   cases:["million","titan","tycoon","galaxy"]}
+  {id:"elite",    name:"Элита",           desc:"Самые дорогие кейсы сайта",            cases:["million","titan","tycoon","galaxy","rickroll"]}
 ];
 CASES.forEach(c=>{ const k = COLLECTIONS.find(x=>x.cases.includes(c.id)); c.coll = k ? k.id : COLLECTIONS[0].id; });
 const plural = (n, a, b, c) => { const m = n%100, k = n%10; return m>10 && m<20 ? c : k===1 ? a : k>=2 && k<=4 ? b : c; };
@@ -1810,6 +1815,7 @@ xxxxxxxxxxxxxxmmxxxxx..xxxxxxxxxxx......
 };
 /* узор каждого скина по смыслу названия: [узор, основной, второй, акцент] */
 const LOOK = {
+  rickroll:[["neon","#120a24","#ff4fa3","#22d3ee"],["lined","#0a1a3a","#22d3ee","#ff4fa3"],["glitch","#ff4fa3","#22d3ee","#120024"],["bubbles","#3a0a5a","#ff4fa3","#ffd1ec"],["check","#1a0a2e","#ff4fa3","#22d3ee"],["hstripes","#1a1a1a","#fde68a","#ff4fa3"],["synth","#2a0f4a","#ff4fa3","#22d3ee"],["gem","#c0c8d0","#ffffff","#ff3ea5"],["scan","#1a0a2e","#a78bfa","#ffffff"],["stripes","#ff4fa3","#fde68a","#22d3ee"],["holo","#ffd1ec","#ffffff","#a5f3fc"],["burst","#ff4fa3","#fde68a","#ffffff"],["gold","#ff4fa3","#fff3c4","#ffffff"]],
   stream:[["coins","#2a1a4a","#fde68a","#ffffff"],["lined","#1a1030","#8b5cf6","#c4b5fd"],["dots","#8b5cf6","#fde68a","#ffffff"],["stripes","#6d28d9","#c4b5fd","#ffffff"],["lightning","#1a0a3a","#a78bfa","#ffffff"],["solid","#5b21b6","#a78bfa","#ffffff"],["scan","#2a1a4a","#8b5cf6","#ffffff"],["spots","#4c1d95","#c4b5fd","#1a0a3a"],["gem","#6d28d9","#e9d5ff","#ffffff"],["laser","#120a24","#a855f7","#ffffff"],["gold","#8b5cf6","#fde68a","#ffffff"],["stars","#0a0618","#3b1a6a","#c4b5fd"],["holo","#c4b5fd","#ffffff","#a78bfa"]],
   blog:[["check","#1a1a1a","#ef4444","#ffffff"],["solid","#ef4444","#fca5a5","#ffffff"],["noise","#3a3a3a","#5a5a5a","#ef4444"],["stripes","#b91c1c","#ffffff","#ef4444"],["gold","#a16207","#fde68a","#ffffff"],["chart","#140a0a","#ef4444","#3a1a1a"],["vstripes","#ef4444","#1a1a1a","#ffffff"],["swirl","#ef4444","#ffffff","#3b82f6"],["scan","#1a1a1a","#ef4444","#ffffff"],["bubbles","#7f1d1d","#ef4444","#fecaca"],["holo","#fecaca","#ffffff","#ef4444"],["metal","#9aa3ad","#e0e6ee","#ffffff"],["gold","#d4a017","#fff3c4","#ffffff"]],
   chat:[["dots","#38bdf8","#fde68a","#ffffff"],["lined","#0c2a4a","#38bdf8","#7dd3fc"],["bubbles","#0c4a6e","#38bdf8","#e0f2fe"],["circuit","#04223f","#38bdf8","#e0f2fe"],["waves","#0c4a6e","#38bdf8","#ffffff"],["rings","#0c2a4a","#38bdf8","#ffffff"],["stripes","#0284c7","#e0f2fe","#38bdf8"],["solid","#0369a1","#7dd3fc","#ffffff"],["spots","#38bdf8","#fde68a","#ef4444"],["void","#000000","#38bdf8","#04223f"],["gem","#7c3aed","#38bdf8","#ffffff"],["glitch","#38bdf8","#04223f","#ffffff"],["noise","#e0f2fe","#ffffff","#7dd3fc"]],
@@ -1940,6 +1946,19 @@ function art(sk){ return pixelArt(sk); }
 /* ---------- Пиксельные иллюстрации кейсов ----------
  * Сундук в цветах кейса и своя эмблема на нём, без фона. */
 const EMB = {
+  rickroll:{p:{a:"#8a8aa8",b:"#1a1a2e",r:"#ff4fa3",y:"#fde68a"}, s:`
+....kkkkkk....
+..kkbbbbbbkk..
+.kbbaabbbbbbk.
+kbbabbkkkbbbbk
+kbbbbkrrrkbbbk
+kbbbbkryrkbbbk
+kbbbbkrrrkbbbk
+kbbbbbkkkbbabk
+.kbbbbbbbbaak.
+..kkbbbbbbkk..
+....kkkkkk....
+..............`},
   stream:{p:{a:"#a78bfa",b:"#5b21b6",w:"#ffffff",r:"#ef4444"}, s:`
 .....kkkk.....
 ....kwaaak..rr
@@ -2674,6 +2693,7 @@ async function openCases(c, free){
     return {el, roll:el.parentElement, cells:el.children, step, cw, segs, seg:0, t0:null, from:0, x:0, done:false, hot:-1, plain:m==="plain"||m==="soft"};
   });
   if(!plain && S.sound) whoosh();
+  if(c.id==="rickroll") rrJingle();
   await new Promise(res=>{
     let lastNow = performance.now();
     function next(s, now){ s.seg++; s.t0 = now; s.from = s.x; if(s.seg>=s.segs.length) s.done = true; else if(s.segs[s.seg].hold && !S.fast) beep(80,.22,.07,"sine"); }
@@ -2852,6 +2872,23 @@ async function drawMusicCtl(){
   });
 }
 
+/* своя 8-битная мелодия в духе синти-попа 80-х — играет при открытии кейса RickRoll */
+function rrJingle(){
+  const a = audio(); if(!a || !S.sound) return;
+  const t0 = a.currentTime + 0.05, step = 60/138/2;
+  const note = n => 440*Math.pow(2,(n-69)/12);
+  const play = (type, n, t, d, v) => { const o = a.createOscillator(), g = a.createGain(); o.type = type; o.frequency.value = note(n);
+    g.gain.setValueAtTime(v, t); g.gain.exponentialRampToValueAtTime(0.0001, t+d); o.connect(g).connect(a.destination); o.start(t); o.stop(t+d+0.02); };
+  // аккорды: до — ля минор — фа — соль, по восьмым арпеджио вверх-вниз
+  const chords = [[60,64,67,72],[57,60,64,69],[53,57,60,65],[55,59,62,67]];
+  const shape = [0,1,2,3,2,1,2,3];
+  for(let bar=0; bar<6; bar++){
+    const ch = chords[bar%4];
+    shape.forEach((k,i)=>{ const t = t0 + (bar*8+i)*step; play("square", ch[k]+12, t, step*0.9, 0.035); });
+    play("triangle", ch[0]-12, t0 + bar*8*step, step*7.5, 0.12);
+    for(let i=0;i<8;i+=2) play("sine", 48, t0 + (bar*8+i)*step, 0.08, 0.18);
+  }
+}
 /* ---------- Результат открытия под рулеткой ---------- */
 function showCaseResult(wins, c){
   const box = document.getElementById("case-result"); if(!box) return;
@@ -3770,7 +3807,7 @@ function applyConfig(raw){
     luck:Object.fromEntries(Object.entries(obj(c.luck)).filter(([k,v])=>typeof k==="string" && isFinite(Number(v)) && Number(v)>0 && Number(v)!==1).map(([k,v])=>[k, Math.min(5, Math.max(0.1, Number(v)))])),
     announce:{text:String(an.text||"").slice(0,300), on:!!an.on, ts:Number(an.ts)||0}};
   RTP = CFG.rtp; RUB_PER_POINT = CFG.runRate; UP_MAX = CFG.upMax; UP_EDGE = CFG.upEdge; CRASH_RTP = CFG.crashRtp; CONTRACT_RTP = CFG.contractRtp; MINES_RTP = CFG.minesRtp; DAILY_BASE = CFG.dailyBase; VAULT_RATE = CFG.vaultRate; START = CFG.start;
-  CASES.forEach(cs=>{ const o = obj(CFG.cases[cs.id]); cs.price = Math.round(n(o.price,1,1e7,cs.defPrice)); cs.off = !!o.off; cs.isNew = o.isNew===undefined ? cs.defNew : !!o.isNew; const r = Number(o.rtp); cs.rtp = isFinite(r) && r>=0.3 && r<=0.99 ? r : null; });
+  CASES.forEach(cs=>{ const o = obj(CFG.cases[cs.id]); cs.price = Math.round(n(o.price,1,1e10,cs.defPrice)); cs.off = !!o.off; cs.isNew = o.isNew===undefined ? cs.defNew : !!o.isNew; const r = Number(o.rtp); cs.rtp = isFinite(r) && r>=0.3 && r<=0.99 ? r : null; });
   recomputeCases(); buildCatalog();
 }
 function subscribeConfig(){
