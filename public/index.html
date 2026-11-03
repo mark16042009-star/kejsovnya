@@ -447,6 +447,20 @@ img,svg,canvas{-webkit-user-drag:none;user-drag:none}
 .wheel-lost{font-family:var(--mono);font-size:20px;fill:var(--text)}
 
 .case-result{display:grid;gap:10px}
+.pp-head{display:flex;align-items:center;gap:18px;flex-wrap:wrap;margin-bottom:14px}
+.pp-main{flex:1 1 260px;display:grid;gap:8px;min-width:0}
+.pp-nick{font-size:26px;word-break:break-word}
+.pp-chips{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.pp-chip{font-size:12px;padding:4px 8px;background:var(--panel2);border:1px solid var(--line);color:var(--muted)}
+.pp-chip.pass{color:#1a1400;background:var(--accent);border-color:var(--accent)}
+.pp-acts{display:flex;gap:8px;flex-wrap:wrap}
+.pp-stats{margin:0 0 14px}
+.pp-cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px;margin-bottom:14px}
+#pp > section.panel{margin-bottom:14px}
+.pp-drop{display:grid;gap:4px}
+.pp-drop > small{font-size:10px;color:var(--muted);text-align:center}
+.drop[data-pid]{cursor:pointer}
+.tw-nick{color:var(--text);text-decoration:none;font-size:18px} .tw-nick:hover{text-decoration:underline}
 .nav-num{position:static;display:inline-grid;place-items:center;min-width:16px;height:16px;padding:0 3px;margin-left:4px;font-style:normal;font-size:10px;line-height:1;color:#111;background:var(--good)}
 .nav-num[hidden]{display:none}
 .qs-season{display:grid;gap:12px;margin-bottom:14px;border-top:3px solid var(--accent)}
@@ -1203,7 +1217,10 @@ body.wide-case main{max-width:none}
 }
 @media (min-width:761px){ nav a .nl,#nav-more .nl{white-space:nowrap!important} }
 @media (max-width:1460px) and (min-width:761px){ .logo b{display:none} }
-@media (min-width:761px){ nav a .nl{white-space:nowrap} }
+@media (min-width:761px){ body nav a span.nl{white-space:nowrap!important;overflow-wrap:normal!important} }
+.nl-s{display:none}
+@media (max-width:760px){ body nav a span.nl{white-space:nowrap!important;overflow-wrap:normal!important;font-size:9px!important;letter-spacing:0!important} nav a{min-width:0;padding-left:0!important;padding-right:0!important} .nl-f{display:none} .nl-s{display:inline} #nav-more .nl{font-size:9px!important;letter-spacing:0!important} }
+@media (max-width:380px){ body nav a span.nl,#nav-more .nl{font-size:8px!important} }
 @media (max-width:1240px) and (min-width:761px){ .me-t{display:none} }
 .minis{grid-template-columns:repeat(auto-fill,minmax(140px,1fr))!important}
 .mini .m-top{flex-wrap:wrap;gap:0 6px}
@@ -1239,7 +1256,7 @@ body.wide-case main{max-width:none}
 #adm-rtp{min-width:0;overflow:hidden}
 .rtp-table{max-width:100%}
 </style>
-<script>window.APP_BUILD="03.11 23:10";</script>
+<script>window.APP_BUILD="03.11 23:17";</script>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="adapter.js"></script>
 <link rel="icon" href="icon.png">
@@ -1254,12 +1271,12 @@ body.wide-case main{max-width:none}
     <nav>
       <a href="#cases" id="nav-cases"><svg class="ni" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="8" width="18" height="12" rx="2"/><path d="M9 8V5h6v3M3 13h18"/></svg><span class="nl">Кейсы</span></a>
       <a href="#upgrade" id="nav-upg"><svg class="ni" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4l7 8h-4v8H9v-8H5z"/></svg><span class="nl">Апгрейд</span></a>
+      <a href="#contract" id="nav-ct"><svg class="ni" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h9l4 4v14H6z"/><path d="M15 3v4h4M9 11h7M9 15h7M9 19h4"/></svg><span class="nl"><span class="nl-f">Контракты</span><span class="nl-s">Контр.</span></span></a>
       <a href="#battles" id="nav-bt"><svg class="ni" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4l9 9M4 4h4M4 4v4M20 4l-9 9M20 4h-4M20 4v4M7 14l3 3-3 3-3-3zM17 14l-3 3 3 3 3-3z"/></svg><span class="nl">Батлы</span></a>
       <a href="#crash" id="nav-crash"><svg class="ni" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 20h18M4 18c6 0 10-4 15-13"/><path d="M15 5h4v4"/></svg><span class="nl">Краш</span></a>
       <a href="#quests" id="nav-qs" class="nav-x"><svg class="ni" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v18l-6-4-6 4z"/><path d="M9 9l2 2 4-4"/></svg><span class="nl">Задания</span><i class="nav-dot" id="nav-qs-dot" hidden></i></a>
       <a href="#trades" id="nav-tr" class="nav-x"><svg class="ni" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h14l-4-4M20 16H6l4 4"/></svg><span class="nl">Трейды</span><i class="nav-dot" id="nav-tr-dot" hidden></i></a>
       <a href="#mines" id="nav-mines" class="nav-x"><svg class="ni" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="14" r="6"/><path d="M15 9l3-3M18 3v2M21 6h-2"/></svg><span class="nl">Мины</span></a>
-      <a href="#contract" id="nav-ct" class="nav-x"><svg class="ni" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h9l4 4v14H6z"/><path d="M15 3v4h4M9 11h7M9 15h7M9 19h4"/></svg><span class="nl">Контракты</span></a>
       <a href="#runner" id="nav-run" class="nav-x"><svg class="ni" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 7v10M9.5 9.5h4a1.5 1.5 0 010 3h-3a1.5 1.5 0 000 3h4"/></svg><span class="nl">Заработать</span></a>
       <a href="#top" id="nav-top" class="nav-x"><svg class="ni" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 20V11M12 20V5M17 20v-6"/></svg><span class="nl">Рейтинг</span></a>
       <a href="#admin" id="nav-admin" class="nav-x" hidden><svg class="ni" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1"/></svg><span class="nl">Админ</span></a>
@@ -3882,7 +3899,7 @@ function publicProfile(){
     opened:t.opened, upg:t.upg, upgWin:t.upgWin, runs:t.runs, runBest:Math.floor(t.runBest), runEarned:t.runEarned,
     deco:cleanDeco(myDeco()), admin:!!CL.owner,
     rtp:{c:t.byCase, us:t.upgStake||0, ug:t.upgGot||0, cs:(t.crash&&t.crash.bet)||0, cg:(t.crash&&t.crash.got)||0, ks:(t.contract&&t.contract.put)||0, kg:(t.contract&&t.contract.got)||0, ms:(t.mines&&t.mines.bet)||0, mg:(t.mines&&t.mines.got)||0},
-    best:pubItem(t.best), show:showcase(S), drops:S.recent.slice(0,10).map(pubDrop),
+    best:pubItem(t.best), show:showcase(S), drops:S.recent.slice(0,10).map(pubDrop), pass:(()=>{ try{ const q = qsState(); return {s:q.season, l:qsLevel(q.xp).lvl}; }catch(e){ return null; } })(),
     tinv:S.inv.slice().sort((a,b)=>b.price-a.price).slice(0,60).map(it=>Object.assign(pubItem(it), {id:String(it.id||"").slice(0,24)}))};
 }
 function cleanProfile(id, d){
@@ -3894,6 +3911,7 @@ function cleanProfile(id, d){
     rtp:(()=>{ const r = d.rtp && typeof d.rtp==="object" ? d.rtp : {}; const c = {};
       if(r.c && typeof r.c==="object") Object.entries(r.c).forEach(([k,v])=>{ if(CASE_BY_ID[k] && Array.isArray(v)) c[k] = [n(v[0]), n(v[1]), n(v[2])]; });
       return {c, us:n(r.us), ug:n(r.ug), cs:n(r.cs), cg:n(r.cg), ks:n(r.ks), kg:n(r.kg), ms:n(r.ms), mg:n(r.mg)}; })(),
+    pass: d.pass && typeof d.pass==="object" ? {s:String(d.pass.s||"").slice(0,7), l:Math.min(30, n(d.pass.l)|0)} : null,
     best:item(d.best), show:Array.isArray(d.show) ? d.show.map(item).filter(Boolean).slice(0,3) : [],
     drops:Array.isArray(d.drops) ? d.drops.slice(0,10).map(x=>{ const it=item(x); if(!it) return null; it.id=String(x.id||"").replace(/[^a-z0-9]/gi,"").slice(0,24)||Math.random().toString(36).slice(2,8); it.t=n(x.t); return it; }).filter(Boolean) : [],
     tinv:Array.isArray(d.tinv) ? d.tinv.slice(0,60).map(x=>{ const it=item(x); if(!it) return null; it.id=String(x.id||"").replace(/[^a-z0-9]/gi,"").slice(0,24); return it.id ? it : null; }).filter(Boolean) : []};
@@ -4015,6 +4033,7 @@ function subscribeTop(){
     CL.list = q.docs.filter(d=>d.exists).map(d=>cleanProfile(d.id, d.data())).filter(Boolean);
     if(!q.metadata.fromCache){ CL.loaded = true; CL.slow = false; clearTimeout(timer); }
     if(location.hash==="#top") drawBoard();
+    if(location.hash.startsWith("#player-")) drawPlayer();
     renderFeed();
     if(location.hash==="#admin") drawAdminPlayers();
   }, ()=>{ CL.err = true; clearTimeout(timer); if(location.hash==="#top") drawBoard(); });
@@ -4170,8 +4189,60 @@ function drawBoard(){
     const p = list[i], b = row.querySelector("[data-nick]");
     b.textContent = p.nick;
     if(p===mine){ const tag=document.createElement("span"); tag.className="you-tag"; tag.textContent="вы"; b.appendChild(tag); }
-    row.addEventListener("click",()=>showPlayer(p));
+    row.addEventListener("click",()=>{ location.hash = playerHref(p===mine ? CL.id : p.id); });
   });
+}
+
+/* ---------- Профиль другого игрока: #player-<id> ---------- */
+const playerHref = id => !id || id===CL.id || id==="me" ? "#profile" : "#player-" + encodeURIComponent(id);
+function boardPlace(p){
+  const all = CL.list.filter(q=>!q.admin && q.id!==CL.id);
+  if(!CL.owner && CL.id) all.push(Object.assign({id:CL.id}, publicProfile()));
+  all.sort((a,b)=>b.worth-a.worth);
+  const i = all.findIndex(q=>q.id===p.id); return i >= 0 ? i+1 : 0;
+}
+function viewPlayer(id){
+  if(id===CL.id){ location.replace("#profile"); return; }
+  document.getElementById("app").innerHTML = `<div class="view-head"><div><a class="back" href="#top" id="pp-back">← Назад</a><h1 style="margin-top:6px">Профиль игрока</h1></div></div><div id="pp" data-pid="${esc(id)}"></div>`;
+  document.getElementById("pp-back").addEventListener("click", e=>{ if(history.length > 1){ e.preventDefault(); history.back(); } });
+  drawPlayer();
+}
+function drawPlayer(){
+  const box = document.getElementById("pp"); if(!box) return;
+  const id = box.dataset.pid, p = CL.list.find(q=>q.id===id);
+  if(!p){
+    box.innerHTML = `<div class="empty">${LOCAL_ONLY || !CL.id ? "Профили других игроков видны после входа в аккаунт." : !CL.loaded ? "Загружаем профиль…" : "Игрок не найден или скрыл профиль."}</div>`;
+    return;
+  }
+  const place = p.admin ? 0 : boardPlace(p), inv = p.tinv || [], invSum = inv.reduce((a,it)=>a+it.price,0);
+  const pass = p.pass && p.pass.s === seasonKey(new Date()) ? p.pass.l : 0;
+  box.innerHTML = `
+    <section class="panel pp-head">
+      ${framed(p, avatarOf(p, 96))}
+      <div class="pp-main">
+        <h2 class="pp-nick ${nickCls(p)}" id="pp-nick"></h2>
+        <div class="pp-chips">${titleChip(p)}<span class="lvl">Уровень <b>${p.lvl}</b> · ${rankOf(p.lvl)}</span>${place ? `<span class="pp-chip">#${place} в рейтинге</span>` : p.admin ? `<span class="pp-chip">администратор</span>` : ""}${pass ? `<span class="pp-chip pass">пропуск · ур. ${pass}</span>` : ""}</div>
+      </div>
+      <div class="pp-acts">${trOn() ? `<a class="btn primary" href="#trade-new-${esc(p.id)}">Предложить обмен</a>` : ""}</div>
+    </section>
+    <div class="stats pp-stats">
+      <div class="stat"><small>Состояние</small><b>${money(p.worth)}</b></div>
+      <div class="stat"><small>Баланс</small><b>${money(p.bal)}</b></div>
+      <div class="stat"><small>Открыто кейсов</small><b>${fmtNum(p.opened)}</b></div>
+      <div class="stat"><small>Апгрейды</small><b>${fmtNum(p.upgWin)} / ${fmtNum(p.upg)}</b></div>
+      <div class="stat"><small>Рекорд забега</small><b>${fmtNum(Math.floor(p.runBest))}</b></div>
+      <div class="stat"><small>Лучший дроп</small><b class="best" style="color:${p.best?RAR[skinOf(p.best).rar].color:'var(--muted)'}">${p.best ? money(p.best.price) : "—"}</b></div>
+    </div>
+    <div class="pp-cols">
+      <section class="panel"><div class="ph"><h2>Витрина</h2></div>${p.show.length ? `<div class="won">${p.show.map(it=>itemCard(it)).join("")}</div>` : `<p class="hint">Витрина пуста.</p>`}</section>
+      <section class="panel"><div class="ph"><h2>Лучший дроп</h2></div>${p.best ? `<div class="won">${itemCard(p.best)}</div>` : `<p class="hint">Пока ничего.</p>`}</section>
+    </div>
+    <section class="panel"><div class="ph"><h2>Последние дропы</h2></div>
+      ${p.drops.length ? `<div class="minis pp-drops">${p.drops.map(it=>{ const [a, b] = srcLabel(it); return `<div class="pp-drop">${mini(it, 'tabindex="-1"', false)}<small>${a}${b ? " · "+b : ""}</small></div>`; }).join("")}</div>` : `<p class="hint">Игрок ещё ничего не выбил.</p>`}</section>
+    <section class="panel"><div class="ph"><h2>Инвентарь</h2><span class="hint">${inv.length ? `${inv.length >= 60 ? "60 самых дорогих" : inv.length + " " + plural(inv.length,"предмет","предмета","предметов")} · ${money(invSum)}` : ""}</span></div>
+      ${inv.length ? `<div class="minis">${inv.map(it=>mini(it, 'tabindex="-1"', false)).join("")}</div>` : `<p class="hint">Инвентарь пуст.</p>`}
+      <p class="hint">Показано состояние на момент последнего захода игрока.</p></section>`;
+  document.getElementById("pp-nick").textContent = p.nick;
 }
 function showPlayer(p){
   const modal = document.getElementById("modal");
@@ -4235,7 +4306,7 @@ function renderFeed(){
     ? items.map((x,i)=>{
         const it = x.it, sk = skinOf(it), k = keys[i], fresh = !first && !seen.has(k);
         const [sa, sb] = srcLabel(it);
-        return `<div class="drop${fresh?' enter':''}" tabindex="0" style="--rc:${RAR[sk.rar].color}" aria-label="${esc(title(sk)+' | '+sk.name)} — ${money(it.price)}. Откуда: ${sa}${sb?' · '+sb:''}">
+        return `<div class="drop${fresh?' enter':''}" tabindex="0" data-pid="${esc(x.who.id||"")}" style="--rc:${RAR[sk.rar].color}" aria-label="${esc(title(sk)+' | '+sk.name)} — ${money(it.price)}. Откуда: ${sa}${sb?' · '+sb:''}">
           <i class="d-src" aria-hidden="true"><small>Откуда</small><b>${sa}</b>${sb?`<small>${sb}</small>`:''}</i>
           ${art(sk)}<em class="d-price">${money(it.price)}</em>
           <span><b>${esc(sk.name)}</b>${it.st?'ST ':''}${esc(title(sk))}</span>
@@ -4243,6 +4314,7 @@ function renderFeed(){
       }).join("")
     : '<span class="feed-empty">Здесь появятся последние выпавшие предметы.</span>');
   feedSeen = new Set(keys);
+  feed.querySelectorAll(".drop[data-pid]").forEach(d=>d.addEventListener("click", ()=>{ location.hash = playerHref(d.dataset.pid); }));
   renderFeedQs();
 }
 
@@ -5748,7 +5820,7 @@ function drawTrades(){
 function twShell(title, partner){
   return `<div class="view-head"><div><h1>${title}</h1></div><a class="btn" href="#trades">← Все трейды</a></div>
     <div class="tw" id="tw">
-      <div class="tw-head">${partner ? framed(partner, avatarOf(partner,40)) : ""}<div><small>Обмен с игроком</small><b id="tw-nick" class="${partner ? nickCls(partner) : ""}"></b></div></div>
+      <div class="tw-head">${partner ? framed(partner, avatarOf(partner,40)) : ""}<div><small>Обмен с игроком</small><a id="tw-nick" class="tw-nick ${partner ? nickCls(partner) : ""}" href="${partner ? playerHref(partner.id) : '#top'}"></a></div></div>
       <div class="tw-offers">
         <section class="tw-side"><h3>Вы отдаёте</h3><div class="tw-box" id="tw-give"></div><div class="tw-coins" id="tw-gc"></div><div class="tw-total" id="tw-gt"></div></section>
         <div class="tw-swap" aria-hidden="true">⇄</div>
@@ -5889,7 +5961,7 @@ function route(){
   document.getElementById("nav-qs").classList.toggle("on", h==="quests");
   document.getElementById("nav-tr").classList.toggle("on", h==="trades" || h.startsWith("trade-"));
   document.getElementById("nav-bt").classList.toggle("on", h==="battles" || h.startsWith("battle-"));
-  document.getElementById("nav-top").classList.toggle("on", h==="top");
+  document.getElementById("nav-top").classList.toggle("on", h==="top" || h.startsWith("player-"));
   document.getElementById("nav-admin").classList.toggle("on", h==="admin");
   moreToggle(false); navMoreState();
   if(h==="admin") return viewAdmin();
@@ -5901,6 +5973,7 @@ function route(){
   if(h==="battles") return viewBattles();
   if(h==="mines") return viewMines();
   if(h==="quests") return viewQuests();
+  if(h.startsWith("player-")) return viewPlayer(decodeURIComponent(h.slice(7)));
   if(h==="trades") return viewTrades();
   if(h.startsWith("trade-new-")) return viewTradeNew(h.slice(10));
   if(h.startsWith("trade-")) return viewTrade(h.slice(6));
