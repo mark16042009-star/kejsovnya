@@ -129,7 +129,7 @@ async function battleAction(st, uid, owner, b) {
     const size = [2, 3, 4].includes(b.size) ? b.size : 2;
     const cost = Math.round(Number(b.cost));
     if (!cases.length) return { error: "Выберите кейсы" };
-    if (!(cost > 0) || cost > 1e9) return { error: "Неверная цена" };
+    if (!(cost > 0) || cost > 1e12) return { error: "Неверная цена" };
     const all = await st.list("battles", 1000);
     if (all.filter(x => x.data.by === uid && x.data.state === "open").length >= 3) return { error: "У вас уже 3 открытых батла" };
     let cleaned = 0; // старые батлы (старше двух суток) убираем понемногу
