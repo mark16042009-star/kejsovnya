@@ -339,6 +339,16 @@ footer p{margin:0}
 .upg-bottom .ph{padding:14px 16px;background:#202020;border-bottom:1px solid var(--line);align-items:center}
 .upg-bottom .minis{padding:12px}
 .filters{display:grid;grid-template-columns:1fr 90px 90px;gap:8px;padding:12px 12px 0}
+.up-sort-row{padding:10px 12px 0}
+.up-sort{display:inline-flex}
+.up-sort button{font-size:12px;padding:6px 10px}
+.mults-top{display:none}
+@media (max-width:760px){
+  .mults-top{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin:4px 0 2px}
+  .mults-top .btn{padding:10px 0;font-size:13px}
+  .ph .mults{display:none}
+  .up-sort{display:grid;grid-template-columns:1fr 1fr;width:100%}
+}
 .filters input{background:var(--panel2);border:1px solid var(--line);color:var(--text);padding:9px 12px;border-radius:10px;font:inherit;min-width:0;width:100%}
 #up-q{width:100%}
 
@@ -1266,10 +1276,10 @@ body.wide-case main{max-width:none}
 #adm-rtp{min-width:0;overflow:hidden}
 .rtp-table{max-width:100%}
 </style>
-<script>window.APP_BUILD="03.11 23:31";</script>
+<script>window.APP_BUILD="03.11 23:42";</script>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
-<script src="config.js?v=202611032131"></script>
-<script src="adapter.js?v=202611032131"></script>
+<script src="config.js?v=202611032142"></script>
+<script src="adapter.js?v=202611032142"></script>
 <link rel="icon" href="icon.png">
 </head>
 <body>
@@ -3464,12 +3474,13 @@ function viewUpgrade(){
       <section class="gauge" id="up-mid" aria-live="polite"></section>
       <section class="slot" id="up-goal" aria-label="Цель"></section>
     </div>
+    <div class="mults mults-top" aria-label="Прокачать до">${[1.5,2,3,5,10].map(x=>`<button class="btn" data-x="${x}">×${String(x).replace(".",",")}</button>`).join("")}</div>
     <div class="upg-go">
       <button class="btn primary up-go" id="up-go"></button>
       <label class="toggle" for="up-fast"><input type="checkbox" id="up-fast" ${S.fast?'checked':''}> Быстро</label>
     </div>
     <div class="upg-bottom">
-      <section class="panel"><div class="ph"><h2>Мой инвентарь</h2><span class="hint" id="up-selinfo"></span></div><div class="minis" id="up-inv"></div></section>
+      <section class="panel"><div class="ph"><h2>Мой инвентарь</h2><span class="hint" id="up-selinfo"></span></div><div class="up-sort-row"><div class="seg up-sort" role="group" aria-label="Сортировка по цене" data-sk="inv">${[["asc","По возрастанию"],["desc","По убыванию"]].map(([v,n])=>`<button type="button" data-sv="${v}" class="${upSortOf("inv")===v?'on':''}" aria-pressed="${upSortOf("inv")===v}">${n}</button>`).join("")}</div></div><div class="minis" id="up-inv"></div></section>
       <section class="panel"><div class="ph"><h2>Прокачать до</h2>
           <div class="mults">${[1.5,2,3,5,10].map(x=>`<button class="btn" data-x="${x}">×${String(x).replace(".",",")}</button>`).join("")}</div></div>
         <div class="filters">
@@ -3477,6 +3488,7 @@ function viewUpgrade(){
           <input id="up-min" type="number" min="0" inputmode="numeric" placeholder="₽ от" value="${esc(upMin)}" aria-label="Цена от">
           <input id="up-max" type="number" min="0" inputmode="numeric" placeholder="₽ до" value="${esc(upMax)}" aria-label="Цена до">
         </div>
+        <div class="up-sort-row"><div class="seg up-sort" role="group" aria-label="Сортировка по цене" data-sk="tg">${[["asc","По возрастанию"],["desc","По убыванию"]].map(([v,n])=>`<button type="button" data-sv="${v}" class="${upSortOf("tg")===v?'on':''}" aria-pressed="${upSortOf("tg")===v}">${n}</button>`).join("")}</div></div>
         <div class="minis" id="up-tg"></div></section>
     </div>`;
   document.getElementById("up-q").addEventListener("input",e=>{ upQuery=e.target.value.trim().toLowerCase(); drawUpTargets(); });
@@ -3484,6 +3496,11 @@ function viewUpgrade(){
   document.getElementById("up-max").addEventListener("input",e=>{ upMax=e.target.value; drawUpTargets(); });
   document.getElementById("up-fast").addEventListener("change",e=>{S.fast=e.target.checked;save();});
   document.getElementById("up-go").addEventListener("click",doUpgrade);
+  app.querySelectorAll(".up-sort [data-sv]").forEach(b=>b.addEventListener("click",()=>{
+    const k = b.closest(".up-sort").dataset.sk; S.upSort = Object.assign({}, S.upSort, {[k]: b.dataset.sv}); save();
+    b.parentElement.querySelectorAll("button").forEach(x=>{ x.classList.toggle("on", x===b); x.setAttribute("aria-pressed", x===b); });
+    if(k==="inv") drawUpInv(); else drawUpTargets();
+  }));
   app.querySelectorAll("[data-x]").forEach(b=>b.addEventListener("click",()=>{
     if(upSpinning) return;
     const st = upStake(); if(!st) return;
@@ -3499,9 +3516,11 @@ function viewUpgrade(){
   introNeedle();
 }
 
+const upSortOf = k => { const v = S.upSort && S.upSort[k]; return v==="asc" || v==="desc" ? v : (k==="inv" ? "desc" : "asc"); };
 function drawUpInv(){
   const box = document.getElementById("up-inv"); if(!box) return;
-  const items = S.inv.slice().sort((a,b)=>b.price-a.price);
+  const dir = upSortOf("inv")==="asc" ? 1 : -1;
+  const items = S.inv.slice().sort((a,b)=>(a.price-b.price)*dir);
   document.getElementById("up-selinfo").textContent = `${upSel.size} / ${UP_SEL}`;
   box.innerHTML = items.length ? items.map(it=>mini(it, `data-id="${it.id}"${upSpinning?' disabled':''}`, upSel.has(it.id))).join("")
     : `<p class="empty-note">Инвентарь пуст. <a href="#cases">Откройте кейс</a></p>`;
@@ -3517,7 +3536,8 @@ function drawUpInv(){
 function drawUpTargets(){
   const box = document.getElementById("up-tg"); if(!box) return;
   const st = upStake(), lo = +upMin || 0, hi = +upMax || Infinity;
-  const list = CATALOG.filter(t=>t.price>st && t.price>=lo && t.price<=hi && (!upQuery || upQuery.split(/\s+/).every(w=>t.text.includes(w)))).slice(0,60);
+  let list = CATALOG.filter(t=>t.price>st && t.price>=lo && t.price<=hi && (!upQuery || upQuery.split(/\s+/).every(w=>t.text.includes(w))));
+  list = (upSortOf("tg")==="desc" ? list.slice().reverse() : list).slice(0,60);
   box.innerHTML = list.length ? list.map(t=>mini(t, `data-k="${t.k}"${upSpinning?' disabled':''}`, upTarget===t)).join("")
     : `<p class="empty-note">Ничего не нашлось</p>`;
   // шанс на каждой цели, чтобы сразу было видно, на что есть смысл идти
