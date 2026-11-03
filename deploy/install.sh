@@ -18,7 +18,8 @@ command -v apt-get >/dev/null || fail "скрипт рассчитан на Ubun
 # ---------- Настройки ----------
 IP="$(curl -fsS4 --max-time 5 https://api.ipify.org 2>/dev/null || hostname -I | awk '{print $1}')"
 DEFAULT_DOMAIN="$(printf '%s' "$IP" | tr . -).sslip.io"
-OLD_TOKEN=""; OLD_ADMINS=""; OLD_DOMAIN=""
+OLD_TOKEN=""; OLD_ADMINS=""; OLD_DOMAIN=""; OLD_EMAIL=""
+[ -f /etc/caddy/Caddyfile ] && OLD_EMAIL="$(sed -n 's/^[[:space:]]*email[[:space:]]\+//p' /etc/caddy/Caddyfile | head -1)"
 if [ -f "$APP/.env" ]; then
   OLD_TOKEN="$(sed -n 's/^BOT_TOKEN=//p' "$APP/.env")"
   OLD_ADMINS="$(sed -n 's/^ADMIN_IDS=//p' "$APP/.env")"
@@ -36,6 +37,9 @@ fi
 [[ "$BOT_TOKEN" =~ ^[0-9]+:[A-Za-z0-9_-]{30,}$ ]] || fail "токен выглядит неверно. Он должен быть вида 1234567890:AAH... Скопируйте его из @BotFather."
 ADMIN_IDS="$(ask "Ваш Telegram ID для админки (узнать: @userinfobot) [${OLD_ADMINS}]: " "$OLD_ADMINS")"
 [[ "$ADMIN_IDS" =~ ^[0-9]+([,[:space:]]+[0-9]+)*$ ]] || fail "Telegram ID — это число, например 123456789. Несколько ID пишите через запятую."
+echo "Email для HTTPS-сертификата. С ним, если Let's Encrypt не сможет проверить сервер, сертификат выдаст ZeroSSL. На него приходят только уведомления о сертификате."
+EMAIL="$(ask "Email [${OLD_EMAIL}]: " "$OLD_EMAIL")"
+[ -z "$EMAIL" ] || [[ "$EMAIL" =~ ^[^@[:space:]]+@[^@[:space:]]+\.[^@[:space:]]+$ ]] || fail "email выглядит неверно."
 
 # ---------- Программы ----------
 say "Устанавливаю системные пакеты"
@@ -102,12 +106,10 @@ PrivateTmp=true
 WantedBy=multi-user.target
 EOF
 
-cat > /etc/caddy/Caddyfile <<EOF
-$DOMAIN {
-    encode gzip
-    reverse_proxy 127.0.0.1:3000
-}
-EOF
+{
+  if [ -n "$EMAIL" ]; then printf '{\n    email %s\n}\n\n' "$EMAIL"; fi
+  printf '%s {\n    encode gzip\n    reverse_proxy 127.0.0.1:3000\n}\n' "$DOMAIN"
+} > /etc/caddy/Caddyfile
 
 if command -v ufw >/dev/null && ufw status | grep -q "Status: active"; then
   ufw allow 22/tcp >/dev/null; ufw allow 80/tcp >/dev/null; ufw allow 443/tcp >/dev/null
@@ -130,12 +132,18 @@ if curl -fsS --max-time 8 -o /dev/null "https://api.telegram.org"; then
 else
   echo "ВНИМАНИЕ: сервер не достучался до api.telegram.org. Игра откроется, но бот не сможет отвечать на /start и ставить кнопку."
 fi
-echo "Жду HTTPS-сертификат (до минуты)..."
-for i in $(seq 1 20); do
-  if curl -fsS --max-time 5 -o /dev/null "https://$DOMAIN/"; then OK=1; break; fi
+echo "Жду HTTPS-сертификат (до двух минут)..."
+for i in $(seq 1 40); do
+  if curl -fsS --max-time 5 -o /dev/null "https://$DOMAIN/" 2>/dev/null; then OK=1; break; fi
   sleep 3
 done
-if [ "${OK:-}" = 1 ]; then echo "HTTPS работает."; else echo "HTTPS пока не отвечает. Подождите пару минут и откройте https://$DOMAIN в браузере. Лог: journalctl -u caddy -n 50"; fi
+if [ "${OK:-}" = 1 ]; then
+  echo "HTTPS работает."
+else
+  printf '\033[1;31mHTTPS пока не работает: сертификат не выдан.\033[0m Caddy продолжит попытки сам, проверьте через несколько минут: https://%s\n' "$DOMAIN"
+  if [ -z "$EMAIL" ]; then echo "Совет: запустите установку ещё раз и укажите email — тогда сертификат сможет выдать ZeroSSL."; fi
+  echo "Подробности: journalctl -u caddy -n 50 --no-pager"
+fi
 
 cat <<EOF
 
