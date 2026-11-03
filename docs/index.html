@@ -634,6 +634,37 @@ img,svg,canvas{-webkit-user-drag:none;user-drag:none}
   .bv-reel{height:104px}
 }
 @media (prefers-reduced-motion: reduce){ .bv-ready.pulse{animation:none} }
+.vault-bar{display:grid;grid-template-columns:auto minmax(0,1fr) auto minmax(80px,200px) auto;gap:14px;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:10px 16px;margin:-6px 0 18px;color:var(--text);text-decoration:none}
+.vault-bar:hover{border-color:#3a3a3a}
+.vault-bar.ready{border-color:color-mix(in srgb,var(--good) 55%,var(--line));background:linear-gradient(90deg,color-mix(in srgb,var(--good) 10%,var(--panel)),var(--panel) 60%)}
+.vb-ic{width:30px;height:30px;fill:none;stroke:var(--accent);stroke-width:1.6}
+.vb-t{display:grid;gap:2px;min-width:0} .vb-t small{color:var(--muted);font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.vb-locks{display:flex;gap:4px}
+.vb-locks i{width:12px;height:12px;border-radius:3px;border:1px solid #444;background:#1a1a1a}
+.vb-locks i.open{background:var(--accent);border-color:var(--accent)} .vb-locks i.ready{border-color:var(--good);background:color-mix(in srgb,var(--good) 40%,#1a1a1a);animation:bvpulse 1.2s infinite}
+.vb-prog{display:block;height:8px;border-radius:5px;background:#262626;overflow:hidden}
+.vb-prog i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:5px}
+.vb-prog.big{height:12px}
+.vault-bar .btn{padding:6px 12px;font-size:13px}
+.vault-wrap{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px;align-items:start}
+.vault-door-p{justify-items:center;text-align:center}
+.vault-door{width:100%;max-width:320px;height:auto}
+.vwheel{transform-origin:150px 150px;transition:transform 1.4s cubic-bezier(.2,.8,.2,1)}
+.vault-door.open .vwheel{transform:rotate(720deg) !important}
+.vlock circle{fill:#202020;stroke:#444;stroke-width:2} .vlock text{fill:var(--muted);font-size:12px;font-family:monospace}
+.vlock.open circle{fill:var(--accent);stroke:var(--accent)} .vlock.open text{fill:var(--accent-ink)}
+.vlock.ready circle{stroke:var(--good);fill:color-mix(in srgb,var(--good) 30%,#202020)} .vlock.ready text{fill:#fff}
+.vault-prog{display:grid;gap:6px;width:100%;max-width:420px;color:var(--muted);font-size:13px}
+.vault-go{padding:12px 18px;min-width:240px}
+.vault-got{color:var(--good);font-size:16px;margin:0}
+.vault-list{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.vault-list li{display:grid;grid-template-columns:90px 110px 1fr;gap:10px;align-items:center;padding:8px 10px;border-radius:8px;background:var(--panel2);font-size:14px}
+.vault-list li span{color:var(--muted);font-size:13px} .vault-list li em{font-style:normal;color:var(--accent);text-align:right}
+.vault-list li.done{opacity:.55} .vault-list li.done em{text-decoration:line-through}
+.vault-list li.now{outline:1px solid var(--accent)}
+.vault-how{margin:0;padding-left:18px;display:grid;gap:4px;color:var(--muted);font-size:14px} .vault-how b{color:var(--text)}
+.nav-dot{position:absolute;top:8px;right:4px;width:8px;height:8px;border-radius:50%;background:var(--good)}
+@media (max-width:820px){ .vault-wrap{grid-template-columns:1fr} .vault-bar{grid-template-columns:auto minmax(0,1fr) auto} .vb-locks{display:none} .vb-prog{grid-column:1/-1;order:5} .vault-list li{grid-template-columns:1fr auto} .vault-list li em{grid-column:1/-1;text-align:left} }
 .rtp-chip{background:color-mix(in srgb, var(--accent) 14%, var(--panel));border-color:color-mix(in srgb, var(--accent) 40%, var(--line))}
 .adm-case{grid-template-columns:10px minmax(0,1fr) 80px 64px auto auto}
 .adm-case input[data-f=rtp]{grid-row:1/span 2;grid-column:4}
@@ -810,10 +841,10 @@ button,a,input,select,label{-webkit-tap-highlight-color:transparent;touch-action
 #adm-rtp{min-width:0;overflow:hidden}
 .rtp-table{max-width:100%}
 </style>
-<script>window.APP_BUILD="03.11 13:36";</script>
+<script>window.APP_BUILD="03.11 13:45";</script>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
-<script src="config.js?v=202611031136"></script>
-<script src="adapter.js?v=202611031136"></script>
+<script src="config.js?v=202611031145"></script>
+<script src="adapter.js?v=202611031145"></script>
 <link rel="icon" href="icon.png">
 </head>
 <body>
@@ -1221,9 +1252,10 @@ function viewCases(){
   const app = document.getElementById("app");
   if(!CASE_SORTS[S.caseSort]) S.caseSort = "price-asc";
   const f = S.caseFilter = Object.assign({q:"", min:"", max:""}, S.caseFilter||{});
-  queueMicrotask(()=>drawDaily());
+  queueMicrotask(()=>{ drawDaily(); drawVaultBar(); });
   app.innerHTML = `
     <section class="daily" id="daily" aria-live="polite" hidden></section>
+    <a class="vault-bar" id="vault-bar" href="#vault"></a>
     <div class="view-head"><h1>Кейсы</h1>
       <form class="case-tools" id="case-tools" role="search">
         <input id="cf-q" type="search" placeholder="Поиск по названию" value="${esc(f.q)}" aria-label="Поиск кейса по названию" autocomplete="off">
@@ -1354,6 +1386,7 @@ async function openCases(c){
   audio();
   S.bal = Math.round((S.bal-cost)*100)/100;
   S.stats.opened += n; S.stats.spent = Math.round((S.stats.spent+cost)*100)/100;
+  vaultAdd(cost);
   const wins = Array.from({length:n},()=>roll(c));
   // сразу кладём в инвентарь, чтобы ничего не потерялось при уходе со страницы
   const bc = S.stats.byCase[c.id] = S.stats.byCase[c.id] || [0,0,0]; // [открыто, потрачено, выпало]
@@ -1533,7 +1566,7 @@ function topups(){ return S.top||0; }
 
 
 /* ---------- Вид: апгрейд ---------- */
-let UP_EDGE = 0.95, UP_MAX = 0.90, CRASH_RTP = 0.95, DAILY_BASE = 50000; const UP_SEL = 6;
+let UP_EDGE = 0.95, UP_MAX = 0.90, CRASH_RTP = 0.95, DAILY_BASE = 50000, VAULT_RATE = 100; const UP_SEL = 6;
 const CATALOG = [];
 function buildCatalog(){
 CATALOG.length = 0;
@@ -1738,6 +1771,7 @@ async function doUpgrade(){
   }
   S.stats.upg++;
   S.stats.upgStake = Math.round((S.stats.upgStake||0) + st);
+  vaultAdd(st);
   if(win) S.stats.upgGot = Math.round((S.stats.upgGot||0) + t.price);
   save();
   upSpinning = true;
@@ -2044,6 +2078,7 @@ function publicProfile(){
   const xp = xpOf(S), t = S.stats;
   return {nick:S.profile.nick, av:{g:S.profile.av.g|0, c:S.profile.av.c|0}, img:validImg(S.profile.img)?S.profile.img:"", xp, lvl:levelOf(xp).lvl, worth:worthOf(S), bal:Math.round(S.bal),
     opened:t.opened, upg:t.upg, upgWin:t.upgWin, runs:t.runs, runBest:Math.floor(t.runBest), runEarned:t.runEarned,
+    vault:vaultLocks(),
     rtp:{c:t.byCase, us:t.upgStake||0, ug:t.upgGot||0, cs:(t.crash&&t.crash.bet)||0, cg:(t.crash&&t.crash.got)||0},
     best:pubItem(t.best), show:showcase(S), drops:S.recent.slice(0,10).map(pubDrop)};
 }
@@ -2052,7 +2087,7 @@ function cleanProfile(id, d){
   const n = v => { v = Number(v); return isFinite(v) && v>=0 ? v : 0; };
   const item = it => (it && validItem({...it, price:n(it.price), fl:n(it.fl)})) ? {c:it.c, s:it.s|0, w:it.w|0, st:!!it.st, price:n(it.price), fl:n(it.fl)} : null;
   return {id, nick:String(d.nick||"Игрок").slice(0,20), av:{g:(d.av&&d.av.g)|0, c:(d.av&&d.av.c)|0}, img:validImg(d.img)?d.img:"", xp:n(d.xp), lvl:Math.max(1,n(d.lvl)|0),
-    worth:n(d.worth), bal:n(d.bal), opened:n(d.opened), upg:n(d.upg), upgWin:n(d.upgWin), runs:n(d.runs), runBest:n(d.runBest), runEarned:n(d.runEarned),
+    worth:n(d.worth), bal:n(d.bal), opened:n(d.opened), upg:n(d.upg), upgWin:n(d.upgWin), runs:n(d.runs), runBest:n(d.runBest), runEarned:n(d.runEarned), vault:Math.min(999, n(d.vault)|0),
     rtp:(()=>{ const r = d.rtp && typeof d.rtp==="object" ? d.rtp : {}; const c = {};
       if(r.c && typeof r.c==="object") Object.entries(r.c).forEach(([k,v])=>{ if(CASE_BY_ID[k] && Array.isArray(v)) c[k] = [n(v[0]), n(v[1]), n(v[2])]; });
       return {c, us:n(r.us), ug:n(r.ug), cs:n(r.cs), cg:n(r.cg)}; })(),
@@ -2288,7 +2323,7 @@ function drawBoard(){
   else note.textContent = `Игроков в рейтинге: ${CL.list.length || 1}.`;
   box.innerHTML = list.map((p,i)=>`<button class="row${p===mine?' you':''}${i<3?' p'+(i+1):''}" data-pid="${esc(p.id)}">
       <span class="place">#${i+1}</span>${avatarOf(p,40)}
-      <span class="who"><b data-nick></b><small>ур. ${p.lvl} · ${rankOf(p.lvl)} · кейсов: ${p.opened}</small></span>
+      <span class="who"><b data-nick></b><small>ур. ${p.lvl} · ${rankOf(p.lvl)} · кейсов: ${p.opened}${p.vault ? ` · замков: ${p.vault}` : ""}</small></span>
       <span class="val">${T.fmt(T.val(p),p)}</span></button>`).join("");
   box.querySelectorAll(".row").forEach((row,i)=>{
     const p = list[i], b = row.querySelector("[data-nick]");
@@ -2357,17 +2392,17 @@ function renderFeed(){
 
 
 /* ---------- Общие настройки (их меняет владелец) ---------- */
-let CFG = {rtp:0.95, runRate:0.5, upMax:0.90, upEdge:0.95, crashRtp:0.95, dailyBase:50000, start:4000, cases:{}, luck:{}, announce:{text:"", on:false, ts:0}, hidden:{}};
+let CFG = {rtp:0.95, runRate:0.5, upMax:0.90, upEdge:0.95, crashRtp:0.95, dailyBase:50000, vaultRate:100, start:4000, cases:{}, luck:{}, announce:{text:"", on:false, ts:0}, hidden:{}};
 function applyConfig(raw){
   const c = raw || {};
   const n = (v,lo,hi,d)=>{ v = Number(v); return isFinite(v) ? Math.min(hi, Math.max(lo, v)) : d; };
   const obj = v => v && typeof v==="object" && !Array.isArray(v) ? v : {};
   const an = obj(c.announce);
-  CFG = {rtp:n(c.rtp,.3,.99,.95), runRate:n(c.runRate,.05,10,.5), upMax:n(c.upMax,.05,.95,.90), upEdge:n(c.upEdge,.3,1,.95), crashRtp:n(c.crashRtp,.3,.99,.95), dailyBase:Math.round(n(c.dailyBase,0,1e7,50000)),
+  CFG = {rtp:n(c.rtp,.3,.99,.95), runRate:n(c.runRate,.05,10,.5), upMax:n(c.upMax,.05,.95,.90), upEdge:n(c.upEdge,.3,1,.95), crashRtp:n(c.crashRtp,.3,.99,.95), dailyBase:Math.round(n(c.dailyBase,0,1e7,50000)), vaultRate:n(c.vaultRate,1,1e6,100),
     start:Math.round(n(c.start,0,1e7,4000)), cases:obj(c.cases), hidden:obj(c.hidden),
     luck:Object.fromEntries(Object.entries(obj(c.luck)).filter(([k,v])=>typeof k==="string" && isFinite(Number(v)) && Number(v)>0 && Number(v)!==1).map(([k,v])=>[k, Math.min(5, Math.max(0.1, Number(v)))])),
     announce:{text:String(an.text||"").slice(0,300), on:!!an.on, ts:Number(an.ts)||0}};
-  RTP = CFG.rtp; RUB_PER_POINT = CFG.runRate; UP_MAX = CFG.upMax; UP_EDGE = CFG.upEdge; CRASH_RTP = CFG.crashRtp; DAILY_BASE = CFG.dailyBase; START = CFG.start;
+  RTP = CFG.rtp; RUB_PER_POINT = CFG.runRate; UP_MAX = CFG.upMax; UP_EDGE = CFG.upEdge; CRASH_RTP = CFG.crashRtp; DAILY_BASE = CFG.dailyBase; VAULT_RATE = CFG.vaultRate; START = CFG.start;
   CASES.forEach(cs=>{ const o = obj(CFG.cases[cs.id]); cs.price = Math.round(n(o.price,1,1e7,cs.defPrice)); cs.off = !!o.off; cs.isNew = o.isNew===undefined ? cs.defNew : !!o.isNew; const r = Number(o.rtp); cs.rtp = isFinite(r) && r>=0.3 && r<=0.99 ? r : null; });
   recomputeCases(); buildCatalog();
 }
@@ -2470,6 +2505,7 @@ function viewAdmin(){
           <label for="e-upedge">RTP апгрейда, %<small>шанс = ставка × отдача ÷ цена цели</small></label><input id="e-upedge" type="number" min="30" max="100" step="1" value="${pctv(CFG.upEdge)}">
           <label for="e-crash">RTP краша, %<small>шанс дожить до ×x = RTP ÷ x</small></label><input id="e-crash" type="number" min="30" max="99" step="1" value="${pctv(CFG.crashRtp)}">
           <label for="e-daily">Ежедневный подарок, ₽<small>за 1-й день серии; к 7-му дню ×10. 0 — выключить</small></label><input id="e-daily" type="number" min="0" step="1000" value="${CFG.dailyBase}">
+          <label for="e-vault">Хранилище: ₽ ставок за 1 фрагмент<small>меньше — замки открываются быстрее</small></label><input id="e-vault" type="number" min="1" step="10" value="${CFG.vaultRate}">
           <label for="e-start">Стартовый баланс, ₽<small>для новых игроков и при сбросе</small></label><input id="e-start" type="number" min="0" step="100" value="${CFG.start}">
         </div>
         <div class="adm-row"><button class="btn primary" id="e-save">Сохранить</button><button class="btn" id="e-def">По умолчанию</button><span class="hint" id="e-msg"></span></div>
@@ -2504,13 +2540,13 @@ function viewAdmin(){
   // экономика
   document.getElementById("e-save").addEventListener("click", async ()=>{
     const v = id => Number(document.getElementById(id).value), m = document.getElementById("e-msg");
-    const patch = {rtp:v("e-rtp")/100, runRate:v("e-run"), upMax:v("e-upmax")/100, upEdge:v("e-upedge")/100, crashRtp:v("e-crash")/100, dailyBase:Math.round(v("e-daily")), start:Math.round(v("e-start"))};
+    const patch = {rtp:v("e-rtp")/100, runRate:v("e-run"), upMax:v("e-upmax")/100, upEdge:v("e-upedge")/100, crashRtp:v("e-crash")/100, dailyBase:Math.round(v("e-daily")), vaultRate:Math.max(1, v("e-vault")), start:Math.round(v("e-start"))};
     if(Object.values(patch).some(x=>!isFinite(x) || x<0)){ flash(m, false, "Проверьте числа: нужны положительные значения."); return; }
     try{ await saveConfig(patch); drawAdminRtp(); flash(m, true, "Сохранено, уже действует у всех"); }catch(e){ flash(m, false, "Не сохранилось. Попробуйте ещё раз."); }
   });
   document.getElementById("e-def").addEventListener("click", ()=>{
     document.getElementById("e-rtp").value = 95; document.getElementById("e-run").value = 0.5; document.getElementById("e-upmax").value = 90;
-    document.getElementById("e-upedge").value = 95; document.getElementById("e-crash").value = 95; document.getElementById("e-daily").value = 50000; document.getElementById("e-start").value = 4000;
+    document.getElementById("e-upedge").value = 95; document.getElementById("e-crash").value = 95; document.getElementById("e-daily").value = 50000; document.getElementById("e-vault").value = 100; document.getElementById("e-start").value = 4000;
     flash(document.getElementById("e-msg"), true, "Значения по умолчанию подставлены, нажмите «Сохранить»");
   });
   // кейсы
@@ -2674,6 +2710,7 @@ function crStart(){
   S.crBet = bet; S.crAuto = auto>1 ? Math.round(auto*100)/100 : 0;
   S.bal = Math.round((S.bal-bet)*100)/100;
   const st = crStats(); st.n++; st.bet = Math.round(st.bet + bet);
+  vaultAdd(bet);
   Object.assign(CR, {state:"run", bet, point:crashPoint(), t0:performance.now(), auto:S.crAuto, at:0});
   save(); renderHeader(); crButtons();
 }
@@ -2827,6 +2864,7 @@ function claimDaily(){
   S.daily = {last: dayKey(new Date()), streak: st.day};
   S.bal = Math.round((S.bal + st.prize)*100)/100;
   S.stats.daily = Math.round((S.stats.daily||0) + st.prize);
+  vaultAdd(0, 25);
   save(); renderHeader();
   if(S.sound){ beep(660,.08,.05,"triangle"); setTimeout(()=>beep(990,.08,.05,"triangle"),90); setTimeout(()=>beep(1320,.14,.05,"triangle"),180); }
   drawDaily(true);
@@ -2888,7 +2926,7 @@ function btSettle(d){
   const m = btMine()[d.id]; if(!m || m.done || BT.anim===d.id) return false;
   const inIt = d.players.some(q=>q.pid===CL.id), st = btStats();
   if(d.state==="cancel" || (d.state==="done" && !inIt) || (d.state==="open" && !inIt && Date.now()-m.t > 20000)){
-    S.bal = Math.round((S.bal + m.paid)*100)/100; st.spent = Math.max(0, st.spent - m.paid); st.n = Math.max(0, st.n - 1);
+    S.bal = Math.round((S.bal + m.paid)*100)/100; st.spent = Math.max(0, st.spent - m.paid); st.n = Math.max(0, st.n - 1); vaultAdd(-m.paid);
     m.done = true; m.refund = true; return true;
   }
   if(d.state!=="done") return false;
@@ -2897,7 +2935,7 @@ function btSettle(d){
   if(d.players[w].pid===CL.id){
     const now = Date.now(); let sum = 0;
     res.flat().filter(Boolean).forEach((it,i)=>{ const o = Object.assign({}, it, {id:now.toString(36)+i.toString(36)+Math.random().toString(36).slice(2,6), t:now}); S.inv.unshift(o); sum += o.price; if(!S.stats.best || o.price > S.stats.best.price) S.stats.best = o; });
-    st.win++; st.got = Math.round(st.got + sum); m.won = sum;
+    st.win++; st.got = Math.round(st.got + sum); m.won = sum; vaultAdd(0, 20);
   }
   return true;
 }
@@ -2925,8 +2963,8 @@ async function btAct(body){
   if(r.battle){ const d = btParse(r.battle.id, r.battle); if(d){ const i = BT.list.findIndex(x=>x.id===d.id); if(i>=0) BT.list[i] = d; else BT.list.unshift(d); r.battle = d; } }
   return r;
 }
-function btPay(id, cost){ S.bal = Math.round((S.bal-cost)*100)/100; btMine()[id] = {paid:cost, t:Date.now()}; const st = btStats(); st.n++; st.spent = Math.round(st.spent + cost); save(); renderHeader(); }
-function btUnpay(id){ const m = btMine()[id]; if(!m) return; S.bal = Math.round((S.bal+m.paid)*100)/100; const st = btStats(); st.n = Math.max(0, st.n-1); st.spent = Math.max(0, st.spent - m.paid); delete btMine()[id]; save(); renderHeader(); }
+function btPay(id, cost){ vaultAdd(cost); S.bal = Math.round((S.bal-cost)*100)/100; btMine()[id] = {paid:cost, t:Date.now()}; const st = btStats(); st.n++; st.spent = Math.round(st.spent + cost); save(); renderHeader(); }
+function btUnpay(id){ const m = btMine()[id]; if(!m) return; vaultAdd(-m.paid); S.bal = Math.round((S.bal+m.paid)*100)/100; const st = btStats(); st.n = Math.max(0, st.n-1); st.spent = Math.max(0, st.spent - m.paid); delete btMine()[id]; save(); renderHeader(); }
 async function btCreate(){
   const msg = document.getElementById("bt-msg"), ids = BT.create.cases.slice(), cost = btCostOf(ids), b = document.getElementById("bt-create");
   if(!ids.length){ flash(msg, false, "Добавьте хотя бы один кейс"); return; }
@@ -3147,6 +3185,112 @@ function bvFinal(d){
   void m;
 }
 
+/* ---------- Секретное хранилище ----------
+ * Долгая цель: за игру начисляются фрагменты кода (1 фрагмент за VAULT_RATE ₽ оборота во всех режимах,
+ * плюс бонусы за ежедневный подарок и победы в батлах). Каждые 6 замков — новое хранилище, пороги и награды ×2. */
+const VAULT_STEPS = [50, 200, 600, 1500, 4000, 10000];
+const VAULT_CASH  = [1000, 3000, 8000, 20000, 50000];
+const VAULT_FINAL = ["gold","diamond","empire","plasma","abyss","legend","million"];
+function vaultState(){
+  const v = S.vault && typeof S.vault==="object" ? S.vault : (S.vault = {f:0, season:1, claimed:0});
+  v.f = Math.max(0, Number(v.f)||0); v.season = Math.max(1, v.season|0); v.claimed = Math.min(6, Math.max(0, v.claimed|0));
+  return v;
+}
+const vaultK = season => Math.pow(2, season-1);
+const vaultNeed = (season, i) => VAULT_STEPS[i]*vaultK(season);
+const vaultFinalCase = season => CASE_BY_ID[VAULT_FINAL[Math.min(VAULT_FINAL.length-1, season-1)]] || CASES[CASES.length-1];
+const vaultLocks = () => { const v = vaultState(); return (v.season-1)*6 + v.claimed; };
+function vaultReady(){ const v = vaultState(); return v.claimed < 6 && v.f >= vaultNeed(v.season, v.claimed); }
+function vaultAdd(rub, bonus){
+  const v = vaultState();
+  v.f = Math.max(0, Math.round((v.f + (rub||0)/VAULT_RATE + (bonus||0))*100)/100);
+  vaultBadge();
+}
+function vaultItem(c){
+  const list = c.skins.filter(x=>x.rar===4), sk = list[Math.floor(Math.random()*list.length)];
+  let x = Math.random(), acc = 0, w = 2; for(let i=0;i<WEAR.length;i++){ acc += WEAR[i].p; if(x<acc){ w = i; break; } }
+  const fl = WEAR[w].min + Math.random()*(WEAR[w].max-WEAR[w].min), st = Math.random() < ST_P;
+  return {id:Date.now().toString(36)+Math.random().toString(36).slice(2,7), c:c.id, s:sk.i, w, fl:+fl.toFixed(4), st, price:Math.max(2, Math.round(sk.basePrice*WEAR[w].m*(st?ST_M:1))), t:Date.now()};
+}
+function vaultClaim(){
+  const v = vaultState(); if(!vaultReady()) return;
+  const i = v.claimed;
+  if(i < 5){ const a = VAULT_CASH[i]*vaultK(v.season); S.bal = Math.round((S.bal + a)*100)/100; v.last = {type:"cash", amount:a}; }
+  else { const it = vaultItem(vaultFinalCase(v.season)); S.inv.unshift(it); if(!S.stats.best || it.price > S.stats.best.price) S.stats.best = it; v.last = {type:"item", item:it}; }
+  v.claimed++;
+  if(S.sound){ [523,659,784,1047].forEach((f,k)=>setTimeout(()=>beep(f,.12,.05,"triangle"), k*110)); }
+  save(); renderHeader(); viewVault(true);
+}
+function vaultNext(){
+  const v = vaultState(); if(v.claimed < 6) return;
+  v.season++; v.claimed = 0; v.f = 0; v.last = null; save(); viewVault();
+}
+function vaultBadge(){
+  const b = document.getElementById("nav-vault-dot"); if(b) b.hidden = !vaultReady();
+  const box = document.getElementById("vault-bar"); if(box) drawVaultBar();
+}
+const fr = n => Math.floor(n).toLocaleString("ru-RU");
+function drawVaultBar(){
+  const box = document.getElementById("vault-bar"); if(!box) return;
+  const v = vaultState(), i = Math.min(5, v.claimed), need = vaultNeed(v.season, i), prev = i ? vaultNeed(v.season, i-1) : 0;
+  const pctv = v.claimed>=6 ? 100 : Math.min(100, Math.max(0, (v.f-prev)/(need-prev)*100));
+  const ready = vaultReady() || v.claimed>=6;
+  box.className = "vault-bar" + (ready ? " ready" : "");
+  box.innerHTML = `${VAULT_ICON}
+    <span class="vb-t"><b>Секретное хранилище ${v.season>1 ? toRoman(v.season) : ""}</b><small>${v.claimed>=6 ? "Хранилище вскрыто! Откройте следующее" : ready ? `Замок ${i+1} готов к взлому — заберите награду` : `Замок ${i+1} из 6 · ${fr(v.f)} / ${fr(need)} фрагментов`}</small></span>
+    <span class="vb-locks">${Array.from({length:6},(_,k)=>`<i class="${k<v.claimed?'open':k===v.claimed&&ready?'ready':''}"></i>`).join("")}</span>
+    <span class="vb-prog"><i style="width:${pctv.toFixed(1)}%"></i></span>
+    <span class="btn ${ready?'primary':''}">${ready ? "Взломать" : "Открыть"}</span>`;
+}
+const toRoman = n => { const m = [[10,"X"],[9,"IX"],[5,"V"],[4,"IV"],[1,"I"]]; let r = ""; for(const [v,c] of m) while(n>=v){ r+=c; n-=v; } return r; };
+const VAULT_ICON = `<svg class="vb-ic" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="12" cy="12" r="4.5"/><path d="M12 7.5v2M12 14.5v2M7.5 12h2M14.5 12h2M6 21v1.5M18 21v1.5"/></svg>`;
+function viewVault(justClaimed){
+  const app = document.getElementById("app"), v = vaultState(), K = vaultK(v.season), fc = vaultFinalCase(v.season);
+  const i = Math.min(5, v.claimed), need = vaultNeed(v.season, i), ready = vaultReady();
+  const angle = v.claimed*60;
+  const last = justClaimed && v.last;
+  app.innerHTML = `
+    <div class="view-head"><div><h1>Секретное хранилище ${v.season>1 ? toRoman(v.season) : ""}</h1>
+      <p class="sub">Играйте в любые режимы — копите фрагменты кода и взламывайте замки. За каждым замком награда, а внутри хранилища — то, о чём никто не знает.</p></div>
+      <div class="run-stats"><div class="stat"><small>Фрагменты</small><b class="num">${fr(v.f)}</b></div><div class="stat"><small>Вскрыто замков</small><b class="num">${vaultLocks()}</b></div></div>
+    </div>
+    <div class="vault-wrap">
+      <section class="panel vault-door-p">
+        <svg class="vault-door${v.claimed>=6?' open':''}" viewBox="0 0 300 300" aria-label="Дверь хранилища, вскрыто замков: ${v.claimed} из 6">
+          <defs><radialGradient id="vdg" cx=".45" cy=".4"><stop offset="0" stop-color="#3a3a3a"/><stop offset="1" stop-color="#1a1a1a"/></radialGradient></defs>
+          <rect x="18" y="18" width="264" height="264" rx="22" fill="#151515" stroke="#2c2c2c" stroke-width="3"/>
+          <circle cx="150" cy="150" r="118" fill="url(#vdg)" stroke="#3a3a3a" stroke-width="6"/>
+          ${Array.from({length:6},(_,k)=>{ const a=(k*60-90)*Math.PI/180, x=150+96*Math.cos(a), y=150+96*Math.sin(a); const st = k<v.claimed ? "open" : (k===v.claimed && ready) ? "ready" : "";
+            return `<g class="vlock ${st}"><circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="13"/><text x="${x.toFixed(1)}" y="${(y+4.5).toFixed(1)}" text-anchor="middle">${k<v.claimed ? "✓" : k+1}</text></g>`; }).join("")}
+          <g class="vwheel" style="transform:rotate(${angle}deg)">
+            <circle cx="150" cy="150" r="52" fill="#202020" stroke="var(--accent)" stroke-width="3"/>
+            ${[0,60,120].map(a=>`<rect x="146" y="92" width="8" height="116" rx="4" fill="#3a3a3a" transform="rotate(${a} 150 150)"/>`).join("")}
+            <circle cx="150" cy="150" r="16" fill="var(--accent)"/>
+          </g>
+        </svg>
+        ${last ? `<p class="vault-got">${last.type==="cash" ? `Замок вскрыт! +${money(last.amount)}` : `Хранилище вскрыто! Внутри — ★ ${esc(skinOf(last.item).name)} за ${money(last.item.price)}. Он уже в инвентаре.`}</p>` : ""}
+        ${v.claimed>=6 ? `<button class="btn primary vault-go" id="vault-next">Найти следующее хранилище</button>`
+          : `<div class="vault-prog"><div class="vb-prog big"><i style="width:${Math.min(100, v.f/need*100).toFixed(1)}%"></i></div><span>${fr(v.f)} / ${fr(need)} фрагментов до замка ${i+1}</span></div>
+             <button class="btn primary vault-go" id="vault-claim" ${ready?'':'disabled'}>${ready ? (i<5 ? `Взломать замок ${i+1} · +${money(VAULT_CASH[i]*K)}` : "Вскрыть хранилище") : `Нужно ещё ${fr(Math.ceil(need - v.f))} ${plural(Math.ceil(need - v.f),"фрагмент","фрагмента","фрагментов")}`}</button>`}
+      </section>
+      <section class="panel">
+        <div class="ph"><h2>Замки и награды</h2></div>
+        <ol class="vault-list">${VAULT_STEPS.map((st,k)=>{ const done = k<v.claimed, now = k===v.claimed;
+          const prize = k<5 ? money(VAULT_CASH[k]*K) : (v.claimed>=5 ? `★ Редкий предмет из кейса «${fc.name}»` : "??? Секрет");
+          return `<li class="${done?'done':now?'now':''}"><b>Замок ${k+1}</b><span>${fr(st*K)} фрагм.</span><em>${prize}</em></li>`; }).join("")}</ol>
+        <div class="ph" style="margin-top:6px"><h2>Как получать фрагменты</h2></div>
+        <ul class="vault-how">
+          <li>Открытие кейсов, апгрейды, краш и батлы — <b>1 фрагмент за каждые ${money(VAULT_RATE)}</b> ставок</li>
+          <li>Ежедневный подарок — <b>+25</b></li>
+          <li>Победа в батле — <b>+20</b></li>
+        </ul>
+        <p class="hint">После шестого замка открывается следующее хранилище: замки вдвое прочнее, награды вдвое больше.</p>
+      </section>
+    </div>`;
+  const c = document.getElementById("vault-claim"); if(c) c.addEventListener("click", vaultClaim);
+  const n = document.getElementById("vault-next"); if(n) n.addEventListener("click", vaultNext);
+}
+
 /* ---------- Маршрутизация ---------- */
 function route(){
   const h = location.hash.slice(1);
@@ -3165,6 +3309,7 @@ function route(){
   if(h==="runner"){ if(document.getElementById("rc")) return; return viewRunner(); }
   if(h==="crash"){ if(document.getElementById("crc")) return; return viewCrash(); }
   if(h==="battles") return viewBattles();
+  if(h==="vault") return viewVault();
   if(h.startsWith("battle-")){ if(BT.view && BT.view.id===h.slice(7) && document.getElementById("bv")) return; return viewBattle(h.slice(7)); }
   if(h==="upgrade"){ if(upSpinning && document.getElementById("needle")) return; return viewUpgrade(); }
   if(h==="inventory") return viewInventory();
