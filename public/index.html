@@ -4,9 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>ПиксельДроп — пиксельный симулятор кейсов</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Tiny5+Duo&display=swap" rel="stylesheet">
+<style>@font-face{font-family:"Tiny5 Duo";src:url(data:font/woff;base64,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) format("woff");font-display:swap}</style>
 <style>
 :root{
   /* Тёмный «игровой» мир, одна тема. Слева направо: шапка → лента дропов → сетка кейсов / рулетка / инвентарь */
@@ -922,7 +920,21 @@ nav a .nav-dot,#nav-more .nav-dot{position:absolute;top:10px;right:2px;width:8px
 .case{transition:transform .15s,border-color .15s}
 @media (hover:hover){ .case:hover{transform:translateY(-2px)} }
 @media (max-width:1180px){ nav a{padding:0 9px;letter-spacing:.03em} }
-@media (max-width:1420px){ nav a.nav-vault{display:none} }
+.me-t small,.me-t b{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block;max-width:130px}
+@media (min-width:761px){ nav{min-width:0;overflow:hidden} .bar{grid-template-columns:auto minmax(0,1fr) auto} }
+/* компьютер поуже: «Заработать», «Рейтинг», «Админ» уходят в «Ещё» */
+@media (max-width:1460px) and (min-width:761px){
+  nav a.nav-x{display:none!important}
+  #nav-more{display:flex;align-items:center;gap:6px;height:100%;padding:0 12px;background:none;border:0;color:var(--muted);font:inherit;text-transform:uppercase;font-size:13px;letter-spacing:.06em;font-weight:800;cursor:pointer;position:relative}
+  #nav-more .ni{display:block;width:18px;height:18px}
+  #nav-more:hover,#nav-more.on,#nav-more[aria-expanded="true"]{color:var(--accent)}
+  #nav-more .nav-dot{top:16px;right:2px}
+  .more-sheet{position:fixed;top:68px;right:16px;z-index:60;display:grid;grid-template-columns:1fr;gap:4px;padding:6px;width:240px;background:rgba(24,24,24,.98);border:1px solid var(--line);box-shadow:0 12px 40px rgba(0,0,0,.6);animation:sheetin .14s ease-out}
+  .more-sheet[hidden]{display:none}
+  .more-sheet a{display:flex;align-items:center;gap:10px;padding:11px 12px;background:var(--panel2);color:var(--text);text-decoration:none;font-weight:800;font-size:13px;text-transform:uppercase;letter-spacing:.04em}
+  .more-sheet a:hover{color:var(--accent)} .more-sheet a.on{color:var(--accent)}
+  .more-sheet a .ni{display:block;flex:none;width:18px;height:18px}
+}
 @media (max-width:1180px) and (min-width:761px){ .logo b{display:none} .me-t{max-width:110px} }
 @media (max-width:960px) and (min-width:761px){ .me-t{display:none} nav a{padding:0 7px;font-size:12px} }
 .daily-days .sh{display:none}
@@ -962,10 +974,40 @@ nav a .nav-dot,#nav-more .nav-dot{position:absolute;top:10px;right:2px;width:8px
 }
 @keyframes sheetin{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 @media (min-width:761px){ .logo b{white-space:nowrap} }
+/* ===== Пиксельный стиль: прямые углы со «ступенькой», жёсткие тени и фаски ===== */
+:root{--notch:polygon(0 4px,4px 4px,4px 0,calc(100% - 4px) 0,calc(100% - 4px) 4px,100% 4px,100% calc(100% - 4px),calc(100% - 4px) calc(100% - 4px),calc(100% - 4px) 100%,4px 100%,4px calc(100% - 4px),0 calc(100% - 4px));--notch2:polygon(0 2px,2px 2px,2px 0,calc(100% - 2px) 0,calc(100% - 2px) 2px,100% 2px,100% calc(100% - 2px),calc(100% - 2px) calc(100% - 2px),calc(100% - 2px) 100%,2px 100%,2px calc(100% - 2px),0 calc(100% - 2px))}
+.bal,.btn,.drop,.case,.opener,.roll,.cell,.case-preview,.seg,.seg button,.odd,.item,.stat,.empty,.modal,.panel,.mini,.box,.me,.prof-card,.lvl,.xpbar,.xpbar i,.field input,.pick button,.pick,.tabs,.tabs button,.row,.you-tag,.toast,.drop-ava,.slot,.stake-it,.up-go,.filters input,.d-who,.case-tools input,.case-tools select,.new-tag,.pcard-ava,.ava-edit,.nick-form input,.cr-it,.announce,.ann-ico,.adm textarea,.adm input,.adm-drop,.adm-case,.adm-pl,.m-ch,.adm-luck select,.cr-chip,.cr-row input,.daily,.daily-days li,.coll-chip,.bt-pc,.bt-card,.bt-bot,.bv-rd,.bv-col,.bv-reel,.bv-mi,.epic-price span,.dtitle,.dtile,.dsw,.pl-head,.rtp-row,select,input,textarea,.more-sheet,.more-sheet a,.st,.auth-tabs button,kbd{border-radius:0!important}
+.panel,.case,.stat,.empty,.slot,.daily,.dtile,.bt-card,.bv-col,.pl-head,.modal,.announce,.adm-case,.adm-pl,.row,.item,.mini,.cr-it,.bt-pc,.more-sheet{clip-path:var(--notch)}
+.btn,.bal,.coll-chip,.seg,.tabs,.daily-days li,.bv-mi,.bv-rd,.drop,.cell,.new-tag,.dtitle,.cr-chip,.odd,.lvl,.you-tag,.m-ch,input,select,textarea,.more-sheet a,.toast{clip-path:var(--notch2)}
+.panel,.case,.stat,.slot,.daily,.bt-card,.bv-col,.row,.item,.mini,.dtile,.adm-case,.adm-pl{box-shadow:inset 0 -3px 0 rgba(0,0,0,.35),inset 0 2px 0 rgba(255,255,255,.05)}
+.btn{box-shadow:inset 0 -3px 0 rgba(0,0,0,.35),inset 0 2px 0 rgba(255,255,255,.08)!important;transition:transform .08s,filter .15s}
+.btn.primary{box-shadow:inset 0 -3px 0 rgba(0,0,0,.28),inset 0 2px 0 rgba(255,255,255,.45)!important}
+.btn:active:not(:disabled){transform:translateY(2px);box-shadow:inset 0 -1px 0 rgba(0,0,0,.35)!important}
+.case:hover{transform:translateY(-2px)}
+.xpbar i,.vb-prog i{background:repeating-linear-gradient(90deg,var(--accent) 0 6px,var(--accent2) 6px 8px)!important}
+.ava{border-radius:0!important}
+svg.ava rect{rx:4px}
+.dfr{border-radius:0}
+.dfr-fire::before,.dfr-rainbow::before{border-radius:0;clip-path:var(--notch)}
+h1,h2,h3{letter-spacing:.04em}
+@media (max-width:760px){ nav a .nl,#nav-more .nl{font-size:9px!important;letter-spacing:0!important;text-overflow:clip} nav a,#nav-more{padding:0 1px!important} }
+/* админка: поля цены и RTP целиком помещают число */
+.adm-cases{grid-template-columns:repeat(auto-fill,minmax(340px,1fr))!important}
+.adm-case{grid-template-columns:10px minmax(0,1fr) 112px 68px!important;grid-template-rows:auto auto auto!important;gap:4px 8px!important}
+.adm-case .dot{grid-column:1;grid-row:1}
+.adm-case b{grid-column:2;grid-row:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.adm-case small{grid-column:2;grid-row:2}
+.adm-case input[data-f=price]{grid-column:3!important;grid-row:1/span 2!important;min-width:0;padding:6px 8px}
+.adm-case input[data-f=rtp]{grid-column:4!important;grid-row:1/span 2!important;min-width:0;padding:6px 8px}
+.adm-case label{grid-row:3!important}
+.adm-case label:nth-of-type(1){grid-column:2}
+.adm-case label:nth-of-type(2){grid-column:3/span 2}
+@media (max-width:400px){ .adm-case{grid-template-columns:10px minmax(0,1fr) 96px 58px!important} }
+.seg button.on,.tabs button.on,.tabs button[aria-selected="true"]{box-shadow:inset 0 -2px 0 var(--accent)}
 #adm-rtp{min-width:0;overflow:hidden}
 .rtp-table{max-width:100%}
 </style>
-<script>window.APP_BUILD="03.11 14:59";</script>
+<script>window.APP_BUILD="03.11 15:12";</script>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="adapter.js"></script>
 <link rel="icon" href="icon.png">
@@ -2293,7 +2335,7 @@ function viewCases(){
     <section class="daily" id="daily" aria-live="polite" hidden></section>
     <div class="view-head"><h1>Кейсы</h1>
       <form class="case-tools" id="case-tools" role="search">
-        <input id="cf-q" type="search" placeholder="Поиск по названию" value="${esc(f.q)}" aria-label="Поиск кейса по названию" autocomplete="off">
+        <input id="cf-q" type="search" placeholder="Поиск" value="${esc(f.q)}" aria-label="Поиск кейса по названию" autocomplete="off">
         <input id="cf-min" type="number" min="0" inputmode="numeric" placeholder="₽ от" value="${esc(f.min)}" aria-label="Цена от">
         <input id="cf-max" type="number" min="0" inputmode="numeric" placeholder="₽ до" value="${esc(f.max)}" aria-label="Цена до">
         <select id="case-sort" aria-label="Сортировка">${Object.entries(CASE_SORTS).map(([k,[n]])=>`<option value="${k}"${S.caseSort===k?' selected':''}>${n}</option>`).join("")}</select>
@@ -3351,7 +3393,7 @@ function viewProfile(){
   if(sortMode==="rar") items.sort((a,b)=>skinOf(b).rar-skinOf(a).rar || b.price-a.price);
   const best = t.best, net = t.won - t.spent;
   app.innerHTML = `
-    <section class="panel pcard dbg-${decoOf(S.profile).bg}">
+    <section class="panel pcard">
       <div class="pcard-ava drop-ava" id="p-ava" title="Перетащите картинку сюда">
         ${framed(S.profile, avatarOf(S.profile,104))}
         <label for="p-file" class="ava-edit" role="button" tabindex="0" id="p-file-btn" aria-label="${S.profile.img?'Заменить картинку':'Загрузить картинку'}">
@@ -3495,7 +3537,7 @@ function drawBoard(){
 function showPlayer(p){
   const modal = document.getElementById("modal");
   modal.innerHTML = `
-    <div class="pl-head dbg-${decoOf(p.id===CL.id||p.id==="me" ? S.profile : p).bg}">${framed(p.id===CL.id||p.id==="me" ? S.profile : p, avatarOf(p,72))}
+    <div class="pl-head">${framed(p.id===CL.id||p.id==="me" ? S.profile : p, avatarOf(p,72))}
       <div><h2 id="modal-title" class="${nickCls(p.id===CL.id||p.id==="me" ? S.profile : p)}"></h2><div style="margin-top:6px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">${titleChip(p.id===CL.id||p.id==="me" ? S.profile : p)}<span class="lvl">Уровень <b>${p.lvl}</b> · ${rankOf(p.lvl)}</span></div></div></div>
     <div class="stats" style="margin:0">
       <div class="stat"><small>Состояние</small><b>${money(p.worth)}</b></div>
@@ -4394,6 +4436,11 @@ const decoIds = k => new Set(DECO[k].map(x=>x.id));
 function myDeco(){
   const d = S.deco && typeof S.deco==="object" ? S.deco : (S.deco = {});
   if(!Array.isArray(d.own)) d.own = [];
+  const bgOwn = d.own.filter(k=>k.startsWith("bg:"));
+  if(bgOwn.length){ // фоны убраны — возвращаем потраченное
+    bgOwn.forEach(k=>{ const o = DECO.bg.find(x=>"bg:"+x.id===k); if(o) S.bal = Math.round((S.bal + o.p)*100)/100; });
+    d.own = d.own.filter(k=>!k.startsWith("bg:")); d.bg = "none";
+  }
   ["bg","frame","color"].forEach(k=>{ const def = DECO[k][0].id; if(!decoIds(k).has(d[k]) || (d[k]!==def && !d.own.includes(k+":"+d[k]))) d[k] = def; });
   if(typeof d.title!=="string" || !TITLE_BY[d.title] || (d.title && !TITLE_BY[d.title].ok())) d.title = "";
   return d;
@@ -4407,11 +4454,11 @@ const decoOf = p => (p && p.isMe) || p===S.profile ? cleanDeco(myDeco()) : clean
 const framed = (p, html) => { const d = decoOf(p); return `<span class="dfr dfr-${d.frame}">${html}</span>`; };
 const nickCls = p => "dnc-" + decoOf(p).color;
 const titleChip = p => { const t = TITLE_BY[decoOf(p).title]; return t && t.id ? `<span class="dtitle" style="--tc:${t.c}">${esc(t.n)}</span>` : ""; };
-let decoTab = "bg";
+let decoTab = "frame";
 function drawDeco(){
   const box = document.getElementById("deco"); if(!box) return;
   const d = myDeco(), me = {isMe:true, nick:S.profile.nick, av:S.profile.av, img:S.profile.img};
-  const tabs = {bg:"Фон", frame:"Рамка", color:"Цвет ника", title:"Титул"};
+  const tabs = {frame:"Рамка", color:"Цвет ника", title:"Титул"};
   let tiles = "";
   if(decoTab==="title"){
     tiles = TITLES.map(t=>{ const on = d.title===t.id, ok = !t.id || t.ok(); const pr = !ok && t.pr ? t.pr() : null;
@@ -4420,8 +4467,7 @@ function drawDeco(){
         <b>${esc(t.n)}</b><small>${on ? "Выбран" : ok ? (t.id ? "Выбрать" : "Убрать титул") : "🔒 " + esc(t.req) + (pr ? ` · ${shortNum(pr[0])} / ${shortNum(pr[1])}` : "")}</small></button>`; }).join("");
   } else {
     tiles = DECO[decoTab].map(o=>{ const key = decoTab+":"+o.id, own = !o.p || d.own.includes(key), on = d[decoTab]===o.id, afford = S.bal >= o.p;
-      const prev = decoTab==="bg" ? `<span class="dsw dbg-${o.id}"></span>`
-        : decoTab==="frame" ? `<span class="dfr dfr-${o.id}">${avatarOf(me,40)}</span>`
+      const prev = decoTab==="frame" ? `<span class="dfr dfr-${o.id}">${avatarOf(me,40)}</span>`
         : `<span class="dnick dnc-${o.id}"></span>`;
       return `<button type="button" class="dtile${on?' on':''}${!own && !afford?' poor':''}" data-k="${decoTab}" data-id="${o.id}" data-p="${o.p}">
         <span class="dprev">${prev}</span><b>${esc(o.n)}</b><small>${on ? "Выбрано" : own ? "Выбрать" : "Купить · " + money(o.p)}</small></button>`; }).join("");
