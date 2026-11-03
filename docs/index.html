@@ -798,6 +798,35 @@ button.mn-cell:hover:not([disabled]){background:#363a42;transform:translateY(-2p
 .mn-cell.boom{background:#7f1d1d;box-shadow:inset 0 0 0 2px #ef5350,0 0 18px #ef5350}
 .mn-board.shake{animation:eshake .5s}
 @media (max-width:820px){ .mn-wrap{grid-template-columns:1fr} .mn-board-p{order:-1;padding:10px} .mn-board{gap:6px} }
+.tr-q{background:var(--panel2);border:1px solid var(--line);color:var(--text);font:inherit;padding:8px 10px;min-width:0;flex:0 1 260px;clip-path:var(--notch2)}
+.tr-players{display:flex;flex-wrap:wrap;gap:8px}
+.tr-pl{display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--panel2);color:var(--text);text-decoration:none;clip-path:var(--notch2)}
+.tr-pl:hover{background:#2c2c2c} .tr-pl small{color:var(--muted);font-size:11px}
+.tr-card{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 12px;padding:10px 12px;background:var(--panel2);color:var(--text);text-decoration:none;clip-path:var(--notch2)}
+.tr-card + .tr-card{margin-top:6px}
+.tr-card:hover{background:#2c2c2c}
+.tr-sum{grid-column:1;color:var(--muted);font-size:13px}
+.tr-st{grid-column:2;grid-row:1/span 2;align-self:center;font-size:12px;color:var(--accent)}
+.tr-card.st-accepted .tr-st{color:var(--good)} .tr-card.st-declined .tr-st,.tr-card.st-canceled .tr-st{color:var(--muted)}
+.tw{display:grid;gap:14px;background:linear-gradient(180deg,#1e2430,#171b22);border:1px solid #2c3442;padding:16px;clip-path:var(--notch)}
+.tw-head{display:flex;align-items:center;gap:12px} .tw-head small{display:block;color:var(--muted);font-size:12px} .tw-head b{font-size:18px}
+.tw-offers{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:12px;align-items:stretch}
+.tw-side{display:grid;gap:8px;align-content:start;background:rgba(0,0,0,.25);border:1px solid #2c3442;padding:12px;clip-path:var(--notch2)}
+.tw-side h3{margin:0;font-size:16px}
+.tw-box{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:6px;min-height:110px;padding:8px;background:rgba(0,0,0,.25);border:1px dashed #3a4558}
+.tw-empty{grid-column:1/-1;align-self:center;text-align:center;color:#5a6578;margin:0}
+.tw-coins label{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:13px}
+.tw-coins input,.tw-foot input{background:var(--panel2);border:1px solid var(--line);color:var(--text);font:inherit;padding:7px 10px;min-width:0}
+.tw-coins input{width:150px}
+.tw-total{font-size:14px;color:var(--muted)} .tw-total b{color:var(--accent)}
+.tw-swap{align-self:center;font-size:28px;color:#5a6578}
+.tw-tabs{margin-bottom:8px}
+.tw-foot{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.tw-foot input{flex:1 1 220px}
+.tw-foot .btn.primary{padding:12px 20px}
+.tw-status{flex:1 1 260px;color:var(--muted)} .tw-status.st-accepted{color:var(--good)}
+.tw-note{margin:0;color:var(--muted);font-size:14px}
+@media (max-width:820px){ .tw-offers{grid-template-columns:1fr} .tw-swap{justify-self:center;transform:rotate(90deg)} .tw{padding:10px} }
 .rtp-chip{background:color-mix(in srgb, var(--accent) 14%, var(--panel));border-color:color-mix(in srgb, var(--accent) 40%, var(--line))}
 .adm-case{grid-template-columns:10px minmax(0,1fr) 80px 64px auto auto}
 .adm-case input[data-f=rtp]{grid-row:1/span 2;grid-column:4}
@@ -1110,10 +1139,10 @@ body.wide-case main{max-width:none}
 #adm-rtp{min-width:0;overflow:hidden}
 .rtp-table{max-width:100%}
 </style>
-<script>window.APP_BUILD="03.11 17:30";</script>
+<script>window.APP_BUILD="03.11 17:39";</script>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
-<script src="config.js?v=202611031530"></script>
-<script src="adapter.js?v=202611031530"></script>
+<script src="config.js?v=202611031539"></script>
+<script src="adapter.js?v=202611031539"></script>
 <link rel="icon" href="icon.png">
 </head>
 <body>
@@ -1128,6 +1157,7 @@ body.wide-case main{max-width:none}
       <a href="#upgrade" id="nav-upg"><svg class="ni" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4l7 8h-4v8H9v-8H5z"/></svg><span class="nl">Апгрейд</span></a>
       <a href="#battles" id="nav-bt"><svg class="ni" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4l9 9M4 4h4M4 4v4M20 4l-9 9M20 4h-4M20 4v4M7 14l3 3-3 3-3-3zM17 14l-3 3 3 3 3-3z"/></svg><span class="nl">Батлы</span></a>
       <a href="#crash" id="nav-crash"><svg class="ni" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 20h18M4 18c6 0 10-4 15-13"/><path d="M15 5h4v4"/></svg><span class="nl">Краш</span></a>
+      <a href="#trades" id="nav-tr" class="nav-x"><svg class="ni" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h14l-4-4M20 16H6l4 4"/></svg><span class="nl">Трейды</span><i class="nav-dot" id="nav-tr-dot" hidden></i></a>
       <a href="#mines" id="nav-mines" class="nav-x"><svg class="ni" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="14" r="6"/><path d="M15 9l3-3M18 3v2M21 6h-2"/></svg><span class="nl">Мины</span></a>
       <a href="#contract" id="nav-ct" class="nav-x"><svg class="ni" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h9l4 4v14H6z"/><path d="M15 3v4h4M9 11h7M9 15h7M9 19h4"/></svg><span class="nl">Контракты</span></a>
       <a href="#runner" id="nav-run" class="nav-x"><svg class="ni" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 7v10M9.5 9.5h4a1.5 1.5 0 010 3h-3a1.5 1.5 0 000 3h4"/></svg><span class="nl">Заработать</span></a>
@@ -3496,7 +3526,8 @@ function publicProfile(){
     opened:t.opened, upg:t.upg, upgWin:t.upgWin, runs:t.runs, runBest:Math.floor(t.runBest), runEarned:t.runEarned,
     deco:cleanDeco(myDeco()), admin:!!CL.owner,
     rtp:{c:t.byCase, us:t.upgStake||0, ug:t.upgGot||0, cs:(t.crash&&t.crash.bet)||0, cg:(t.crash&&t.crash.got)||0, ks:(t.contract&&t.contract.put)||0, kg:(t.contract&&t.contract.got)||0, ms:(t.mines&&t.mines.bet)||0, mg:(t.mines&&t.mines.got)||0},
-    best:pubItem(t.best), show:showcase(S), drops:S.recent.slice(0,10).map(pubDrop)};
+    best:pubItem(t.best), show:showcase(S), drops:S.recent.slice(0,10).map(pubDrop),
+    tinv:S.inv.slice().sort((a,b)=>b.price-a.price).slice(0,60).map(it=>Object.assign(pubItem(it), {id:String(it.id||"").slice(0,24)}))};
 }
 function cleanProfile(id, d){
   if(!d || typeof d!=="object") return null;
@@ -3508,7 +3539,8 @@ function cleanProfile(id, d){
       if(r.c && typeof r.c==="object") Object.entries(r.c).forEach(([k,v])=>{ if(CASE_BY_ID[k] && Array.isArray(v)) c[k] = [n(v[0]), n(v[1]), n(v[2])]; });
       return {c, us:n(r.us), ug:n(r.ug), cs:n(r.cs), cg:n(r.cg), ks:n(r.ks), kg:n(r.kg), ms:n(r.ms), mg:n(r.mg)}; })(),
     best:item(d.best), show:Array.isArray(d.show) ? d.show.map(item).filter(Boolean).slice(0,3) : [],
-    drops:Array.isArray(d.drops) ? d.drops.slice(0,10).map(x=>{ const it=item(x); if(!it) return null; it.id=String(x.id||"").replace(/[^a-z0-9]/gi,"").slice(0,24)||Math.random().toString(36).slice(2,8); it.t=n(x.t); return it; }).filter(Boolean) : []};
+    drops:Array.isArray(d.drops) ? d.drops.slice(0,10).map(x=>{ const it=item(x); if(!it) return null; it.id=String(x.id||"").replace(/[^a-z0-9]/gi,"").slice(0,24)||Math.random().toString(36).slice(2,8); it.t=n(x.t); return it; }).filter(Boolean) : [],
+    tinv:Array.isArray(d.tinv) ? d.tinv.slice(0,60).map(x=>{ const it=item(x); if(!it) return null; it.id=String(x.id||"").replace(/[^a-z0-9]/gi,"").slice(0,24); return it.id ? it : null; }).filter(Boolean) : []};
 }
 function setStatus(st){ CL.status = st; renderHeader(); if(location.hash==="#profile") drawSync(); }
 
@@ -3526,6 +3558,7 @@ async function initCloud(){
     subscribeTop();
     subscribeFeed();
     btInitSettle();
+    trStart();
     const ref = db.collection("data/users/"+id).doc("game");
     let snap;
     try{
@@ -3767,9 +3800,10 @@ function showPlayer(p){
     <div><h3 style="font-size:16px;margin-bottom:8px">Витрина</h3>
       ${p.show.length ? `<div class="won">${p.show.map(it=>itemCard(it)).join("")}</div>` : `<p class="hint">Витрина пуста.</p>`}</div>
     ${p.best ? `<div><h3 style="font-size:16px;margin-bottom:8px">Лучший дроп</h3><div class="won">${itemCard(p.best)}</div></div>` : ""}
-    <div class="modal-actions"><button class="btn primary" id="m-close">Закрыть</button></div>`;
+    <div class="modal-actions">${trOn() && p.id!==CL.id && p.id!=="me" ? `<a class="btn" href="#trade-new-${esc(p.id)}" id="m-trade">Предложить обмен</a>` : ""}<button class="btn primary" id="m-close">Закрыть</button></div>`;
   document.getElementById("modal-title").textContent = p.nick;
   document.getElementById("m-close").onclick = closeModal;
+  const mt = document.getElementById("m-trade"); if(mt) mt.addEventListener("click", closeModal);
   openOverlay("m-close");
 }
 
@@ -3877,7 +3911,7 @@ function subscribeGrants(){
         toast("Ваш профиль снова в рейтинге");
       }
     });
-    if(changed){ S.applied = S.applied.slice(-100); save(); renderHeader(); if(!spinning && !upSpinning && location.hash!=="#runner" && location.hash!=="#crash" && !BT.anim && !location.hash.startsWith("#battle")) route(); }
+    if(changed){ S.applied = S.applied.slice(-100); save(); renderHeader(); if(!spinning && !upSpinning && location.hash!=="#runner" && location.hash!=="#crash" && !BT.anim && !location.hash.startsWith("#battle") && !location.hash.startsWith("#trade")) route(); }
   }, ()=>{});
 }
 
@@ -5039,6 +5073,215 @@ function mnRefreshStats(){
   set("mn-n", st.n); set("mn-best", st.best ? mnFx(st.best) : "—"); set("mn-rtp", st.bet ? Math.round(st.got/st.bet*100)+"%" : "—");
 }
 
+/* ---------- Трейды между игроками (окно обмена в духе Steam) ----------
+ * Отправитель сразу «замораживает» свои предметы и монеты. Если обмен приняли — получает предметы
+ * партнёра; если отклонили или отменили — забирает своё обратно. Принимающий обменивается сам при нажатии «Принять». */
+const TR = {list:[], timer:0, fast:0, view:null, draft:null, tab:"me"};
+const trOn = () => !LOCAL_ONLY && !!CL.id && !!CL.db && typeof CL.db.action==="function";
+function trMine(){ if(!S.trd || typeof S.trd!=="object" || Array.isArray(S.trd)) S.trd = {}; return S.trd; }
+const trNewId = () => Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+const trSum = a => a.reduce((x,i)=>x+(Number(i.price)||0),0);
+function trAdd(items){ items.forEach(it=>{ const o = {id:trNewId(), c:String(it.c), s:it.s|0, w:it.w|0, fl:Number(it.fl)||0, st:!!it.st, price:Math.max(0,Number(it.price)||0), t:Date.now()}; if(validItem(o)) S.inv.unshift(o); }); }
+async function trAct(body){ return await CL.db.action("trade", body) || {}; }
+const trIncoming = () => TR.list.filter(t=>t.to===CL.id && t.state==="pending");
+function trBadge(){
+  const n = trIncoming().length, d = document.getElementById("nav-tr-dot"), m = document.getElementById("nav-more-dot");
+  if(d) d.hidden = !n; if(m) m.hidden = !n;
+}
+function trSettle(){
+  const mine = trMine(); let ch = false;
+  TR.list.forEach(t=>{
+    if(t.from!==CL.id) return;
+    const m = mine[t.id]; if(!m || m.done) return;
+    if(t.state==="accepted"){ trAdd(t.get||[]); S.bal = Math.round((S.bal + (t.getCoins||0))*100)/100; m.done = true; ch = true; }
+    else if(t.state==="declined" || t.state==="canceled"){ trAdd(t.give||[]); S.bal = Math.round((S.bal + (t.giveCoins||0))*100)/100; m.done = true; ch = true; }
+  });
+  if(ch){ save(); renderHeader(); }
+}
+async function trRefresh(){
+  if(!trOn()) return;
+  let r; try{ r = await trAct({action:"list"}); }catch(e){ return; }
+  if(!Array.isArray(r.trades)) return;
+  TR.list = r.trades; trSettle(); trBadge();
+  if(document.getElementById("tr-list")) drawTrades();
+  if(TR.view && document.getElementById("tw")){ const t = TR.list.find(x=>x.id===TR.view); if(t) drawTradeView(t); }
+}
+function trStart(){
+  if(TR.timer || !trOn()) return;
+  trRefresh();
+  TR.timer = setInterval(()=>{ if(!document.hidden && !document.getElementById("tr-list") && !document.getElementById("tw")) trRefresh(); }, 60000);
+}
+function trFast(){ // на страницах обмена обновляем чаще
+  clearInterval(TR.fast);
+  TR.fast = setInterval(()=>{ if(!document.getElementById("tr-list") && !document.getElementById("tw")){ clearInterval(TR.fast); return; } if(!document.hidden) trRefresh(); }, 6000);
+}
+const trState = t => ({pending:"ожидает ответа", accepted:"обмен состоялся", declined:"отклонён", canceled:"отменён"})[t.state] || t.state;
+function trCard(t){
+  const out = t.from===CL.id, nick = out ? t.toNick : t.fromNick;
+  const give = out ? t.give : t.get, get = out ? t.get : t.give, gc = out ? t.giveCoins : t.getCoins, rc = out ? t.getCoins : t.giveCoins;
+  return `<a class="tr-card st-${t.state}" href="#trade-${t.id}">
+    <span class="tr-who">${out ? "Вы → " : ""}<b></b>${out ? "" : " → вам"}</span>
+    <span class="tr-sum">отдаёте ${give.length} ${plural(give.length,"предмет","предмета","предметов")}${gc ? " + " + money(gc) : ""} · получаете ${get.length} ${plural(get.length,"предмет","предмета","предметов")}${rc ? " + " + money(rc) : ""}</span>
+    <span class="tr-st">${trState(t)}</span></a>`;
+}
+function viewTrades(){
+  const app = document.getElementById("app");
+  if(!trOn()){ app.innerHTML = `<div class="view-head"><h1>Трейды</h1></div><div class="empty">${LOCAL_ONLY ? "Обмены работают только в версии сайта с сервером." : "Войдите в аккаунт, чтобы обмениваться предметами с другими игроками."}</div>`; return; }
+  TR.view = null;
+  app.innerHTML = `
+    <div class="view-head"><div><h1>Трейды</h1><p class="sub">Меняйтесь предметами и монетами с другими игроками. Выберите игрока — откроется окно обмена.</p></div></div>
+    <section class="panel"><div class="ph"><h2>Новый обмен</h2><input id="tr-q" class="tr-q" placeholder="Поиск игрока по нику" autocomplete="off"></div><div class="tr-players" id="tr-players"></div></section>
+    <div id="tr-list"></div>`;
+  document.getElementById("tr-q").addEventListener("input", drawTrPlayers);
+  drawTrPlayers(); drawTrades(); trRefresh(); trFast();
+}
+function drawTrPlayers(){
+  const box = document.getElementById("tr-players"); if(!box) return;
+  const q = (document.getElementById("tr-q").value||"").trim().toLowerCase();
+  const list = CL.list.filter(p=>p.id!==CL.id && (!q || p.nick.toLowerCase().includes(q))).sort((a,b)=>b.worth-a.worth).slice(0,30);
+  box.innerHTML = list.length ? list.map(p=>`<a class="tr-pl" href="#trade-new-${esc(p.id)}">${framed(p, avatarOf(p,32))}<b class="${nickCls(p)}"></b><small>${(p.tinv||[]).length} ${plural((p.tinv||[]).length,"предмет","предмета","предметов")}</small></a>`).join("")
+    : `<p class="hint">${CL.list.length ? "Никого не нашли." : "Игроки появятся, когда загрузится рейтинг."}</p>`;
+  box.querySelectorAll(".tr-pl").forEach((a,i)=>{ a.querySelector("b").textContent = list[i].nick; });
+}
+function drawTrades(){
+  const box = document.getElementById("tr-list"); if(!box) return;
+  const inc = TR.list.filter(t=>t.to===CL.id && t.state==="pending"), out = TR.list.filter(t=>t.from===CL.id && t.state==="pending"), hist = TR.list.filter(t=>t.state!=="pending").slice(0,20);
+  const sec = (title, arr, empty) => `<section class="panel" style="margin-top:14px"><div class="ph"><h2>${title}</h2></div>${arr.length ? arr.map(trCard).join("") : `<p class="hint">${empty}</p>`}</section>`;
+  box.innerHTML = sec("Входящие предложения", inc, "Пока никто ничего не предлагает.") + sec("Ваши предложения", out, "Вы ещё ничего не предлагали.") + sec("История", hist, "Здесь будут завершённые обмены.");
+  const all = inc.concat(out, hist);
+  box.querySelectorAll(".tr-card").forEach((a,i)=>{ const t = all[i]; a.querySelector(".tr-who b").textContent = t.from===CL.id ? t.toNick : t.fromNick; });
+}
+/* --- окно обмена --- */
+function twShell(title, partner){
+  return `<div class="view-head"><div><h1>${title}</h1></div><a class="btn" href="#trades">← Все трейды</a></div>
+    <div class="tw" id="tw">
+      <div class="tw-head">${partner ? framed(partner, avatarOf(partner,40)) : ""}<div><small>Обмен с игроком</small><b id="tw-nick" class="${partner ? nickCls(partner) : ""}"></b></div></div>
+      <div class="tw-offers">
+        <section class="tw-side"><h3>Вы отдаёте</h3><div class="tw-box" id="tw-give"></div><div class="tw-coins" id="tw-gc"></div><div class="tw-total" id="tw-gt"></div></section>
+        <div class="tw-swap" aria-hidden="true">⇄</div>
+        <section class="tw-side"><h3>Вы получаете</h3><div class="tw-box" id="tw-get"></div><div class="tw-coins" id="tw-rc"></div><div class="tw-total" id="tw-rt"></div></section>
+      </div>
+      <div id="tw-pick"></div>
+      <div class="tw-foot" id="tw-foot"></div>
+    </div>`;
+}
+const twItems = (arr, rm) => arr.length ? arr.map(it=>mini(it, rm ? `data-rm="${it.id}" title="Убрать"` : `tabindex="-1"`, false)).join("") : `<p class="tw-empty">пусто</p>`;
+function viewTradeNew(pid){
+  const app = document.getElementById("app");
+  if(!trOn()){ location.replace("#trades"); return; }
+  const p = CL.list.find(x=>x.id===pid);
+  if(!p){ app.innerHTML = `<div class="view-head"><h1>Обмен</h1></div><div class="empty">Игрок не найден. <a href="#trades">К списку трейдов</a></div>`; return; }
+  if(!TR.draft || TR.draft.to!==pid) TR.draft = {to:pid, give:new Set(), get:new Set(), giveCoins:0, getCoins:0};
+  TR.view = null;
+  app.innerHTML = twShell("Новый обмен", p);
+  document.getElementById("tw-nick").textContent = p.nick;
+  drawTradeNew(p);
+}
+function drawTradeNew(p){
+  const d = TR.draft;
+  const give = S.inv.filter(i=>d.give.has(i.id)), get = (p.tinv||[]).filter(i=>d.get.has(i.id));
+  [...d.give].forEach(id=>{ if(!S.inv.some(i=>i.id===id)) d.give.delete(id); });
+  document.getElementById("tw-give").innerHTML = twItems(give, true);
+  document.getElementById("tw-get").innerHTML = twItems(get, true);
+  document.getElementById("tw-gc").innerHTML = `<label>+ монеты <input id="tw-gci" type="number" min="0" step="1" inputmode="numeric" value="${d.giveCoins||""}" placeholder="0"></label>`;
+  document.getElementById("tw-rc").innerHTML = `<label>+ монеты <input id="tw-rci" type="number" min="0" step="1" inputmode="numeric" value="${d.getCoins||""}" placeholder="0"></label>`;
+  const gt = trSum(give) + (d.giveCoins||0), rt = trSum(get) + (d.getCoins||0);
+  document.getElementById("tw-gt").innerHTML = `Итого: <b class="num">${money(gt)}</b>`;
+  document.getElementById("tw-rt").innerHTML = `Итого: <b class="num">${money(rt)}</b>`;
+  const mineInv = S.inv.slice().sort((a,b)=>b.price-a.price), theirs = (p.tinv||[]).slice().sort((a,b)=>b.price-a.price);
+  const list = TR.tab==="me" ? mineInv : theirs, sel = TR.tab==="me" ? d.give : d.get;
+  document.getElementById("tw-pick").innerHTML = `
+    <div class="tabs tw-tabs" role="tablist"><button role="tab" data-tab="me" class="${TR.tab==="me"?'on':''}">Ваш инвентарь</button><button role="tab" data-tab="them" class="${TR.tab==="them"?'on':''}">Инвентарь игрока</button></div>
+    <div class="minis tw-inv">${list.length ? list.map(it=>mini(it, `data-pick="${it.id}"`, sel.has(it.id))).join("") : `<p class="empty-note">${TR.tab==="me" ? "Ваш инвентарь пуст." : "У игрока нет предметов для обмена."}</p>`}</div>
+    ${TR.tab==="them" ? `<p class="hint">Показаны до 60 самых дорогих предметов игрока на момент его последнего захода.</p>` : ""}`;
+  document.getElementById("tw-foot").innerHTML = `<input id="tw-msg" maxlength="120" placeholder="Сообщение (необязательно)" value="${esc(d.msg||"")}"><button class="btn primary" id="tw-send">Отправить предложение</button><span class="hint" id="tw-err"></span>`;
+  const rd = ()=>drawTradeNew(p);
+  document.querySelectorAll("#tw-pick [data-tab]").forEach(b=>b.addEventListener("click",()=>{ TR.tab = b.dataset.tab; rd(); }));
+  document.querySelectorAll("#tw-pick [data-pick]").forEach(b=>b.addEventListener("click",()=>{ const id = b.dataset.pick, set = TR.tab==="me" ? d.give : d.get;
+    if(set.has(id)) set.delete(id); else if(set.size < 20) set.add(id); rd(); }));
+  document.querySelectorAll("#tw-give [data-rm]").forEach(b=>b.addEventListener("click",()=>{ d.give.delete(b.dataset.rm); rd(); }));
+  document.querySelectorAll("#tw-get [data-rm]").forEach(b=>b.addEventListener("click",()=>{ d.get.delete(b.dataset.rm); rd(); }));
+  const totals = ()=>{ const g2 = S.inv.filter(i=>d.give.has(i.id)), r2 = (p.tinv||[]).filter(i=>d.get.has(i.id));
+    document.getElementById("tw-gt").innerHTML = `Итого: <b class="num">${money(trSum(g2) + (d.giveCoins||0))}</b>`;
+    document.getElementById("tw-rt").innerHTML = `Итого: <b class="num">${money(trSum(r2) + (d.getCoins||0))}</b>`; };
+  document.getElementById("tw-gci").addEventListener("input", e=>{ d.giveCoins = Math.max(0, Math.floor(Number(e.target.value)||0)); totals(); });
+  document.getElementById("tw-rci").addEventListener("input", e=>{ d.getCoins = Math.max(0, Math.floor(Number(e.target.value)||0)); totals(); });
+  document.getElementById("tw-msg").addEventListener("input", e=>{ d.msg = e.target.value; });
+  document.getElementById("tw-send").addEventListener("click", ()=>trSend(p));
+}
+async function trSend(p){
+  const d = TR.draft, err = document.getElementById("tw-err"), btn = document.getElementById("tw-send");
+  const give = S.inv.filter(i=>d.give.has(i.id)), get = (p.tinv||[]).filter(i=>d.get.has(i.id));
+  if(!give.length && !get.length && !d.giveCoins && !d.getCoins){ flash(err, false, "Добавьте предметы или монеты"); return; }
+  if((d.giveCoins||0) > S.bal){ flash(err, false, "Не хватает монет"); return; }
+  btn.disabled = true;
+  // замораживаем отдаваемое
+  const ids = new Set(give.map(i=>i.id));
+  S.inv = S.inv.filter(i=>!ids.has(i.id)); S.bal = Math.round((S.bal - (d.giveCoins||0))*100)/100; save(); renderHeader();
+  let r; try{ r = await trAct({action:"create", to:p.id, toNick:p.nick, nick:S.profile.nick, give, get, giveCoins:d.giveCoins||0, getCoins:d.getCoins||0, msg:d.msg||""}); }catch(e){ r = {error:"Нет связи с сервером"}; }
+  if(r.error || !r.trade){ S.inv = give.concat(S.inv); S.bal = Math.round((S.bal + (d.giveCoins||0))*100)/100; save(); renderHeader(); btn.disabled = false; flash(err, false, r.error || "Не получилось"); return; }
+  trMine()[r.trade.id] = {done:false}; save();
+  TR.list.unshift(r.trade); TR.draft = null;
+  if(S.sound) beep(880,.08,.05,"triangle");
+  location.hash = "#trade-" + r.trade.id;
+}
+function viewTrade(id){
+  const app = document.getElementById("app");
+  if(!trOn()){ location.replace("#trades"); return; }
+  TR.view = id;
+  const t = TR.list.find(x=>x.id===id);
+  if(!t){ app.innerHTML = `<div class="view-head"><h1>Обмен</h1></div><div class="empty">Загрузка…</div>`; trRefresh().then(()=>{ if(TR.view===id && !TR.list.some(x=>x.id===id)) app.innerHTML = `<div class="view-head"><h1>Обмен</h1></div><div class="empty">Обмен не найден. <a href="#trades">К списку трейдов</a></div>`; else if(TR.view===id) viewTrade(id); }); return; }
+  const out = t.from===CL.id, pid = out ? t.to : t.from, partner = CL.list.find(x=>x.id===pid) || {id:pid, nick: out ? t.toNick : t.fromNick, av:{g:0,c:0}};
+  app.innerHTML = twShell(out ? "Ваше предложение" : "Предложение обмена", partner);
+  document.getElementById("tw-nick").textContent = partner.nick;
+  drawTradeView(t); trFast();
+}
+function drawTradeView(t){
+  const out = t.from===CL.id;
+  const give = out ? t.give : t.get, get = out ? t.get : t.give, gc = (out ? t.giveCoins : t.getCoins)||0, rc = (out ? t.getCoins : t.giveCoins)||0;
+  document.getElementById("tw-give").innerHTML = twItems(give, false);
+  document.getElementById("tw-get").innerHTML = twItems(get, false);
+  document.getElementById("tw-gc").innerHTML = gc ? `+ <b class="num">${money(gc)}</b>` : "";
+  document.getElementById("tw-rc").innerHTML = rc ? `+ <b class="num">${money(rc)}</b>` : "";
+  document.getElementById("tw-gt").innerHTML = `Итого: <b class="num">${money(trSum(give)+gc)}</b>`;
+  document.getElementById("tw-rt").innerHTML = `Итого: <b class="num">${money(trSum(get)+rc)}</b>`;
+  document.getElementById("tw-pick").innerHTML = t.msg ? `<p class="tw-note"></p>` : "";
+  if(t.msg) document.querySelector(".tw-note").textContent = "Сообщение: " + t.msg;
+  const foot = document.getElementById("tw-foot");
+  if(t.state==="pending" && !out){
+    foot.innerHTML = `<button class="btn primary" id="tw-acc">Принять обмен</button><button class="btn" id="tw-dec">Отклонить</button><span class="hint" id="tw-err"></span>`;
+    document.getElementById("tw-acc").addEventListener("click", ()=>trAccept(t));
+    document.getElementById("tw-dec").addEventListener("click", ()=>trClose(t, "decline"));
+  } else if(t.state==="pending" && out){
+    foot.innerHTML = `<span class="tw-status">Ждём ответа игрока. Ваши предметы зарезервированы под этот обмен.</span><button class="btn" id="tw-can">Отменить предложение</button><span class="hint" id="tw-err"></span>`;
+    document.getElementById("tw-can").addEventListener("click", ()=>trClose(t, "cancel"));
+  } else {
+    foot.innerHTML = `<span class="tw-status st-${t.state}">${t.state==="accepted" ? "Обмен состоялся — предметы уже в инвентаре." : t.state==="declined" ? (out ? "Игрок отклонил обмен. Ваши предметы вернулись." : "Вы отклонили обмен.") : (out ? "Вы отменили предложение. Предметы вернулись." : "Игрок отменил предложение.")}</span>`;
+  }
+}
+async function trAccept(t){
+  const err = document.getElementById("tw-err"), btn = document.getElementById("tw-acc");
+  const ids = new Set((t.get||[]).map(g=>g.id));
+  if(![...ids].every(id=>S.inv.some(i=>i.id===id))){ flash(err, false, "У вас уже нет части запрошенных предметов — обмен принять нельзя"); return; }
+  if((t.getCoins||0) > S.bal){ flash(err, false, "Не хватает монет для обмена"); return; }
+  btn.disabled = true;
+  let r; try{ r = await trAct({action:"accept", id:t.id}); }catch(e){ r = {error:"Нет связи с сервером"}; }
+  if(r.error){ btn.disabled = false; flash(err, false, r.error); trRefresh(); return; }
+  S.inv = S.inv.filter(i=>!ids.has(i.id)); S.bal = Math.round((S.bal - (t.getCoins||0) + (t.giveCoins||0))*100)/100;
+  trAdd(t.give||[]); trMine()[t.id] = {done:true};
+  save(); renderHeader();
+  if(S.sound){ beep(660,.08,.05,"triangle"); setTimeout(()=>beep(990,.12,.05,"triangle"), 90); }
+  const i = TR.list.findIndex(x=>x.id===t.id); if(i>=0) TR.list[i] = r.trade;
+  trBadge(); drawTradeView(r.trade);
+}
+async function trClose(t, action){
+  const err = document.getElementById("tw-err");
+  let r; try{ r = await trAct({action, id:t.id}); }catch(e){ r = {error:"Нет связи с сервером"}; }
+  if(r.error){ flash(err, false, r.error); trRefresh(); return; }
+  const i = TR.list.findIndex(x=>x.id===t.id); if(i>=0) TR.list[i] = r.trade;
+  trSettle(); trBadge(); drawTradeView(r.trade);
+}
+
 /* ---------- Маршрутизация ---------- */
 function route(){
   const h = location.hash.slice(1);
@@ -5050,6 +5293,7 @@ function route(){
   document.getElementById("nav-crash").classList.toggle("on", h==="crash");
   document.getElementById("nav-ct").classList.toggle("on", h==="contract");
   document.getElementById("nav-mines").classList.toggle("on", h==="mines");
+  document.getElementById("nav-tr").classList.toggle("on", h==="trades" || h.startsWith("trade-"));
   document.getElementById("nav-bt").classList.toggle("on", h==="battles" || h.startsWith("battle-"));
   document.getElementById("nav-top").classList.toggle("on", h==="top");
   document.getElementById("nav-admin").classList.toggle("on", h==="admin");
@@ -5062,6 +5306,9 @@ function route(){
   if(h==="crash"){ if(document.getElementById("crc")) return; return viewCrash(); }
   if(h==="battles") return viewBattles();
   if(h==="mines") return viewMines();
+  if(h==="trades") return viewTrades();
+  if(h.startsWith("trade-new-")) return viewTradeNew(h.slice(10));
+  if(h.startsWith("trade-")) return viewTrade(h.slice(6));
   if(h==="contract"){ if(CT.busy && document.getElementById("ct-slots")) return; return viewContract(); }
   if(h.startsWith("battle-")){ if(BT.view && BT.view.id===h.slice(7) && document.getElementById("bv")) return; return viewBattle(h.slice(7)); }
   if(h==="upgrade"){ if(upSpinning && document.getElementById("needle")) return; return viewUpgrade(); }

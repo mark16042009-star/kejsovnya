@@ -248,6 +248,52 @@ async function promoActivate(st, uid, b) {
   return { ok: true, code, reward: { type: d.type === "case" ? "case" : "money", amount: Math.max(0, Math.round(Number(d.amount) || 0)), caseId: String(d.caseId || ""), count: Math.max(1, Math.min(100, Number(d.count) | 0 || 1)) } };
 }
 
+
+/* ---------------- Трейды между игроками ----------------
+ * Предложение обмена: предметы и монеты с обеих сторон. Сервер хранит trades/{id}
+ * и следит за состоянием: pending → accepted / declined / canceled (смена только с pending). */
+const cleanTradeItems = a => (Array.isArray(a) ? a.slice(0, 20) : []).map(x => x && typeof x === "object" ? {
+  id: String(x.id || "").replace(/[^a-z0-9]/gi, "").slice(0, 24), c: String(x.c || "").slice(0, 20), s: x.s | 0, w: x.w | 0,
+  fl: Number(x.fl) || 0, st: !!x.st, price: Math.max(0, Math.round(Number(x.price) || 0)) } : null).filter(x => x && x.id && x.c);
+async function tradeAction(st, uid, b) {
+  b = b && typeof b === "object" ? b : {};
+  const now = Date.now();
+  const setIf = st.setIf ? (p, d, v) => st.setIf(p, d, v) : async (p, d, v) => { const c = await st.get(p); if (!c || c.ver !== v) return false; await st.set(p, d); return true; };
+  if (b.action === "list") {
+    const all = await st.list("trades", 1000);
+    const mine = all.map(x => x.data).filter(t => t && (t.from === uid || t.to === uid)).sort((a, c) => (c.ts || 0) - (a.ts || 0)).slice(0, 60);
+    return { trades: mine };
+  }
+  if (b.action === "create") {
+    const to = String(b.to || "").slice(0, 80);
+    if (!to || to === uid) return { error: "Выберите другого игрока" };
+    const give = cleanTradeItems(b.give), get = cleanTradeItems(b.get);
+    const giveCoins = Math.max(0, Math.min(1e12, Math.round(Number(b.giveCoins) || 0))), getCoins = Math.max(0, Math.min(1e12, Math.round(Number(b.getCoins) || 0)));
+    if (!give.length && !get.length && !giveCoins && !getCoins) return { error: "Добавьте предметы или монеты" };
+    const all = await st.list("trades", 1000);
+    if (all.filter(x => x.data && x.data.from === uid && x.data.state === "pending").length >= 10) return { error: "У вас уже 10 открытых предложений" };
+    let cleaned = 0; // старые завершённые трейды (старше 14 дней) убираем понемногу
+    for (const x of all) if (cleaned < 10 && x.data && x.data.state !== "pending" && now - (Number(x.data.ts) || 0) > 14 * 864e5) { await st.del("trades/" + x.id); cleaned++; }
+    const id = now.toString(36) + [...crypto.getRandomValues(new Uint8Array(3))].map(v => v.toString(16).padStart(2, "0")).join("");
+    const t = { id, from: uid, fromNick: String(b.nick || "Игрок").slice(0, 20), to, toNick: String(b.toNick || "Игрок").slice(0, 20),
+      give, get, giveCoins, getCoins, msg: String(b.msg || "").slice(0, 120), state: "pending", ts: now };
+    await st.set("trades/" + id, t);
+    return { trade: t };
+  }
+  const id = String(b.id || "");
+  if (!/^[a-z0-9]{1,40}$/i.test(id)) return { error: "Трейд не найден" };
+  const cur = await st.get("trades/" + id);
+  if (!cur) return { error: "Трейд не найден" };
+  const t = cur.data;
+  const next = { accept: ["to", "accepted"], decline: ["to", "declined"], cancel: ["from", "canceled"] }[b.action];
+  if (!next) return { error: "Неизвестное действие" };
+  if (t[next[0]] !== uid) return { error: "Нет прав" };
+  if (t.state !== "pending") return { error: "Трейд уже закрыт", trade: t };
+  t.state = next[1]; t.done = now;
+  if (!(await setIf("trades/" + id, t, cur.ver))) { const again = await st.get("trades/" + id); return { error: "Трейд уже закрыт", trade: again && again.data }; }
+  return { trade: t };
+}
+
 /* ---------------- Правила доступа (те же, что были на claude.ai) ---------------- */
 const SEG = /^[A-Za-z0-9_\-.~:@+]{1,200}$/;
 function parsePath(p, wantDoc) {
@@ -422,6 +468,10 @@ async function main() {
         if (!canRead(s, uid, owner)) return send(res, 200, { docs: [], ver: 0 });
         const limit = Math.min(1000, Math.max(1, Number(url.searchParams.get("limit")) || 1000));
         return send(res, 200, await store.list(s.join("/"), limit));
+      }
+      if (route === "POST /api/trade") {
+        if (tooMany(uid)) return send(res, 200, { error: "Слишком часто" });
+        return send(res, 200, await tradeAction(store, uid, await readBody(req)));
       }
       if (route === "POST /api/promo") {
         if (tooMany(uid)) return send(res, 200, { error: "Слишком часто" });
