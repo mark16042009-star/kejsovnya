@@ -446,6 +446,13 @@ img,svg,canvas{-webkit-user-drag:none;user-drag:none}
 .wheel-lost{font-family:var(--mono);font-size:20px;fill:var(--text)}
 
 .case-result{display:grid;gap:10px}
+.lim-tag{position:absolute;top:10px;right:10px;z-index:2;font-size:10px;letter-spacing:.04em;text-transform:uppercase;padding:3px 7px;background:#2a0f12;color:#ffb4b4;border:1px solid var(--bad)}
+.lim-tag.out{background:#1a1a1a;color:var(--muted);border-color:var(--line)}
+.lim-line{display:grid;gap:6px;color:var(--muted);font-size:14px}
+.lim-line b{color:var(--bad)}
+.lim-line i{display:block;height:6px;background:var(--bg2);border:1px solid var(--line);position:relative}
+.lim-line i::after{content:"";position:absolute;inset:0 auto 0 0;width:var(--p);background:var(--bad)}
+.lim-line.out{color:var(--text)}
 .cr-acts{display:flex;flex-wrap:wrap;gap:8px}
 .cr-rar{display:flex;flex-wrap:wrap;gap:6px}
 .cr-more{justify-self:center}
@@ -524,6 +531,11 @@ img,svg,canvas{-webkit-user-drag:none;user-drag:none}
 .adm-case label{grid-row:1/span 2;display:flex;gap:4px;align-items:center;font-size:13px;color:var(--muted);white-space:nowrap}
 .adm-case input[type=checkbox]{accent-color:var(--accent)}
 .adm-case.off{opacity:.5}
+.adm-lim{grid-column:2/-1;display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:4px}
+.adm-lim::before{content:"Тираж:";font-size:12px;color:var(--muted)}
+.adm-case .adm-lim input{width:110px;flex:0 0 110px;grid-row:auto;grid-column:auto}
+.adm-lim small{font-size:11px;color:var(--muted)}
+.adm-lim .adm-reset{padding:3px 8px;font-size:12px} .adm-lim .adm-reset[hidden]{display:none}
 .adm .ph input[type=search]{width:220px}
 .adm-players{display:grid;gap:6px}
 .adm-pl{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:6px 12px;align-items:center;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:8px 12px}
@@ -1171,10 +1183,10 @@ body.wide-case main{max-width:none}
 #adm-rtp{min-width:0;overflow:hidden}
 .rtp-table{max-width:100%}
 </style>
-<script>window.APP_BUILD="03.11 21:50";</script>
+<script>window.APP_BUILD="03.11 22:06";</script>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
-<script src="config.js?v=202611031950"></script>
-<script src="adapter.js?v=202611031950"></script>
+<script src="config.js?v=202611032006"></script>
+<script src="adapter.js?v=202611032006"></script>
 <link rel="icon" href="icon.png">
 </head>
 <body>
@@ -2782,7 +2794,7 @@ function drawCaseGrid(){
   }
   const list = CASES.filter(c=>!c.off && c.price>=lo && c.price<=hi && (!q || c.name.toLowerCase().includes(q))).sort(CASE_SORTS[S.caseSort][1]);
   const card = c => `<a class="case${c.elite?' elite':''}" href="#case-${c.id}" style="--ca:${c.accent}">
-        ${c.isNew?'<span class="new-tag">Новый</span>':''}${freeOf(c.id) ? `<span class="free-tag">🎁 ×${freeOf(c.id)}</span>` : ''}
+        ${c.isNew?'<span class="new-tag">Новый</span>':''}${freeOf(c.id) ? `<span class="free-tag">🎁 ×${freeOf(c.id)}</span>` : ''}${stockBadge(c)}
         ${caseArt(c)}
         <div class="case-row"><h3>${c.name}</h3><span class="price">${money(c.price)}</span></div>
         <div class="top">от <b>${money(c.minP)}</b> до <b>${money(c.maxP)}</b></div>
@@ -2812,6 +2824,7 @@ function viewCase(c){
     </div>
     <section class="opener" aria-label="Открытие кейса">
       <div class="rolls" id="rolls"><div class="case-preview">${caseArt(c)}</div></div>
+      <div id="lim-line">${stockLine(c)}</div>
       <div class="case-result" id="case-result" hidden></div>
       <div class="controls">
         <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
@@ -2850,7 +2863,12 @@ function updateOpenBtn(c){
   const btn = document.getElementById("open"), hint = document.getElementById("hint");
   if(!btn) return;
   const fr = freeOf(c.id);
-  if(fr > 0){ btn.textContent = `Открыть бесплатно · осталось ${fr}`; btn.disabled = spinning; hint.className = "hint"; hint.textContent = ""; return; }
+  if(fr > 0 && !(c.limit && (stockLeft(c) <= 0 || !btOn()))){ btn.textContent = `Открыть бесплатно · осталось ${fr}`; btn.disabled = spinning; hint.className = "hint"; hint.textContent = ""; return; }
+  if(c.limit){
+    const left = stockLeft(c);
+    if(left <= 0 || !btOn()){ btn.textContent = left <= 0 ? "Распродан" : "Только для аккаунтов"; btn.disabled = true; hint.className = "hint"; hint.textContent = left <= 0 ? "" : "Лимитированный кейс можно открыть, войдя в аккаунт."; return; }
+    if(S.n > left){ const cost = Math.round(c.price*S.n*100)/100; btn.textContent = `Открыть ${S.n} шт. за ${money(cost)}`; btn.disabled = true; hint.className = "hint err"; hint.textContent = `Осталось только ${fmtNum(left)} шт. — выберите меньше.`; return; }
+  }
   const cost = Math.round(c.price*S.n*100)/100;
   btn.textContent = `Открыть ${S.n>1?S.n+' шт. ':''}за ${money(cost)}`;
   const enough = S.bal >= cost - 1e-9;
@@ -2876,6 +2894,17 @@ async function openCases(c, free){
   if(free && freeOf(c.id) < 1) return;
   const n = free ? 1 : S.n, cost = free ? 0 : Math.round(c.price*n*100)/100;
   if(S.bal < cost - 1e-9){ updateOpenBtn(c); return; }
+  if(c.limit){
+    if(!btOn() || stockLeft(c) < n){ updateOpenBtn(c); return; }
+    spinning = true; { const b = document.getElementById("open"); if(b){ b.disabled = true; b.textContent = "Проверяем тираж…"; } }
+    let r; try{ r = await CL.db.action("stock", {case:c.id, n}) || {}; }catch(e){ r = {error:"Нет связи с сервером"}; }
+    spinning = false;
+    if(typeof r.left === "number" && r.limit) CL.stock[c.id] = Math.max(0, r.limit - r.left);
+    if(!r.ok){ stockRefresh(); updateOpenBtn(c); const h = document.getElementById("hint"); if(h){ h.className = "hint err"; h.textContent = r.error || "Не получилось, попробуйте ещё раз"; } return; }
+    stockRefresh();
+    if(free && freeOf(c.id) < 1) return;
+    if(S.bal < cost - 1e-9){ updateOpenBtn(c); return; }
+  }
   spinning = true;
   audio();
   if(free) S.free[c.id] = freeOf(c.id) - 1;
@@ -3797,6 +3826,7 @@ async function initCloud(){
     subscribeConfig();
     subscribeTop();
     subscribeFeed();
+    subscribeStock();
     btInitSettle();
     trStart();
     const ref = db.collection("data/users/"+id).doc("game");
@@ -3850,6 +3880,36 @@ async function flushCloud(){
   wBusy = false;
   if(wDirty) flushCloud();
 }
+/* ---------- Лимитированные кейсы: общий тираж ---------- */
+CL.stock = {};
+function subscribeStock(){
+  CL.db.doc("stock/main").onSnapshot(snap=>{
+    const d = snap.exists ? snap.data() : {}, sold = d && d.sold && typeof d.sold==="object" ? d.sold : {};
+    CL.stock = {}; Object.keys(sold).forEach(k=>{ const v = Number(sold[k]); if(isFinite(v) && v>0) CL.stock[k] = v; });
+    stockRefresh();
+  }, ()=>{});
+}
+const stockLeft = c => c.limit ? Math.max(0, c.limit - (CL.stock[c.id]||0)) : Infinity;
+function stockBadge(c){
+  if(!c.limit) return "";
+  const left = stockLeft(c);
+  return left > 0 ? `<span class="lim-tag" title="Ограниченный тираж">Осталось ${fmtNum(left)} из ${fmtNum(c.limit)}</span>` : `<span class="lim-tag out">Распродан</span>`;
+}
+const fmtNum = v => Math.round(v).toLocaleString("ru-RU").replace(/\u00a0/g," ");
+function confirmTwice(b){ if(b.dataset.sure){ return true; } b.dataset.sure = "1"; const t = b.textContent; b.textContent = "точно?"; setTimeout(()=>{ if(document.body.contains(b)){ delete b.dataset.sure; b.textContent = t; } }, 3000); return false; }
+function stockRefresh(){
+  const h = location.hash;
+  if(document.getElementById("case-grid") && CASES.some(c=>c.limit)) drawCaseGrid();
+  const m = h.match(/^#case-(.+)$/), c = m && CASE_BY_ID[m[1]];
+  if(c){ const el = document.getElementById("lim-line"); if(el) el.innerHTML = stockLine(c); if(!spinning) updateOpenBtn(c); }
+  if(h==="#admin") document.querySelectorAll("[data-sold]").forEach(el=>{ const c = CASE_BY_ID[el.dataset.sold]; if(c) el.textContent = soldText(c); }); document.querySelectorAll("[data-reset]").forEach(b=>{ b.hidden = !CL.stock[b.dataset.reset]; });
+}
+function stockLine(c){
+  if(!c.limit) return "";
+  const left = stockLeft(c), pct = Math.max(0, Math.min(100, left/c.limit*100));
+  return `<div class="lim-line${left?'':' out'}"><span>${left ? `Ограниченный тираж: осталось <b class="num">${fmtNum(left)}</b> из ${fmtNum(c.limit)}` : `Кейс распродан — все ${fmtNum(c.limit)} шт. уже открыты`}</span><i style="--p:${pct}%"></i></div>`;
+}
+const soldText = c => `продано ${fmtNum(CL.stock[c.id]||0)}${c.limit ? ` из ${fmtNum(c.limit)}` : ""}`;
 function subscribeFeed(){
   CL.db.doc("feed/main").onSnapshot(snap=>{
     if(!snap.exists) return;
@@ -4110,7 +4170,7 @@ function applyConfig(raw){
     luck:Object.fromEntries(Object.entries(obj(c.luck)).filter(([k,v])=>typeof k==="string" && isFinite(Number(v)) && Number(v)>0 && Number(v)!==1).map(([k,v])=>[k, Math.min(5, Math.max(0.1, Number(v)))])),
     announce:{text:String(an.text||"").slice(0,300), on:!!an.on, ts:Number(an.ts)||0}};
   RTP = CFG.rtp; RUB_PER_POINT = CFG.runRate; UP_MAX = CFG.upMax; UP_EDGE = CFG.upEdge; CRASH_RTP = CFG.crashRtp; CONTRACT_RTP = CFG.contractRtp; MINES_RTP = CFG.minesRtp; DAILY_BASE = CFG.dailyBase; VAULT_RATE = CFG.vaultRate; START = CFG.start;
-  CASES.forEach(cs=>{ const o = obj(CFG.cases[cs.id]); cs.price = Math.round(n(o.price,1,1e10,cs.defPrice)); cs.off = !!o.off; cs.isNew = o.isNew===undefined ? cs.defNew : !!o.isNew; const r = Number(o.rtp); cs.rtp = isFinite(r) && r>=0.3 && r<=0.99 ? r : null; });
+  CASES.forEach(cs=>{ const o = obj(CFG.cases[cs.id]); cs.price = Math.round(n(o.price,1,1e10,cs.defPrice)); cs.off = !!o.off; cs.isNew = o.isNew===undefined ? cs.defNew : !!o.isNew; const r = Number(o.rtp); cs.rtp = isFinite(r) && r>=0.3 && r<=0.99 ? r : null; cs.limit = Math.floor(n(o.limit,0,1e9,0)); });
   recomputeCases(); buildCatalog();
 }
 function subscribeConfig(){
@@ -4229,6 +4289,7 @@ function viewAdmin(){
             <input type="number" min="1" step="1" value="${c.price}" aria-label="Цена кейса ${c.name}" data-f="price"><small>исходно ${money(c.defPrice)}</small>
             <input type="number" min="30" max="99" step="1" value="${c.rtp ? Math.round(c.rtp*100) : ''}" placeholder="${Math.round(RTP*100)}%" aria-label="RTP кейса ${c.name}, %" title="RTP кейса, %. Пусто — общий" data-f="rtp">
             <label><input type="checkbox" data-f="on" ${c.off?'':'checked'}> вкл.</label>
+            <span class="adm-lim"><input type="number" min="0" step="1" value="${c.limit||''}" placeholder="∞" aria-label="Тираж кейса ${c.name}" title="Сколько штук этого кейса можно открыть всем игрокам вместе. Пусто — без ограничений" data-f="limit"><small data-sold="${c.id}">${soldText(c)}</small><button type="button" class="btn adm-reset" data-reset="${c.id}" title="Обнулить счётчик проданных" ${CL.stock[c.id]?'':'hidden'}>обнулить</button></span>
             <label><input type="checkbox" data-f="new" ${c.isNew?'checked':''}> новый</label>
           </div>`).join("")}</div>
         <div class="adm-row"><button class="btn primary" id="c-save">Сохранить кейсы</button><button class="btn" id="c-def">Сбросить к исходным</button><span class="hint" id="c-msg"></span></div>
@@ -4270,11 +4331,19 @@ function viewAdmin(){
       const rv = row.querySelector("[data-f='rtp']").value.trim(), rtp = rv==="" ? null : Number(rv)/100;
       if(rtp!==null && !(rtp>=0.3 && rtp<=0.99)) bad = true;
       cases[c.id] = {price, off: !row.querySelector("[data-f='on']").checked, isNew: row.querySelector("[data-f='new']").checked};
+      const lv = row.querySelector("[data-f='limit']").value.trim(), lim = lv==="" ? 0 : Math.floor(Number(lv));
+      if(!(lim>=0)) bad = true; else if(lim) cases[c.id].limit = lim;
       if(rtp!==null) cases[c.id].rtp = rtp;
     });
-    if(bad){ flash(m, false, "Цена — от 1 ₽, RTP — от 30 до 99% (или пусто)."); return; }
+    if(bad){ flash(m, false, "Цена — от 1 ₽, RTP — от 30 до 99% (или пусто), тираж — целое число или пусто."); return; }
     try{ await saveConfig({cases}); drawAdminRtp(); flash(m, true, "Кейсы обновлены у всех"); }catch(e){ flash(m, false, "Не сохранилось. Попробуйте ещё раз."); }
   });
+  app.querySelectorAll("[data-reset]").forEach(b=>b.addEventListener("click", async ()=>{
+    const id = b.dataset.reset, m = document.getElementById("c-msg");
+    if(!confirmTwice(b)) return;
+    try{ const sold = Object.assign({}, CL.stock); delete sold[id]; await CL.db.doc("stock/main").set({sold}); CL.stock = sold; delete b.dataset.sure; b.textContent = "обнулить"; stockRefresh(); flash(m, true, `Счётчик «${CASE_BY_ID[id].name}» обнулён — тираж снова полный`); }
+    catch(e){ flash(m, false, "Не сохранилось. Попробуйте ещё раз."); }
+  }));
   document.getElementById("c-def").addEventListener("click", async ()=>{
     const m = document.getElementById("c-msg");
     try{ await saveConfig({cases:{}}); viewAdmin(); flash(document.getElementById("c-msg"), true, "Кейсы сброшены к исходным"); }catch(e){ flash(m, false, "Не сохранилось. Попробуйте ещё раз."); }

@@ -231,6 +231,30 @@ async function battleAction(st, uid, owner, b) {
 /* ---------------- Промокоды ----------------
  * Создаёт и видит промокоды только админ (promos/КОД). Активация идёт через сервер:
  * он проверяет срок, лимит активаций и что игрок ещё не вводил этот код. */
+/* ---------------- Лимитированные кейсы ----------------
+ * Админ задаёт в config/main → cases[id].limit общий тираж кейса. Счётчик проданных
+ * лежит в stock/main → sold[id]; списываем атомарно (setIf), чтобы тираж не превысили. */
+async function stockAction(st, uid, b) {
+  b = b && typeof b === "object" ? b : {};
+  const id = String(b.case || "").slice(0, 20), n = Math.max(1, Math.min(100, Number(b.n) | 0 || 1));
+  const cfg = await st.get("config/main");
+  const cc = cfg && cfg.data && cfg.data.cases && cfg.data.cases[id];
+  const limit = cc ? Math.max(0, Math.floor(Number(cc.limit) || 0)) : 0;
+  if (!limit) return { ok: true, unlimited: true };
+  const setIf = st.setIf ? (p, d, v) => st.setIf(p, d, v) : async (p, d, v) => { const c = await st.get(p); if (!c || c.ver !== v) return false; await st.set(p, d); return true; };
+  for (let i = 0; i < 8; i++) {
+    const cur = await st.get("stock/main");
+    const d = cur && cur.data && typeof cur.data === "object" ? cur.data : {};
+    const soldMap = d.sold && typeof d.sold === "object" ? d.sold : {};
+    const sold = Math.max(0, Number(soldMap[id]) || 0), left = limit - sold;
+    if (left < n) return { error: left > 0 ? `Осталось только ${left} шт.` : "Кейс распродан", left: Math.max(0, left), limit };
+    const next = Object.assign({}, d, { sold: Object.assign({}, soldMap, { [id]: sold + n }) });
+    if (!cur) { await st.set("stock/main", next); return { ok: true, left: left - n, limit }; }
+    if (await setIf("stock/main", next, cur.ver)) return { ok: true, left: left - n, limit };
+  }
+  return { error: "Много желающих — попробуйте ещё раз" };
+}
+
 async function promoActivate(st, uid, b) {
   const code = String((b && b.code) || "").trim().toUpperCase().replace(/\s+/g, "");
   if (!code) return { error: "Введите промокод" };
@@ -305,7 +329,7 @@ function parsePath(p, wantDoc) {
 }
 function canRead(s, uid, owner) {
   if (s[0] === "data" && s[1] === "users") return s[2] === uid;        // личные данные — только свои
-  if (s[0] === "profiles" || s[0] === "config" || s[0] === "feed" || s[0] === "battles") return true; // рейтинг, настройки, лента и батлы — всем
+  if (s[0] === "profiles" || s[0] === "config" || s[0] === "feed" || s[0] === "battles" || s[0] === "stock") return true; // рейтинг, настройки, лента и батлы — всем
   if (s[0] === "grants") return owner || (s.length > 1 && s[1] === uid); // почтовый ящик — свой, админу все
   if (s[0] === "promos") return owner;
   return false;
@@ -313,7 +337,7 @@ function canRead(s, uid, owner) {
 function canWrite(s, uid, owner) {
   if (s[0] === "data" && s[1] === "users") return s.length > 2 && s[2] === uid;
   if (s[0] === "profiles") return s.length > 1 && (owner || s[1] === uid);
-  if (s[0] === "config" || s[0] === "grants" || s[0] === "promos") return owner;
+  if (s[0] === "config" || s[0] === "grants" || s[0] === "promos" || s[0] === "stock") return owner;
   return false;
 }
 
@@ -472,6 +496,10 @@ async function main() {
       if (route === "POST /api/trade") {
         if (tooMany(uid)) return send(res, 200, { error: "Слишком часто" });
         return send(res, 200, await tradeAction(store, uid, await readBody(req)));
+      }
+      if (route === "POST /api/stock") {
+        if (tooMany(uid)) return send(res, 200, { error: "Слишком часто" });
+        return send(res, 200, await stockAction(store, uid, await readBody(req)));
       }
       if (route === "POST /api/promo") {
         if (tooMany(uid)) return send(res, 200, { error: "Слишком часто" });
