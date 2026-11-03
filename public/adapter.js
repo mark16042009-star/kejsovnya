@@ -38,7 +38,8 @@
     return fetch(API + url, {
       method: method,
       // заголовок Telegram отправляем только внутри Telegram: лишний заголовок ломает запросы к Cloudflare (CORS)
-      headers: Object.assign({ "Content-Type": "application/json" }, initData ? { "X-Tg-Init-Data": initData } : {},
+      // заголовок Telegram нужен только серверу на VPS (вход через Telegram); Cloudflare-версия входит по логину и паролю
+      headers: Object.assign({ "Content-Type": "application/json" }, initData && AUTH !== "token" ? { "X-Tg-Init-Data": initData } : {},
         AUTH === "token" && getToken() ? { "Authorization": "Bearer " + getToken() } : {}),
       body: body ? JSON.stringify(body) : undefined
     }).then(function (r) {
@@ -55,7 +56,7 @@
 
   var mePromise = null;
   function me() {
-    if (!mePromise) mePromise = (AUTH === "token" && !getToken() && !initData) ? Promise.resolve(null)
+    if (!mePromise) mePromise = (AUTH === "token" && !getToken()) ? Promise.resolve(null)
       : call("GET", "/me").catch(function (e) { if (AUTH === "token" && e && e.code === "invalid_argument") setToken(""); return null; });
     return mePromise;
   }
@@ -166,7 +167,7 @@
   };
 
   /* ---------------- Вход по логину и паролю (обычный сайт) ---------------- */
-  if (initData) return; // в Telegram вход автоматический
+  if (initData && AUTH !== "token") return; // на VPS в Telegram вход автоматический, в Cloudflare-версии — по логину и паролю
   var LOCAL_KEY = "kejsovnya-rub-v1";
   window.APP_CONFIG = Object.assign({}, window.APP_CONFIG, {
     localNote: "Вы играете без аккаунта: прогресс хранится только в этом браузере. Войдите или зарегистрируйтесь, чтобы сохранить его и попасть в рейтинг.",
