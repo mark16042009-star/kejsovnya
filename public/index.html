@@ -516,6 +516,9 @@ img,svg,canvas{-webkit-user-drag:none;user-drag:none}
 
 .m-ch{position:absolute;right:6px;top:28px;font-size:11px;padding:1px 5px;border-radius:5px;background:rgba(0,0,0,.6);color:var(--muted)}
 .m-ch.mid{color:#facc15}.m-ch.hi{color:var(--good)}
+.adm-luck{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--muted)}
+.adm-luck select{background:var(--panel2);color:var(--text);border:1px solid var(--line);border-radius:8px;padding:6px 8px;font:inherit}
+.adm-pl.lucky .adm-luck select{border-color:var(--good);color:var(--good)} .adm-pl.unlucky .adm-luck select{border-color:var(--bad);color:var(--bad)}
 .rtp-chip{background:color-mix(in srgb, var(--accent) 14%, var(--panel));border-color:color-mix(in srgb, var(--accent) 40%, var(--line))}
 .adm-case{grid-template-columns:10px minmax(0,1fr) 80px 64px auto auto}
 .adm-case input[data-f=rtp]{grid-row:1/span 2;grid-column:4}
@@ -995,10 +998,32 @@ const skinOf = it => CASE_BY_ID[it.c].skins[it.s];
 const title = sk => sk.knife ? `★ ${sk.weapon}` : sk.weapon;
 
 /* ---------- Розыгрыш ---------- */
-function pickRarity(){ let x=Math.random(), acc=0; for(let i=0;i<5;i++){ acc+=RAR[i].p; if(x<acc) return i; } return 0; }
-function pickSkin(c){ const rar=pickRarity(); const list=c.skins.filter(s=>s.rar===rar); return list[Math.floor(Math.random()*list.length)]; }
+/* Персональная удача игрока (задаёт админ): 1 — обычные шансы, 1.5 — отдача ×1,5, 0.5 — вдвое меньше.
+ * Цены предметов не меняются — меняются вероятности редкостей, чтобы средняя отдача кейса стала RTP × удача.
+ * Игрок видит свои настоящие шансы и RTP на странице кейса и в апгрейде. */
+const myLuck = () => { const v = CL.id && CFG.luck ? Number(CFG.luck[CL.id]) : 1; return isFinite(v) && v>0 ? Math.min(5, Math.max(0.1, v)) : 1; };
+const oddsCache = {};
+function caseOdds(c){
+  const L = myLuck(), key = c.id+"|"+L+"|"+c.m;
+  if(oddsCache[key]) return oddsCache[key];
+  const base = RAR.map(r=>r.p);
+  const v = RAR.map((r,k)=>{ const s = c.skins.filter(x=>x.rar===k); return r.base*s.reduce((a,x)=>a+x.f,0)/s.length; });
+  const ev0 = base.reduce((a,p,k)=>a+p*v[k],0);
+  const tilt = t => { const w = base.map((p,k)=>p*Math.pow(v[k],t)); const z = w.reduce((a,b)=>a+b,0); return w.map(x=>x/z); };
+  let p = base;
+  if(L!==1){
+    const ratio = t => tilt(t).reduce((a,q,k)=>a+q*v[k],0)/ev0;
+    let lo = -12, hi = 12;
+    for(let i=0;i<60;i++){ const mid=(lo+hi)/2; if(ratio(mid) < L) lo = mid; else hi = mid; }
+    p = tilt((lo+hi)/2);
+  }
+  const k = p.reduce((a,q,i)=>a+q*v[i],0)/ev0;
+  return oddsCache[key] = {p, rtp:(c.rtp||RTP)*k};
+}
+function pickRarity(c){ const p = c ? caseOdds(c).p : RAR.map(r=>r.p); let x=Math.random(), acc=0; for(let i=0;i<5;i++){ acc+=p[i]; if(x<acc) return i; } return 0; }
+function pickSkin(c, fair){ const rar=pickRarity(fair ? c : null); const list=c.skins.filter(s=>s.rar===rar); return list[Math.floor(Math.random()*list.length)]; }
 function roll(c){
-  const sk = pickSkin(c);
+  const sk = pickSkin(c, true);
   let x=Math.random(), acc=0, w=2;
   for(let i=0;i<WEAR.length;i++){ acc+=WEAR[i].p; if(x<acc){w=i;break;} }
   const fl = WEAR[w].min + Math.random()*(WEAR[w].max-WEAR[w].min);
@@ -1132,7 +1157,7 @@ function viewCase(c){
       </div>
     </section>
     <div class="section-title"><h2>Содержимое кейса</h2>
-      <div class="odds"><span class="odd rtp-chip" title="Какая доля цены кейса в среднем возвращается предметами">RTP <span class="num">${Math.round((c.rtp||RTP)*100)}%</span></span>${RAR.map(r=>`<span class="odd" style="--rc:${r.color}"><i></i>${r.name} <span class="num">${(r.p*100).toFixed(2)}%</span></span>`).join("")}</div>
+      <div class="odds"><span class="odd rtp-chip" title="Какая доля цены кейса в среднем возвращается предметами">RTP <span class="num">${Math.round(caseOdds(c).rtp*100)}%</span></span>${RAR.map((r,k)=>`<span class="odd" style="--rc:${r.color}"><i></i>${r.name} <span class="num">${(caseOdds(c).p[k]*100).toFixed(2)}%</span></span>`).join("")}</div>
     </div>
     <div class="contents">${contents.map(sk=>{
       const lo = sk.basePrice*WEAR[4].m, hi = sk.basePrice*WEAR[0].m*ST_M;
@@ -1408,7 +1433,8 @@ function introNeedle(){
 }
 let upSel = new Set(), upTarget = null, upQuery = "", upSpinning = false, upAngle = 0;
 const upStake = () => S.inv.filter(i=>upSel.has(i.id)).reduce((a,i)=>a+i.price,0);
-const upChance = () => { const st=upStake(); return (!st||!upTarget) ? 0 : Math.min(UP_MAX, st*UP_EDGE/upTarget.price); };
+const chanceFor = (st, price) => { const L = myLuck(); return Math.min(L>1 ? Math.max(UP_MAX, 0.97) : UP_MAX, st*UP_EDGE*L/price); };
+const upChance = () => { const st=upStake(); return (!st||!upTarget) ? 0 : chanceFor(st, upTarget.price); };
 const pct = ch => (ch*100).toFixed(ch<0.1?2:1).replace(".",",") + "%";
 
 function mini(o, attrs, on){
@@ -1485,7 +1511,7 @@ function drawUpTargets(){
   box.innerHTML = list.length ? list.map(t=>mini(t, `data-k="${t.k}"${upSpinning?' disabled':''}`, upTarget===t)).join("")
     : `<p class="empty-note">Ничего не нашлось</p>`;
   // шанс на каждой цели, чтобы сразу было видно, на что есть смысл идти
-  if(st) box.querySelectorAll("[data-k]").forEach(b=>{ const t = CATALOG[+b.dataset.k], ch = Math.min(UP_MAX, st*UP_EDGE/t.price);
+  if(st) box.querySelectorAll("[data-k]").forEach(b=>{ const t = CATALOG[+b.dataset.k], ch = chanceFor(st, t.price);
     const e = document.createElement("span"); e.className = "m-ch" + (ch>=0.3?" hi":ch>=0.1?" mid":""); e.textContent = pct(ch); b.appendChild(e); });
   box.querySelectorAll("[data-k]").forEach(b=>b.addEventListener("click",()=>{
     if(upSpinning) return;
@@ -2184,7 +2210,7 @@ function renderFeed(){
 
 
 /* ---------- Общие настройки (их меняет владелец) ---------- */
-let CFG = {rtp:0.95, runRate:0.5, upMax:0.90, upEdge:0.95, start:4000, cases:{}, announce:{text:"", on:false, ts:0}, hidden:{}};
+let CFG = {rtp:0.95, runRate:0.5, upMax:0.90, upEdge:0.95, start:4000, cases:{}, luck:{}, announce:{text:"", on:false, ts:0}, hidden:{}};
 function applyConfig(raw){
   const c = raw || {};
   const n = (v,lo,hi,d)=>{ v = Number(v); return isFinite(v) ? Math.min(hi, Math.max(lo, v)) : d; };
@@ -2192,6 +2218,7 @@ function applyConfig(raw){
   const an = obj(c.announce);
   CFG = {rtp:n(c.rtp,.3,.99,.95), runRate:n(c.runRate,.05,10,.5), upMax:n(c.upMax,.05,.95,.90), upEdge:n(c.upEdge,.3,1,.95),
     start:Math.round(n(c.start,0,1e7,4000)), cases:obj(c.cases), hidden:obj(c.hidden),
+    luck:Object.fromEntries(Object.entries(obj(c.luck)).filter(([k,v])=>typeof k==="string" && isFinite(Number(v)) && Number(v)>0 && Number(v)!==1).map(([k,v])=>[k, Math.min(5, Math.max(0.1, Number(v)))])),
     announce:{text:String(an.text||"").slice(0,300), on:!!an.on, ts:Number(an.ts)||0}};
   RTP = CFG.rtp; RUB_PER_POINT = CFG.runRate; UP_MAX = CFG.upMax; UP_EDGE = CFG.upEdge; START = CFG.start;
   CASES.forEach(cs=>{ const o = obj(CFG.cases[cs.id]); cs.price = Math.round(n(o.price,1,1e7,cs.defPrice)); cs.off = !!o.off; cs.isNew = o.isNew===undefined ? cs.defNew : !!o.isNew; const r = Number(o.rtp); cs.rtp = isFinite(r) && r>=0.3 && r<=0.99 ? r : null; });
@@ -2265,7 +2292,7 @@ function sendOp(id, op){
     const snap = await ref.get();
     const ops = snap.exists && Array.isArray(snap.data().ops) ? snap.data().ops.slice(-29) : [];
     ops.push(Object.assign({id:Date.now().toString(36)+Math.random().toString(36).slice(2,7), ts:Date.now()}, op));
-    await ref.set({ops});
+    await ref.set(Object.assign({}, snap.exists ? snap.data() : {}, {ops}));
   };
   opChains[id] = (opChains[id]||Promise.resolve()).catch(()=>{}).then(run);
   return opChains[id];
@@ -2406,6 +2433,7 @@ function drawAdminSummary(){
   dEl.querySelectorAll(".adm-drop em").forEach((el,i)=>{ el.textContent = drops[i].nick; });
   drawAdminRtp();
 }
+const LUCKS = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 2, 3];
 function drawAdminPlayers(){
   drawAdminSummary();
   const box = document.getElementById("adm-players"); if(!box) return;
@@ -2413,7 +2441,7 @@ function drawAdminPlayers(){
   const list = CL.list.filter(p=>!q || p.nick.toLowerCase().includes(q)).sort((a,b)=>b.worth-a.worth);
   // не трогаем список, пока админ в нём что-то вводит, и не перерисовываем без изменений
   const busy = box.contains(document.activeElement) || [...box.querySelectorAll("[data-amt]")].some(i=>i.value) || [...box.querySelectorAll("[data-msg]")].some(m=>m.textContent);
-  const sig = JSON.stringify(list.map(p=>[p.id,p.nick,p.lvl,p.bal,p.worth,p.img?1:0,p.av]));
+  const sig = JSON.stringify(list.map(p=>[p.id,p.nick,p.lvl,p.bal,p.worth,p.img?1:0,p.av,(CFG.luck||{})[p.id]||1]));
   if(box.dataset.sig === sig || (busy && box.dataset.sig)){
     if(busy && box.dataset.sig !== sig) box.dataset.stale = "1";
     return;
@@ -2429,6 +2457,9 @@ function drawAdminPlayers(){
         <button class="btn" data-op="take">Списать</button>
         <button class="btn" data-op="reset">Сбросить ник</button>
         <button class="btn" data-op="hide">Скрыть</button>
+        <label class="adm-luck" title="Подкрутка шансов: множитель отдачи в кейсах и шанса в апгрейде">Удача
+          <select data-luck>${LUCKS.map(v=>`<option value="${v}"${Math.abs(v-((CFG.luck||{})[p.id]||1))<1e-9?' selected':''}>${v===1?'обычная':'×'+String(v).replace(".",",")}</option>`).join("")}${LUCKS.includes((CFG.luck||{})[p.id]||1)?'':`<option selected value="${CFG.luck[p.id]}">×${String(CFG.luck[p.id]).replace(".",",")}</option>`}</select>
+        </label>
       </span>
       <span class="hint" data-msg></span>
     </div>`).join("") : `<p class="hint">Игроков не найдено.</p>`;
@@ -2436,6 +2467,14 @@ function drawAdminPlayers(){
     const p = CL.list.find(x=>x.id===row.dataset.pid);
     row.querySelector(".who b").textContent = p.nick + (p.id===CL.id ? " (вы)" : "");
     const msg = row.querySelector("[data-msg]");
+    row.classList.toggle("lucky", ((CFG.luck||{})[p.id]||1) > 1);
+    row.classList.toggle("unlucky", ((CFG.luck||{})[p.id]||1) < 1);
+    row.querySelector("[data-luck]").addEventListener("change", async e=>{
+      const v = Number(e.target.value), luck = Object.assign({}, CFG.luck);
+      if(v===1) delete luck[p.id]; else luck[p.id] = v;
+      try{ await saveConfig({luck}); flash(msg, true, v===1 ? "Шансы обычные" : `Удача ×${String(v).replace(".",",")} — применится у игрока в течение минуты`); e.target.blur(); }
+      catch(err){ flash(msg, false, "Не получилось. Попробуйте ещё раз."); }
+    });
     row.querySelectorAll("[data-op]").forEach(b=>b.addEventListener("click", async ()=>{
       const op = b.dataset.op;
       try{
