@@ -918,10 +918,10 @@ nav a .nav-dot,#nav-more .nav-dot{position:absolute;top:10px;right:2px;width:8px
 #adm-rtp{min-width:0;overflow:hidden}
 .rtp-table{max-width:100%}
 </style>
-<script>window.APP_BUILD="03.11 14:44";</script>
+<script>window.APP_BUILD="03.11 14:50";</script>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
-<script src="config.js?v=202611031244"></script>
-<script src="adapter.js?v=202611031244"></script>
+<script src="config.js?v=202611031250"></script>
+<script src="adapter.js?v=202611031250"></script>
 <link rel="icon" href="icon.png">
 </head>
 <body>
@@ -1075,7 +1075,16 @@ const CASES = [
    names:["Миф","Сага","Эпос","Предание","Былина","Летопись","Реликвия","Артефакт","Наследие","Бессмертие","Вечность","Пантеон","Абсолют"]},
   {id:"million", name:"Миллион", price:1000000, accent:"#fde68a", isNew:true, elite:true,
    pal:[["#111111","#fde68a"],["#2a2416","#f5f5f4"],["#3b2f0b","#facc15"],["#0c0a09","#d6d3d1"]],
-   names:["Купюра","Пачка","Чек","Сейф","Хранилище","Биржа","Акция","Дивиденд","Капитал","Магнат","Монетный двор","Джекпот","Миллион"]}
+   names:["Купюра","Пачка","Чек","Сейф","Хранилище","Биржа","Акция","Дивиденд","Капитал","Магнат","Монетный двор","Джекпот","Миллион"]},
+  {id:"titan", name:"Титан", price:2500000, accent:"#a8b2be", isNew:true, elite:true,
+   pal:[["#2a2e34","#a8b2be"],["#3a4048","#e0e6ee"],["#1a1d22","#7a848e"],["#4a525c","#d0d6de"]],
+   names:["Сплав","Броня","Каркас","Клёпка","Монолит","Колосс","Прометей","Атлант","Кронос","Гиперион","Титанит","Олимп","Титаномахия"]},
+  {id:"tycoon", name:"Олигарх", price:5000000, accent:"#e8c56a", isNew:true, elite:true,
+   pal:[["#2a2010","#e8c56a"],["#1a1a1a","#fde68a"],["#3a2a10","#f2ead2"],["#0c0c10","#d4a017"]],
+   names:["Яхта","Вилла","Лимузин","Шампанское","Икра","Частный джет","Остров","Пентхаус","Особняк","Фаберже","Бриллиантовый дождь","Империя","Король жизни"]},
+  {id:"galaxy", name:"Галактика", price:6850000, accent:"#c4b5fd", isNew:true, elite:true,
+   pal:[["#0a0a20","#c4b5fd"],["#14082a","#a78bfa"],["#05001a","#e9d5ff"],["#1a0a3a","#fde68a"]],
+   names:["Звёздная пыль","Комета","Протозвезда","Белый карлик","Красный гигант","Тёмная материя","Магнетар","Гамма-всплеск","Скопление","Спираль","Галактический диск","Мультивселенная","Сто миллионов"]}
 ];
 const LAYOUT = [0,0,0,1,1,1,2,2,2,3,3,4,4]; // редкость для каждого из 13 предметов кейса
 
@@ -1122,7 +1131,8 @@ const COLLECTIONS = [
   {id:"nature",   name:"Стихии",          desc:"Пески, океан, джунгли, лёд и огонь",  cases:["sand","ocean","jungle","tundra","volcano"]},
   {id:"city",     name:"Город и техника", desc:"Ржавчина, бетон, неон и плазма",      cases:["rust","city","neon","plasma"]},
   {id:"space",    name:"Космос и тайны",  desc:"Для охотников за легендами",          cases:["cosmos","abyss","legend"]},
-  {id:"treasure", name:"Сокровищница",    desc:"Самые дорогие кейсы сайта",           cases:["gold","diamond","empire","million"]}
+  {id:"treasure", name:"Сокровищница", desc:"Золото, бриллианты и власть",         cases:["gold","diamond","empire"]},
+  {id:"elite",    name:"Элита",           desc:"Скины стоимостью до 100 миллионов",   cases:["million","titan","tycoon","galaxy"]}
 ];
 CASES.forEach(c=>{ const k = COLLECTIONS.find(x=>x.cases.includes(c.id)); c.coll = k ? k.id : COLLECTIONS[0].id; });
 const plural = (n, a, b, c) => { const m = n%100, k = n%10; return m>10 && m<20 ? c : k===1 ? a : k>=2 && k<=4 ? b : c; };
@@ -1599,6 +1609,9 @@ xxxxxxxxxxxxxxmmxxxxx..xxxxxxxxxxx......
 };
 /* узор каждого скина по смыслу названия: [узор, основной, второй, акцент] */
 const LOOK = {
+  titan:[["metal","#5a626e","#a8b2be","#e0e6ee"],["hex","#3a4048","#7a848e","#4a525c"],["grid","#2a2e34","#9aa3ad","#2a2e34"],["metal","#6a727c","#b0b8c2","#fde68a"],["marble","#2e3238","#5a626e","#3a3f47"],["gold","#7a828c","#d0d6de","#ffffff"],["flames","#5a1206","#ff7a1a","#ffe46b"],["waves","#1e3a5f","#94a3b8","#e0e6ee"],["rings","#1a1a2a","#a8b2be","#fde68a"],["burst","#94a3b8","#ffffff","#fde68a"],["gem","#8a96a4","#e0e6ee","#ffffff"],["royal","#e0e6ee","#d4a017","#ffffff"],["lightning","#14161c","#c0c8d0","#ffffff"]],
+  tycoon:[["hstripes","#f4f4ee","#1e3a8a","#f4f4ee"],["marble","#f2ead2","#d4a017","#e0d8c0"],["metal","#0c0c10","#3a3a44","#fde68a"],["bubbles","#e8c56a","#fff3c4","#ffffff"],["dots","#1a1a1a","#4a4a4a","#6a6a6a"],["solid","#e0e6ee","#94a3b8","#ffffff"],["waves","#1fa89a","#f2d08a","#7ae0a0"],["windows","#14161c","#fde68a","#2a2e38"],["royal","#2a1a10","#d4a017","#f2ead2"],["gem","#1e3a8a","#d4a017","#e02d4d"],["rain","#0e3a4a","#ffffff","#a5f3fc"],["royal","#7a0a1a","#ffd23a","#ffffff"],["gold","#d4a017","#ffffff","#fde68a"]],
+  galaxy:[["stars","#0a0a20","#3a2a6a","#ffffff"],["stars","#04122a","#5ad0ff","#ffffff"],["nebula","#0b0b2b","#ff8a3d","#ffd23a"],["burst","#c8d8ff","#ffffff","#ffffff"],["burst","#a01a05","#ff7a1a","#ffd23a"],["void","#000000","#5a2a8a","#0a0014"],["lightning","#0a0a2a","#c084fc","#ffffff"],["laser","#05001a","#5aff9a","#ffffff"],["stars","#0a0a20","#fde68a","#ffffff"],["swirl","#3a1a6a","#c4b5fd","#0a0a2a"],["rings","#0a0a20","#c4b5fd","#fff3c4"],["holo","#c4b5fd","#ffffff","#ffd1ff"],["gold","#d4a017","#fff3c4","#ffffff"]],
   rust:[["rust","#4a4f55","#b5562a","#e08a3c"],["rust","#6b6f75","#a8461d","#d9822b"],["noise","#c8a36a","#e6c98f","#8a6a3c"],["wood","#5a3b22","#7a5232","#2e1d10"],["hstripes","#b5651d","#e08a4c","#7a3a12"],["rust","#3d6b63","#7aa89a","#a8461d"],["lava","#2b1d18","#ff7a1a","#ffd23a"],["flames","#5a1206","#ff5a1f","#ffc23a"],["marble","#3d7a6b","#9ad1c0","#2a4f47"],["lava","#3a0f05","#ff3d00","#ffe08a"],["flames","#2b0606","#ff2e00","#fff07a"],["metal","#3a3f47","#8b939e","#d0d6de"],["metal","#22262b","#4b525b","#9aa3ad"]],
   jungle:[["noise","#2f4a1f","#5f8a2e","#a3b545"],["leaf","#1f5a2a","#7fd36b","#2e8b3a"],["leaf","#2d6a2f","#a3e07a","#3f8f3f"],["camo","#2b3320","#4a5a2e","#6b6b3a"],["camo","#3b4a2a","#6b7a3a","#2a2418"],["spots","#d9a03c","#7a4a14","#1a1208"],["camo","#1f7a3a","#f2c94c","#ff6b9a"],["spots","#6b7a2a","#2a3010","#0a0f05"],["digi","#2b3a22","#5a7a3a","#a3a36b"],["gem","#0f6b3f","#4ade80","#c8ffe0"],["marble","#3f8f6b","#a8e0c8","#1f5a44"],["spots","#1fb5ff","#0a2a5a","#000000"],["hstripes","#a8321f","#f2c94c","#1a1208"]],
   tundra:[["noise","#e8eef5","#c6d4e2","#ffffff"],["waves","#9fb8d0","#dfe9f3","#ffffff"],["ice","#cfe6f5","#ffffff","#7fb8e0"],["waves","#1e3a5f","#3f6f9a","#e6f4ff"],["stripes","#d6e2ee","#8fa6bc","#ffffff"],["waves","#4a7fb0","#a8d0f0","#ffffff"],["ice","#6fb6e8","#c8ecff","#ffffff"],["gem","#9fd2f0","#e6f7ff","#ffffff"],["stars","#0b1630","#1e3a6a","#ffffff"],["waves","#0b1a2a","#3ee08a","#b06bff"],["digi","#e8f2fa","#9fb8d0","#5f7a94"],["noise","#f4f4ee","#dcdcd0","#ffffff"],["gem","#bfefff","#ffffff","#5fb8e0"]],
@@ -1723,6 +1736,45 @@ function art(sk){ return pixelArt(sk); }
 /* ---------- Пиксельные иллюстрации кейсов ----------
  * Сундук в цветах кейса и своя эмблема на нём, без фона. */
 const EMB = {
+  titan:{p:{a:"#a8b2be",b:"#5a626e"}, s:`
+..............
+..kkkkkkkkkkk.
+kkaaaaaaaaaak.
+kaaaaaaaaaaak.
+.kkkaaaaabbk..
+....kaaabk....
+....kaaabk....
+...kaaaabbk...
+..kbbbbbbbbk..
+..kkkkkkkkkk..
+..............
+..............`},
+  tycoon:{p:{a:"#ffffff",b:"#1e3a8a",d:"#38bdf8"}, s:`
+......k.......
+......kk......
+......kak.....
+......kaak....
+......kaaak...
+......kaaaak..
+......kkkkkkk.
+kkkkkkkkkkkkkk
+kaaaaaaaaaaak.
+.kbbbbbbbbbk..
+dddkkkkkkkkddd
+.dddddddddddd.`},
+  galaxy:{p:{a:"#c4b5fd",b:"#7c3aed",w:"#ffffff"}, s:`
+....bbbb......
+..bb....aa....
+.b...aaaa.a...
+b...a....a.b..
+b..a..ww..a.b.
+b..a.wwww.a..b
+.b.a..ww..a..b
+..b.a....a...b
+...b.aaaa...b.
+....a.....bb..
+.....aaaabb...
+..............`},
   carton:{p:{a:"#c8a273",b:"#8a6a43",c:"#e8d8a8"}, s:`
 ..............
 .kkkkkkkkkkkk.
@@ -4253,7 +4305,7 @@ function bvFinal(d){
  * плюс бонусы за ежедневный подарок и победы в батлах). Каждые 6 замков — новое хранилище, пороги и награды ×2. */
 const VAULT_STEPS = [50, 200, 600, 1500, 4000, 10000];
 const VAULT_CASH  = [1000, 3000, 8000, 20000, 50000];
-const VAULT_FINAL = ["gold","diamond","empire","plasma","abyss","legend","million"];
+const VAULT_FINAL = ["gold","diamond","empire","plasma","abyss","legend","million","titan","tycoon","galaxy"];
 function vaultState(){
   const v = S.vault && typeof S.vault==="object" ? S.vault : (S.vault = {f:0, season:1, claimed:0});
   v.f = Math.max(0, Number(v.f)||0); v.season = Math.max(1, v.season|0); v.claimed = Math.min(6, Math.max(0, v.claimed|0));
