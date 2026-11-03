@@ -1035,7 +1035,7 @@ h1,h2,h3{letter-spacing:.04em}
 #adm-rtp{min-width:0;overflow:hidden}
 .rtp-table{max-width:100%}
 </style>
-<script>window.APP_BUILD="03.11 15:26";</script>
+<script>window.APP_BUILD="03.11 15:34";</script>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="adapter.js"></script>
 <link rel="icon" href="icon.png">
@@ -1199,7 +1199,16 @@ const CASES = [
    names:["Яхта","Вилла","Лимузин","Шампанское","Икра","Частный джет","Остров","Пентхаус","Особняк","Фаберже","Бриллиантовый дождь","Империя","Король жизни"]},
   {id:"galaxy", name:"Галактика", price:6850000, accent:"#c4b5fd", isNew:true, elite:true,
    pal:[["#0a0a20","#c4b5fd"],["#14082a","#a78bfa"],["#05001a","#e9d5ff"],["#1a0a3a","#fde68a"]],
-   names:["Звёздная пыль","Комета","Протозвезда","Белый карлик","Красный гигант","Тёмная материя","Магнетар","Гамма-всплеск","Скопление","Спираль","Галактический диск","Мультивселенная","Сто миллионов"]}
+   names:["Звёздная пыль","Комета","Протозвезда","Белый карлик","Красный гигант","Тёмная материя","Магнетар","Гамма-всплеск","Скопление","Спираль","Галактический диск","Мультивселенная","Сто миллионов"]},
+  {id:"stream", name:"Стример", price:30000, accent:"#8b5cf6", isNew:true,
+   pal:[["#1a0a3a","#8b5cf6"],["#2a1a4a","#c4b5fd"],["#120a24","#a78bfa"],["#3b1a6a","#e9d5ff"]],
+   names:["Донат","Чат","Эмоут","Сабка","Рейд","Хост","Клип","Фолловер","Прайм","Стрим-снайпер","Топ-донатер","Ночной эфир","Миллион зрителей"]},
+  {id:"blog", name:"Блогер", price:70000, accent:"#ef4444", isNew:true,
+   pal:[["#2a0a0a","#ef4444"],["#1a1a1a","#fca5a5"],["#3a0a0a","#ffffff"],["#140a0a","#b91c1c"]],
+   names:["Превью","Лайк","Дизлайк","Подписка","Колокольчик","Тренды","Шортс","Коллаб","Монтаж","Вирусное","Миллион просмотров","Серебро","Золотая кнопка"]},
+  {id:"chat", name:"Мессенджер", price:150000, accent:"#38bdf8", isNew:true,
+   pal:[["#04223f","#38bdf8"],["#0c4a6e","#7dd3fc"],["#0c2a4a","#e0f2fe"],["#0369a1","#ffffff"]],
+   names:["Стикер","Канал","Беседа","Бот","Голосовое","Кружок","Пересылка","Закреп","Реакция","Секретный чат","Премиум","Шифр","Облако"]}
 ];
 const LAYOUT = [0,0,0,1,1,1,2,2,2,3,3,4,4]; // редкость для каждого из 13 предметов кейса
 
@@ -1247,6 +1256,7 @@ const COLLECTIONS = [
   {id:"city",     name:"Город и техника", desc:"Ржавчина, бетон, неон и плазма",      cases:["rust","city","neon","plasma"]},
   {id:"space",    name:"Космос и тайны",  desc:"Для охотников за легендами",          cases:["cosmos","abyss","legend"]},
   {id:"treasure", name:"Сокровищница", desc:"Золото, бриллианты и власть",         cases:["gold","diamond","empire"]},
+  {id:"social",   name:"Соцсети",         desc:"Стримы, ролики и переписки",          cases:["stream","blog","chat"]},
   {id:"elite",    name:"Элита",           desc:"Скины стоимостью до 100 миллионов",   cases:["million","titan","tycoon","galaxy"]}
 ];
 CASES.forEach(c=>{ const k = COLLECTIONS.find(x=>x.cases.includes(c.id)); c.coll = k ? k.id : COLLECTIONS[0].id; });
@@ -1724,6 +1734,9 @@ xxxxxxxxxxxxxxmmxxxxx..xxxxxxxxxxx......
 };
 /* узор каждого скина по смыслу названия: [узор, основной, второй, акцент] */
 const LOOK = {
+  stream:[["coins","#2a1a4a","#fde68a","#ffffff"],["lined","#1a1030","#8b5cf6","#c4b5fd"],["dots","#8b5cf6","#fde68a","#ffffff"],["stripes","#6d28d9","#c4b5fd","#ffffff"],["lightning","#1a0a3a","#a78bfa","#ffffff"],["solid","#5b21b6","#a78bfa","#ffffff"],["scan","#2a1a4a","#8b5cf6","#ffffff"],["spots","#4c1d95","#c4b5fd","#1a0a3a"],["gem","#6d28d9","#e9d5ff","#ffffff"],["laser","#120a24","#a855f7","#ffffff"],["gold","#8b5cf6","#fde68a","#ffffff"],["stars","#0a0618","#3b1a6a","#c4b5fd"],["holo","#c4b5fd","#ffffff","#a78bfa"]],
+  blog:[["check","#1a1a1a","#ef4444","#ffffff"],["solid","#ef4444","#fca5a5","#ffffff"],["noise","#3a3a3a","#5a5a5a","#ef4444"],["stripes","#b91c1c","#ffffff","#ef4444"],["gold","#a16207","#fde68a","#ffffff"],["chart","#140a0a","#ef4444","#3a1a1a"],["vstripes","#ef4444","#1a1a1a","#ffffff"],["swirl","#ef4444","#ffffff","#3b82f6"],["scan","#1a1a1a","#ef4444","#ffffff"],["bubbles","#7f1d1d","#ef4444","#fecaca"],["holo","#fecaca","#ffffff","#ef4444"],["metal","#9aa3ad","#e0e6ee","#ffffff"],["gold","#d4a017","#fff3c4","#ffffff"]],
+  chat:[["dots","#38bdf8","#fde68a","#ffffff"],["lined","#0c2a4a","#38bdf8","#7dd3fc"],["bubbles","#0c4a6e","#38bdf8","#e0f2fe"],["circuit","#04223f","#38bdf8","#e0f2fe"],["waves","#0c4a6e","#38bdf8","#ffffff"],["rings","#0c2a4a","#38bdf8","#ffffff"],["stripes","#0284c7","#e0f2fe","#38bdf8"],["solid","#0369a1","#7dd3fc","#ffffff"],["spots","#38bdf8","#fde68a","#ef4444"],["void","#000000","#38bdf8","#04223f"],["gem","#7c3aed","#38bdf8","#ffffff"],["glitch","#38bdf8","#04223f","#ffffff"],["noise","#e0f2fe","#ffffff","#7dd3fc"]],
   titan:[["metal","#5a626e","#a8b2be","#e0e6ee"],["hex","#3a4048","#7a848e","#4a525c"],["grid","#2a2e34","#9aa3ad","#2a2e34"],["metal","#6a727c","#b0b8c2","#fde68a"],["marble","#2e3238","#5a626e","#3a3f47"],["gold","#7a828c","#d0d6de","#ffffff"],["flames","#5a1206","#ff7a1a","#ffe46b"],["waves","#1e3a5f","#94a3b8","#e0e6ee"],["rings","#1a1a2a","#a8b2be","#fde68a"],["burst","#94a3b8","#ffffff","#fde68a"],["gem","#8a96a4","#e0e6ee","#ffffff"],["royal","#e0e6ee","#d4a017","#ffffff"],["lightning","#14161c","#c0c8d0","#ffffff"]],
   tycoon:[["hstripes","#f4f4ee","#1e3a8a","#f4f4ee"],["marble","#f2ead2","#d4a017","#e0d8c0"],["metal","#0c0c10","#3a3a44","#fde68a"],["bubbles","#e8c56a","#fff3c4","#ffffff"],["dots","#1a1a1a","#4a4a4a","#6a6a6a"],["solid","#e0e6ee","#94a3b8","#ffffff"],["waves","#1fa89a","#f2d08a","#7ae0a0"],["windows","#14161c","#fde68a","#2a2e38"],["royal","#2a1a10","#d4a017","#f2ead2"],["gem","#1e3a8a","#d4a017","#e02d4d"],["rain","#0e3a4a","#ffffff","#a5f3fc"],["royal","#7a0a1a","#ffd23a","#ffffff"],["gold","#d4a017","#ffffff","#fde68a"]],
   galaxy:[["stars","#0a0a20","#3a2a6a","#ffffff"],["stars","#04122a","#5ad0ff","#ffffff"],["nebula","#0b0b2b","#ff8a3d","#ffd23a"],["burst","#c8d8ff","#ffffff","#ffffff"],["burst","#a01a05","#ff7a1a","#ffd23a"],["void","#000000","#5a2a8a","#0a0014"],["lightning","#0a0a2a","#c084fc","#ffffff"],["laser","#05001a","#5aff9a","#ffffff"],["stars","#0a0a20","#fde68a","#ffffff"],["swirl","#3a1a6a","#c4b5fd","#0a0a2a"],["rings","#0a0a20","#c4b5fd","#fff3c4"],["holo","#c4b5fd","#ffffff","#ffd1ff"],["gold","#d4a017","#fff3c4","#ffffff"]],
@@ -1851,6 +1864,45 @@ function art(sk){ return pixelArt(sk); }
 /* ---------- Пиксельные иллюстрации кейсов ----------
  * Сундук в цветах кейса и своя эмблема на нём, без фона. */
 const EMB = {
+  stream:{p:{a:"#a78bfa",b:"#5b21b6",w:"#ffffff",r:"#ef4444"}, s:`
+.....kkkk.....
+....kwaaak..rr
+....kaaaak..rr
+....kabaak....
+....kaaaak....
+..k.kaaaak.k..
+..k..kkkk..k..
+...kk....kk...
+.....kbbk.....
+......bb......
+....kbbbbk....
+....kkkkkk....`},
+  blog:{p:{a:"#ef4444",w:"#ffffff"}, s:`
+..............
+..............
+kkkkkkkkkk....
+kaaaaaaaak..kk
+kawwaaaaakkkak
+kawaaaaaaaaaak
+kaaaaaaaaaaaak
+kaaaaaaaakkkak
+kaaaaaaaak..kk
+kkkkkkkkkk....
+..k.....k.....
+.kk.....kk....`},
+  chat:{p:{a:"#38bdf8",w:"#ffffff"}, s:`
+..............
+.kkkkkkkkkkkk.
+kaaaaaaaaaaaak
+kaaaaaaaaaaaak
+kaawwaawwaawwk
+kaawwaawwaawwk
+kaaaaaaaaaaaak
+.kkkkaaaakkkk.
+.....kaak.....
+......kak.....
+.......kk.....
+..............`},
   titan:{p:{a:"#a8b2be",b:"#5a626e"}, s:`
 ..............
 ..kkkkkkkkkkk.
