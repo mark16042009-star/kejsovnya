@@ -231,6 +231,9 @@ async function refAction(st, uid, login, b, env) {
     const code = String(b.code || "").toLowerCase().replace(/[^a-z0-9]/g, "").slice(0, 12);
     if (!code) return { error: "Нет кода" };
     if (await st.get("refby/" + uid)) return { error: "Вы уже пришли по приглашению" };
+    const tg = await tgUser(b.initData, String((env && env.BOT_TOKEN) || "").trim());
+    if (!tg || !tg.id) return { error: "Приглашения работают только в Telegram" };
+    if (await st.get("reftg/" + tg.id)) return { error: "Этот Telegram уже приходил по приглашению" };
     const acc = await st.get("accounts/" + String(login || "").toLowerCase());
     const created = acc && acc.data && Number(acc.data.created) || 0;
     if (!created || Date.now() - created > REF_NEW_DAYS * 864e5) return { error: "Приглашение действует только для новых игроков" };
@@ -241,7 +244,8 @@ async function refAction(st, uid, login, b, env) {
     if (!Array.isArray(d.list)) d.list = [];
     if (!d.list.some(x => x.uid === uid) && d.list.length < 500) d.list.push({ uid, ts: Date.now(), paid: false });
     await st.set("refs/" + inviter, d);
-    await st.set("refby/" + uid, { inviter, ts: Date.now() });
+    await st.set("refby/" + uid, { inviter, ts: Date.now(), tg: tg.id });
+    await st.set("reftg/" + tg.id, { uid, ts: Date.now() });
     const p = await st.get("profiles/" + inviter);
     return { ok: true, inviterNick: p && p.data && p.data.nick ? String(p.data.nick).slice(0, 20) : "игрок", need, bonus };
   }
