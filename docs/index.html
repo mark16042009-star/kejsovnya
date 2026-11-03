@@ -1140,10 +1140,10 @@ body.wide-case main{max-width:none}
 #adm-rtp{min-width:0;overflow:hidden}
 .rtp-table{max-width:100%}
 </style>
-<script>window.APP_BUILD="03.11 19:51";</script>
+<script>window.APP_BUILD="03.11 20:03";</script>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
-<script src="config.js?v=202611031751"></script>
-<script src="adapter.js?v=202611031751"></script>
+<script src="config.js?v=202611031803"></script>
+<script src="adapter.js?v=202611031803"></script>
 <link rel="icon" href="icon.png">
 </head>
 <body>
@@ -1326,6 +1326,9 @@ const CASES = [
    bases:[0.6,0.9,1.5,2.6,6.1],
    pal:[["#3a3f47","#c0c8d0"],["#1a1a1a","#e4ae39"],["#2a0a0a","#ef4444"],["#0a1a3a","#60a5fa"]],
    names:["Пепел","Сталь","Дымка","Песчаник","Ночной лес","Закат","Гроза","Ледник","Багрянец","Северное сияние","Алмазная крошка","Чёрное золото","Абсолют"]},
+  {id:"allin", name:"Всё или ничего", price:1000000, accent:"#ffd23a", isNew:true, elite:true,
+   pal:[["#3a3f47","#9aa3ad"],["#d4a017","#fff3c4"]],
+   fixed:{p:1e-8, items:[{weapon:"Складной нож", name:"Ничего", rar:1, price:100000}, {weapon:"Керамбит", name:"Всё", rar:4, price:100000000000}]}},
   {id:"rickroll", name:"RickRoll", price:100000000, accent:"#ff4fa3", isNew:true, elite:true,
    pal:[["#1a0a2e","#ff4fa3"],["#0a1a3a","#22d3ee"],["#2a0a3a","#fde68a"],["#120024","#a78bfa"]],
    names:["Кликбейт","Ссылка","Подвох","Сюрприз","Ловушка","Кассета","Синтипоп","Диско","Видеоклип","Хит-парад 80-х","Розыгрыш","Мем века","Легенда интернета"]}
@@ -1341,6 +1344,10 @@ CASES.forEach(c=>{
   const r = rng(hash(c.id));
   const pools = POOLS.map(p=>shuffle(p,r));
   const knives = shuffle(KNIVES,r);
+  if(c.fixed){
+    c.skins = c.fixed.items.map((it,i)=>({i, rar:it.rar, weapon:it.weapon, type:"knife", knife:true, name:it.name, case:c.id, c:c.pal[i%c.pal.length], pt:"grad", blobs:[], f:1, fixedPrice:it.price}));
+    c.defPrice = c.price; c.defNew = !!c.isNew; c.off = false; return;
+  }
   const allKn = c.knifeOnly ? KNIVES.concat(KNIVES_NEW) : null;
   const used = [0,0,0,0,0];
   c.skins = LAYOUT.map((rar,i)=>{
@@ -1357,6 +1364,12 @@ CASES.forEach(c=>{
 const rBase = (c,k) => (c.bases ? c.bases[k] : RAR[k].base);
 function recomputeCases(){
   CASES.forEach(c=>{
+    if(c.fixed){ // цены и шансы заданы жёстко, RTP не подгоняется
+      const big = c.fixed.p; c.m = 1;
+      c.skins.forEach(sk=>{ sk.basePrice = sk.fixedPrice; sk.chance = sk.rar===4 ? big : 1-big; });
+      c.maxP = Math.max(...c.skins.map(x=>x.basePrice)); c.minP = Math.min(...c.skins.map(x=>x.basePrice));
+      return;
+    }
     // множитель цены, чтобы средняя отдача кейса была RTP
     let ev=0;
     for(let k=0;k<5;k++){
@@ -1380,7 +1393,7 @@ const COLLECTIONS = [
   {id:"space",    name:"Космос и тайны",  desc:"Для охотников за легендами",          cases:["cosmos","abyss","legend"]},
   {id:"treasure", name:"Сокровищница", desc:"Золото, бриллианты и власть",         cases:["gold","diamond","empire"]},
   {id:"social",   name:"Соцсети",         desc:"Стримы, ролики и переписки",          cases:["stream","blog","chat"]},
-  {id:"elite",    name:"Элита",           desc:"Самые дорогие кейсы сайта",            cases:["million","titan","tycoon","galaxy","frog","rickroll","blades"]}
+  {id:"elite",    name:"Элита",           desc:"Самые дорогие кейсы сайта",            cases:["million","titan","tycoon","galaxy","frog","rickroll","blades","allin"]}
 ];
 CASES.forEach(c=>{ const k = COLLECTIONS.find(x=>x.cases.includes(c.id)); c.coll = k ? k.id : COLLECTIONS[0].id; });
 const plural = (n, a, b, c) => { const m = n%100, k = n%10; return m>10 && m<20 ? c : k===1 ? a : k>=2 && k<=4 ? b : c; };
@@ -1959,6 +1972,7 @@ xxxxxxxxxxxxxxmmxxxxx..xxxxxxxxxxx......
 };
 /* узор каждого скина по смыслу названия: [узор, основной, второй, акцент] */
 const LOOK = {
+  allin:[["noise","#3a3f47","#5a6068","#2a2f35"],["gold","#d4a017","#fff3c4","#ffffff"]],
   blades:[["noise","#3a3a3a","#5a5a5a","#2a2a2a"],["metal","#8a929c","#c0c8d0","#ffffff"],["marble","#4a4f55","#9aa3ad","#2a2f35"],["camo","#a8865a","#c8a273","#6b5a3a"],["camo","#14301e","#2e5a3a","#0a1a10"],["burst","#f97316","#fde68a","#7c2d12"],["lightning","#1e1b4b","#818cf8","#e0e7ff"],["ice","#bae6fd","#ffffff","#38bdf8"],["lava","#450a0a","#ef4444","#fca5a5"],["nebula","#0f172a","#22d3ee","#a78bfa"],["gem","#9aa3ad","#ffffff","#7dd3fc"],["gold","#1a1a1a","#d4a017","#fff3c4"],["holo","#ffd1ec","#ffffff","#a5f3fc"]],
   frog:[["dots","#1f5a2a","#4ade80","#a7f3c4"],["leaf","#14532d","#4ade80","#86efac"],["camo","#2b3320","#4a5a2e","#14532d"],["vstripes","#6b7a2a","#a3b545","#3f4a1a"],["bubbles","#166534","#4ade80","#d9f99d"],["dots","#1a1a1a","#3a3a3a","#9ae6b4"],["stripes","#22c55e","#bbf7d0","#14532d"],["swirl","#4ade80","#fbcfe8","#ffffff"],["gem","#0f6b3f","#4ade80","#c8ffe0"],["royal","#14532d","#fde68a","#f9a8d4"],["royal","#166534","#ffd23a","#ffffff"],["gold","#a3b545","#fde68a","#ffffff"],["holo","#bbf7d0","#ffffff","#fde68a"]],
   rickroll:[["neon","#120a24","#ff4fa3","#22d3ee"],["lined","#0a1a3a","#22d3ee","#ff4fa3"],["glitch","#ff4fa3","#22d3ee","#120024"],["bubbles","#3a0a5a","#ff4fa3","#ffd1ec"],["check","#1a0a2e","#ff4fa3","#22d3ee"],["hstripes","#1a1a1a","#fde68a","#ff4fa3"],["synth","#2a0f4a","#ff4fa3","#22d3ee"],["gem","#c0c8d0","#ffffff","#ff3ea5"],["scan","#1a0a2e","#a78bfa","#ffffff"],["stripes","#ff4fa3","#fde68a","#22d3ee"],["holo","#ffd1ec","#ffffff","#a5f3fc"],["burst","#ff4fa3","#fde68a","#ffffff"],["gold","#ff4fa3","#fff3c4","#ffffff"]],
@@ -2092,6 +2106,19 @@ function art(sk){ return pixelArt(sk); }
 /* ---------- Пиксельные иллюстрации кейсов ----------
  * Сундук в цветах кейса и своя эмблема на нём, без фона. */
 const EMB = {
+  allin:{p:{a:"#ffd23a",b:"#4a4f55",w:"#ffffff",d:"#1a1a1a"}, s:`
+....kkkkkk....
+..kkaaabbbkk..
+.kaaaaabbbbbk.
+.kawaaabbbbbk.
+kaaaaaabbbdbbk
+kaaawaabbbdbbk
+kaaawaabbbdbbk
+kaaaaaabbbbbbk
+.kaaaaabbbdbk.
+.kaaaaabbbbbk.
+..kkaaabbbkk..
+....kkkkkk....`},
   blades:{p:{a:"#e5e7eb",b:"#6b4a2a",y:"#e4ae39",w:"#ffffff"}, s:`
 ..........kk..
 .........kwak.
@@ -2590,6 +2617,7 @@ const title = sk => sk.knife ? `★ ${sk.weapon}` : sk.weapon;
 const myLuck = () => { const v = CL.id && CFG.luck ? Number(CFG.luck[CL.id]) : 1; return isFinite(v) && v>0 ? Math.min(5, Math.max(0.1, v)) : 1; };
 const oddsCache = {};
 function caseOdds(c){
+  if(c.fixed){ const ev = c.skins.reduce((a,sk)=>a+sk.chance*sk.basePrice,0); return {p:RAR.map(()=>0), rtp:ev/c.price}; }
   const L = myLuck(), key = c.id+"|"+L+"|"+c.m;
   if(oddsCache[key]) return oddsCache[key];
   const base = RAR.map(r=>r.p);
@@ -2606,10 +2634,14 @@ function caseOdds(c){
   const k = p.reduce((a,q,i)=>a+q*v[i],0)/ev0;
   return oddsCache[key] = {p, rtp:(c.rtp||RTP)*k};
 }
+function fmtPct(p){ const v = p*100; if(v < 100 && v >= 99.99) return v.toFixed(Math.min(12, Math.ceil(-Math.log10(100-v)))) + "%"; if(v >= 0.01 || v === 0) return v.toFixed(v < 0.1 && v > 0 ? 3 : 2) + "%"; const d = Math.min(12, Math.ceil(-Math.log10(v))); return v.toFixed(d).replace(/0+$/,"") + "%"; }
 function pickRarity(c){ const p = c ? caseOdds(c).p : RAR.map(r=>r.p); let x=Math.random(), acc=0; for(let i=0;i<5;i++){ acc+=p[i]; if(x<acc) return i; } return 0; }
-function pickSkin(c, fair){ const rar=pickRarity(fair ? c : null); const list=c.skins.filter(s=>s.rar===rar); return list[Math.floor(Math.random()*list.length)]; }
+function pickSkin(c, fair){
+  if(c.fixed){ const big = c.skins.find(x=>x.rar===4), small = c.skins.find(x=>x.rar!==4); return Math.random() < (fair ? c.fixed.p : 0.04) ? big : small; }
+  const rar=pickRarity(fair ? c : null); const list=c.skins.filter(s=>s.rar===rar); return list[Math.floor(Math.random()*list.length)]; }
 function roll(c){
   const sk = pickSkin(c, true);
+  if(c.fixed) return {id:Date.now().toString(36)+Math.random().toString(36).slice(2,7), c:c.id, s:sk.i, w:0, fl:+(Math.random()*0.07).toFixed(4), st:false, price:sk.basePrice, t:Date.now()};
   let x=Math.random(), acc=0, w=2;
   for(let i=0;i<WEAR.length;i++){ acc+=WEAR[i].p; if(x<acc){w=i;break;} }
   const fl = WEAR[w].min + Math.random()*(WEAR[w].max-WEAR[w].min);
@@ -2760,15 +2792,15 @@ function viewCase(c){
       </div>
     </section>
     <div class="section-title"><h2>Содержимое кейса</h2>
-      <div class="odds"><span class="odd rtp-chip" title="Какая доля цены кейса в среднем возвращается предметами">RTP <span class="num">${Math.round(caseOdds(c).rtp*100)}%</span></span>${RAR.map((r,k)=>`<span class="odd" style="--rc:${r.color}"><i></i>${r.name} <span class="num">${(caseOdds(c).p[k]*100).toFixed(2)}%</span></span>`).join("")}</div>
+      <div class="odds"><span class="odd rtp-chip" title="Какая доля цены кейса в среднем возвращается предметами">RTP <span class="num">${Math.round(caseOdds(c).rtp*100)}%</span></span>${c.fixed ? c.skins.slice().reverse().map(sk=>`<span class="odd" style="--rc:${RAR[sk.rar].color}"><i></i>${esc(sk.name)} <span class="num">${fmtPct(sk.chance)}</span></span>`).join("") : RAR.map((r,k)=>`<span class="odd" style="--rc:${r.color}"><i></i>${r.name} <span class="num">${(caseOdds(c).p[k]*100).toFixed(2)}%</span></span>`).join("")}</div>
     </div>
     <div class="contents">${contents.map(sk=>{
-      const lo = sk.basePrice*WEAR[4].m, hi = sk.basePrice*WEAR[0].m*ST_M;
+      const lo = c.fixed ? sk.basePrice : sk.basePrice*WEAR[4].m, hi = c.fixed ? sk.basePrice : sk.basePrice*WEAR[0].m*ST_M;
       return `<div class="item" style="--rc:${RAR[sk.rar].color}">
         ${art(sk)}
         <div class="w">${esc(title(sk))}</div>
         <div class="n">${esc(sk.name)}</div>
-        <div class="meta"><span class="num">${(sk.chance*100).toFixed(sk.chance<0.01?3:2)}%</span><span class="price rng"><span>${money(lo)}</span>–<wbr><span>${money(hi)}</span></span></div>
+        <div class="meta"><span class="num">${fmtPct(sk.chance)}</span><span class="price rng">${lo===hi ? `<span>${money(lo)}</span>` : `<span>${money(lo)}</span>–<wbr><span>${money(hi)}</span>`}</span></div>
       </div>`}).join("")}
     </div>`;
   updateOpenBtn(c);
@@ -3140,8 +3172,8 @@ let UP_EDGE = 0.95, UP_MAX = 0.90, CRASH_RTP = 0.95, CONTRACT_RTP = 0.95, MINES_
 const CATALOG = [];
 function buildCatalog(){
 CATALOG.length = 0;
-CASES.filter(c=>!c.off).forEach(c=>c.skins.forEach(sk=>WEAR.forEach((w,wi)=>CATALOG.push({c:c.id, s:sk.i, w:wi, st:false,
-  price:Math.max(2, Math.round(sk.basePrice*w.m)), text:(title(sk)+" "+sk.name+" "+c.name+" "+w.s).toLowerCase()}))));
+CASES.filter(c=>!c.off).forEach(c=>c.skins.forEach(sk=>WEAR.forEach((w,wi)=>c.fixed && wi>0 ? 0 : CATALOG.push({c:c.id, s:sk.i, w:wi, st:false,
+  price:c.fixed ? sk.basePrice : Math.max(2, Math.round(sk.basePrice*w.m)), text:(title(sk)+" "+sk.name+" "+c.name+" "+w.s).toLowerCase()}))));
 CATALOG.sort((a,b)=>a.price-b.price);
 CATALOG.forEach((t,i)=>t.k=i);
 }
@@ -4484,6 +4516,7 @@ function drawDaily(justGot){
 const BT = {list:[], unsub:null, create:{cases:[], size:2}, anim:null, seen:new Set(), skip:false, wake:null, view:null};
 const btOn = () => !LOCAL_ONLY && !!CL.id && !!CL.db && typeof CL.db.action==="function";
 function rollWith(c, r){
+  if(c.fixed){ const sk = r() < c.fixed.p ? c.skins.find(x=>x.rar===4) : c.skins.find(x=>x.rar!==4); return {c:c.id, s:sk.i, w:0, fl:+(r()*0.07).toFixed(4), st:false, price:sk.basePrice}; }
   let x = r(), acc = 0, k = 0;
   for(; k<5; k++){ acc += RAR[k].p; if(x<acc) break; }
   if(k>4) k = 0;
