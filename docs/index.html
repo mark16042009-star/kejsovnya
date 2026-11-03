@@ -841,10 +841,10 @@ button,a,input,select,label{-webkit-tap-highlight-color:transparent;touch-action
 #adm-rtp{min-width:0;overflow:hidden}
 .rtp-table{max-width:100%}
 </style>
-<script>window.APP_BUILD="03.11 13:45";</script>
+<script>window.APP_BUILD="03.11 13:54";</script>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
-<script src="config.js?v=202611031145"></script>
-<script src="adapter.js?v=202611031145"></script>
+<script src="config.js?v=202611031154"></script>
+<script src="adapter.js?v=202611031154"></script>
 <link rel="icon" href="icon.png">
 </head>
 <body>
@@ -1050,21 +1050,181 @@ const plural = (n, a, b, c) => { const m = n%100, k = n%10; return m>10 && m<20 
 
 /* ---------- Рисование ---------- */
 let uid = 0;
-function art(sk){
-  const id = "a"+(uid++);
-  const [a,b] = sk.c, path = PATHS[sk.type];
-  let defs = "", over = "";
-  if(sk.pt==="stripes"){
-    defs = `<pattern id="${id}p" width="12" height="12" patternUnits="userSpaceOnUse" patternTransform="rotate(35)"><rect width="5" height="12" fill="${b}" opacity=".6"/></pattern>`;
-    over = `<rect width="200" height="80" fill="url(#${id}p)"/>`;
-  } else if(sk.pt==="dots"){
-    defs = `<pattern id="${id}p" width="9" height="9" patternUnits="userSpaceOnUse"><circle cx="4.5" cy="4.5" r="2" fill="${a}" opacity=".7"/></pattern>`;
-    over = `<rect width="200" height="80" fill="url(#${id}p)"/>`;
-  } else if(sk.pt==="camo"){
-    over = sk.blobs.map((q,k)=>`<ellipse cx="${q[0].toFixed(0)}" cy="${q[1].toFixed(0)}" rx="${q[2].toFixed(0)}" ry="${q[3].toFixed(0)}" transform="rotate(${q[4].toFixed(0)} ${q[0].toFixed(0)} ${q[1].toFixed(0)})" fill="${k%2?a:b}" opacity=".75"/>`).join("");
+/* ---------- Пиксельные скины ----------
+ * Каждый тип оружия — спрайт 40×16 клеток: x — окрашенная часть (скин), m — тёмный металл, h — светлый металл.
+ * Скин раскрашивает клетки x по своему узору, добавляет объём (светлый верх, тёмный низ), чёрную обводку
+ * и блики у редких предметов. Готовая картинка кешируется для каждого скина. */
+const SPRITES = {
+  rifle: [
+    "........................................",
+    "........................................",
+    ".....................................m..",
+    "...........mmmmmmmmmmmmmm............m..",
+    "xxx........xhhhhhhhhhhhhxxxxxxxxxmmmmmmm",
+    "xxxxx......xxxxxxxxxxxxxxxxxxxxxxmmmmmmm",
+    "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.......",
+    "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.......",
+    ".xxxxxxxxx.xxxmmxxxxxxx.................",
+    "...xxxxxxx..xxm.xxxxxx..................",
+    ".....xxxxx..xxm..xxxxxx.................",
+    "............xxx...xxxxx.................",
+    "............xxx....xxxxx................",
+    "....................xxxx................",
+    "........................................",
+    "........................................"
+  ],
+  sniper: [
+    "........................................",
+    "............mmmmmmmmmmmmm...............",
+    "...........mhhhhhhhhhhhhhm..............",
+    "............mmmmmmmmmmmmm...............",
+    "..............m.......m.................",
+    "xxxx.......xxxxxxxxxxxxxxxxxxxxx........",
+    "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxmmmmmmmm",
+    "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxmmmmmmmm",
+    "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.........",
+    "xxxxx...xxxxmmxxxxxx....................",
+    "xxx......xxxm.xxxx......................",
+    "..........xxm...........................",
+    "..........xxx...........................",
+    "...........xx...........................",
+    "........................................",
+    "........................................"
+  ],
+  smg: [
+    "........................................",
+    "........................................",
+    "........................................",
+    "................................m.......",
+    "..........hhhhhhhhhhhhhhhhhh....m.......",
+    "..xxxx....xxxxxxxxxxxxxxxxxxxxxxmmmmmm..",
+    "..xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxmmmmmm..",
+    "..xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx........",
+    "..xx......xxxxxmmxxxxxxxxx..............",
+    "..xx.......xxxm..xxx....................",
+    "..xx.......xxxm..xxx....................",
+    "...........xxx...xxx....................",
+    "............xx...xxx....................",
+    ".................xxx....................",
+    "........................................",
+    "........................................"
+  ],
+  shotgun: [
+    "........................................",
+    "........................................",
+    "........................................",
+    "........................................",
+    "...........................m............",
+    "............mmmmmmmmmmmmmmmmmmmmmmmmmmmm",
+    "xxx.........xxxxxxxxxxxxxxxxxxxxxxxxxxxm",
+    "xxxxxxx...xxxxxxxxxxxxxx.hhhhhhhhhh.....",
+    "xxxxxxxxxxxxxxxxmmxxxxx..xxxxxxxxxx.....",
+    ".xxxxxxxxxxx.xxm.........xxxxxxxxxx.....",
+    "...xxxxxxx...xxm........................",
+    "..............xx........................",
+    "........................................",
+    "........................................",
+    "........................................",
+    "........................................"
+  ],
+  pistol: [
+    "........................................",
+    "........................................",
+    "..........m.......................m.....",
+    ".........hhhhhhhhhhhhhhhhhhhhhhhhhhh....",
+    ".........xxxxxxxxxxxxxxxxxxxxxxxxxxxmmm.",
+    ".........xxxxxxxxxxxxxxxxxxxxxxxxxxx....",
+    ".........xxxxxxxxxxxxxxxxxxxxxxxxxxx....",
+    "..........xxxxxxxxxmmmmxx...............",
+    "..........xxxxxxx.m..m..................",
+    "..........xxxxxxx..mm...................",
+    "...........xxxxxx.......................",
+    "...........xxxxxx.......................",
+    "............xxxxx.......................",
+    "............xxxxx.......................",
+    "............mmmmm.......................",
+    "........................................"
+  ],
+  knife: [
+    "........................................",
+    "........................................",
+    "........................................",
+    "........................................",
+    ".........................hhhhhh.........",
+    "...................hhhhhhxxxxxxxhh......",
+    "..............m.hhxxxxxxxxxxxxxxxxxh....",
+    "..xxxxxxxxxx.mmmxxxxxxxxxxxxxxxxxxxxxh..",
+    ".xxxxxxxxxxxxmmmxxxxxxxxxxxxxxxxxxxxx...",
+    ".xxmxxmxxmxxxmmmxxxxxxxxxxxxxxxxxx......",
+    "..xxxxxxxxxx.mmm..xxxxxxxxxxxx..........",
+    "..............m.........................",
+    "........................................",
+    "........................................",
+    "........................................",
+    "........................................"
+  ]
+};
+const PX_W = 40, PX_H = 16, PX_CELL = 5; // клетка 5×5 в координатах 200×80
+const hexRgb = h => { h = h.replace("#",""); if(h.length===3) h = h.split("").map(c=>c+c).join(""); const n = parseInt(h,16); return [n>>16&255, n>>8&255, n&255]; };
+const rgbHex = c => "#" + c.map(v=>Math.max(0,Math.min(255,Math.round(v))).toString(16).padStart(2,"0")).join("");
+const mix = (a, b, t) => a.map((v,i)=>v+(b[i]-v)*t);
+const shade = (c, k) => k>=0 ? mix(c, [255,255,255], k) : mix(c, [0,0,0], -k);
+function pxColor(sk, gx, gy, A, B){
+  const cx = gx*PX_CELL+PX_CELL/2, cy = gy*PX_CELL+PX_CELL/2;
+  const t = Math.min(1, Math.max(0, cx/200*0.75 + cy/80*0.25));
+  if(sk.pt==="stripes"){ const band = Math.floor((gx+gy)/3)%2; return shade(band ? mix(A, B, 0.75) : A, (t-.5)*0.2); }
+  if(sk.pt==="dots"){ const on = (gx%3===1 && gy%2===1); return on ? shade(A, 0.25) : mix(B, A, t*0.4); }
+  if(sk.pt==="camo"){
+    for(let k=0;k<sk.blobs.length;k++){ const [bx,by,rx,ry,rot] = sk.blobs[k], r = rot*Math.PI/180, dx = cx-bx, dy = cy-by;
+      const u = dx*Math.cos(r)+dy*Math.sin(r), v = -dx*Math.sin(r)+dy*Math.cos(r);
+      if((u*u)/(rx*rx) + (v*v)/(ry*ry) <= 1) return k%2 ? shade(A,-0.05) : shade(B,0.05); }
+    return mix(A, B, 0.5);
   }
-  return `<svg class="art" viewBox="0 0 200 80" preserveAspectRatio="xMidYMid meet" aria-hidden="true"><defs><linearGradient id="${id}g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${a}"/><stop offset="1" stop-color="${b}"/></linearGradient>${defs}<clipPath id="${id}c"><path d="${path}"/></clipPath></defs><g clip-path="url(#${id}c)"><rect width="200" height="80" fill="url(#${id}g)"/>${over}<rect width="200" height="34" fill="#fff" opacity=".08"/></g><path d="${path}" fill="none" stroke="rgba(0,0,0,.6)" stroke-width="1.6" stroke-linejoin="round"/></svg>`;
+  return mix(A, B, t);
 }
+function pixelArt(sk){
+  if(sk._px) return sk._px;
+  const spr = SPRITES[sk.type] || SPRITES.rifle;
+  const at = (x,y) => (y>=0 && y<PX_H && x>=0 && x<PX_W) ? (spr[y][x]||".") : ".";
+  const A = hexRgb(sk.c[0]), B = hexRgb(sk.c[1]);
+  const METAL = [43,47,56], METAL_L = [96,104,118], OUT = "#0b0b0e";
+  const rr = rng(hash(sk.name + "|" + sk.i + "|px"));
+  const grid = [];
+  for(let y=0;y<PX_H;y++) for(let x=0;x<PX_W;x++){
+    const ch = at(x,y);
+    let col = null;
+    if(ch==="x"){
+      col = pxColor(sk, x, y, A, B);
+      const lum = col[0]*.3 + col[1]*.59 + col[2]*.11; if(lum < 60) col = mix(col, A, 0.5), col = lum < 35 ? shade(col, 0.18) : col; // слишком тёмное не сливается с фоном
+      if(at(x,y-1)===".") col = shade(col, 0.28);           // свет сверху
+      else if(at(x,y+1)===".") col = shade(col, -0.3);      // тень снизу
+      else if(at(x,y-2)===".") col = shade(col, 0.1);
+    } else if(ch==="m"){ col = at(x,y-1)==="." ? shade(METAL, 0.18) : METAL; }
+    else if(ch==="h"){ col = at(x,y-1)==="." ? shade(METAL_L, 0.25) : METAL_L; }
+    else if([[1,0],[-1,0],[0,1],[0,-1]].some(([dx,dy])=>at(x+dx,y+dy)!=="."))  col = OUT; // обводка
+    grid.push(col ? (typeof col==="string" ? col : rgbHex(col)) : null);
+  }
+  // блики у дорогих редкостей
+  if(sk.rar>=2){
+    const n = sk.rar>=4 ? 5 : sk.rar>=3 ? 3 : 1, cells = [];
+    for(let y=0;y<PX_H;y++) for(let x=0;x<PX_W;x++) if(at(x,y)==="x" && at(x,y-1)===".") cells.push(y*PX_W+x);
+    for(let k=0;k<n && cells.length;k++){ const i = cells.splice(Math.floor(rr()*cells.length),1)[0]; grid[i] = "#ffffff"; }
+  }
+  // склеиваем клетки одного цвета в строках и рисуем одним path на цвет
+  const byCol = {};
+  for(let y=0;y<PX_H;y++){
+    let x = 0;
+    while(x<PX_W){
+      const c = grid[y*PX_W+x]; if(!c){ x++; continue; }
+      let w = 1; while(x+w<PX_W && grid[y*PX_W+x+w]===c) w++;
+      (byCol[c] = byCol[c] || []).push(`M${x} ${y}h${w}v1h-${w}z`);
+      x += w;
+    }
+  }
+  const paths = Object.entries(byCol).map(([c,d])=>`<path fill="${c}" d="${d.join("")}"/>`).join("");
+  return sk._px = `<svg class="art px" viewBox="-1 -1 ${PX_W+2} ${PX_H+2}" preserveAspectRatio="xMidYMid meet" shape-rendering="crispEdges" aria-hidden="true">${paths}</svg>`;
+}
+function art(sk){ return pixelArt(sk); }
 function caseArt(c){
   const id = "c"+(uid++); const [a,b] = c.pal[0];
   return `<svg viewBox="0 0 160 110" aria-hidden="true"><defs><linearGradient id="${id}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${b}"/><stop offset="1" stop-color="${a}"/></linearGradient></defs>
