@@ -72,6 +72,7 @@ main{max-width:1240px;margin:0 auto;padding:24px 16px 48px}
 .case::before{content:"";position:absolute;inset:0;background:radial-gradient(240px 140px at 50% 30%, var(--ca) 0%, transparent 70%);opacity:.18;pointer-events:none}
 .case:hover{transform:translateY(-3px);border-color:var(--ca)}
 .case svg{width:100%;height:auto;position:relative}
+.case-art{display:block;border-radius:8px;image-rendering:pixelated}
 .case-row{display:flex;justify-content:space-between;align-items:baseline;gap:8px;position:relative}
 .case h3{font-size:18px}
 .price{font-family:var(--mono);font-weight:700;color:var(--accent)}
@@ -917,7 +918,7 @@ nav a .nav-dot,#nav-more .nav-dot{position:absolute;top:10px;right:2px;width:8px
 #adm-rtp{min-width:0;overflow:hidden}
 .rtp-table{max-width:100%}
 </style>
-<script>window.APP_BUILD="03.11 14:31";</script>
+<script>window.APP_BUILD="03.11 14:40";</script>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="adapter.js"></script>
 <link rel="icon" href="icon.png">
@@ -1718,18 +1719,328 @@ function pixelArt(sk){
   return sk._px = `<svg class="art px" viewBox="-1 -1 ${PX_W+2} ${PX_H+2}" preserveAspectRatio="xMidYMid meet" shape-rendering="crispEdges" aria-hidden="true">${Object.entries(byCol).map(([c,d])=>`<path fill="${c}" d="${d.join("")}"/>`).join("")}</svg>`;
 }
 function art(sk){ return pixelArt(sk); }
+/* ---------- Пиксельные иллюстрации кейсов ----------
+ * У каждого кейса своя сцена (64×44 пикселя), сундук в цветах кейса и своя эмблема на нём. */
+const EMB = {
+  carton:{p:{a:"#c8a273",b:"#8a6a43",c:"#e8d8a8"}, s:`
+..............
+.kkkkkkkkkkkk.
+.kaaaaccaaaak.
+.kaaaaccaaaak.
+.kbbbbccbbbbk.
+.kaaaaccaaaak.
+.kaaaaccaaaak.
+.kaaaaccaaaak.
+.kaaaaaaaaaak.
+.kaaaaaabbbak.
+.kkkkkkkkkkkk.
+..............`},
+  chalk:{p:{a:"#2a5a3c",b:"#8a5a2a",w:"#f4f6f4"}, s:`
+kkkkkkkkkkkkkk
+kbbbbbbbbbbbbk
+kbaaaaaaaaaabk
+kbawwaaaaaaabk
+kbaawwawaaaabk
+kbaaaawawwaabk
+kbaaaaaaaawabk
+kbaaaaaaaaaabk
+kbbbbbbbbbbbbk
+kkkkkkkkkkkkkk
+...kk....kk...
+..kk......kk..`},
+  sand:{p:{a:"#f2c46d",b:"#c8913a",c:"#fff07a"}, s:`
+..........cc..
+.........cccc.
+.........cccc.
+..........cc..
+......kk......
+.....kabk.....
+....kaabbk....
+...kaaabbbk...
+..kaaaabbbbk..
+.kaaaaabbbbbk.
+kkkkkkkkkkkkkk
+..............`},
+  retro:{p:{a:"#2dd4bf",b:"#1a1a1a",c:"#f2c94c",w:"#ffffff"}, s:`
+..............
+kkkkkkkkkkkkkk
+kaaaaaaaaaaaak
+kaccccccccccak
+kacbbccccbbcak
+kacbwccccwbcak
+kacbbccccbbcak
+kaccccccccccak
+kaaaabbbbaaaak
+kaaabaaaabaaak
+kkkkkkkkkkkkkk
+..............`},
+  ocean:{p:{a:"#38bdf8",b:"#0c4a8a",w:"#ffffff"}, s:`
+..............
+.......www....
+.....wwaaaw...
+....waaaaaaw..
+...waabbbaaaw.
+...wabb..baaw.
+..waab....bw..
+.waab.........
+waaab.....www.
+aaaabwwwwwaaaa
+bbbbbbbbbbbbbb
+..............`},
+  rust:{p:{a:"#d9822b",b:"#7a3a12"}, s:`
+......kk......
+...kk.kk.kk...
+...kakaakak...
+....kaaaak....
+.kkkaabbaakkk.
+.kaaab..baaak.
+.kaaab..baaak.
+.kkkaabbaakkk.
+....kaaaak....
+...kakaakak...
+...kk.kk.kk...
+......kk......`},
+  candy:{p:{a:"#f9a8d4",b:"#e11d74",w:"#ffffff"}, s:`
+....kkkkkk....
+...kaabbaak...
+..kabbaabbak..
+..kbaawwaabk..
+..kbawbbwabk..
+..kabbaabbak..
+...kaabbaak...
+....kkkkkk....
+......kk......
+......wk......
+......wk......
+......kk......`},
+  jungle:{p:{a:"#4ade80",b:"#166534",c:"#8a5a2a"}, s:`
+...kk....kk...
+..kaak..kaak..
+.kaabakkabaak.
+kaabbaaaabbaak
+.kkaabaabaakk.
+...kkabbakk...
+.....kcck.....
+.....kcck.....
+.....kcck.....
+....kccck.....
+....kcck......
+...kkkkkk.....`},
+  tundra:{p:{a:"#7dd3fc",w:"#ffffff"}, s:`
+......ww......
+...w..ww..w...
+....w.ww.w....
+.....wwww.....
+.w...wwww...w.
+wwwwwwaawwwwww
+wwwwwwaawwwwww
+.w...wwww...w.
+.....wwww.....
+....w.ww.w....
+...w..ww..w...
+......ww......`},
+  city:{p:{a:"#facc15",b:"#4b5563",c:"#374151"}, s:`
+.......kk.....
+......kbbk....
+......kbbk....
+..kkk.kabk....
+..kck.kbak.kk.
+..kak.kabkkcck
+kkkckkkbbkkack
+kcakcckabkkcck
+kcckcakbakkack
+kackcckbbkkcck
+kcckcakabkkack
+kkkkkkkkkkkkkk`},
+  neon:{p:{a:"#ff3ea5",w:"#ffd1ec"}, s:`
+..............
+..kkk....kkk..
+.kaaak..kaaak.
+kawwaakkaaaaak
+kawaaaaaaaaaak
+kaaaaaaaaaaaak
+.kaaaaaaaaaak.
+..kaaaaaaaak..
+...kaaaaaak...
+....kaaaak....
+.....kaak.....
+......kk......`},
+  volcano:{p:{a:"#5a3a2a",b:"#3a2418",c:"#ff5a1f",d:"#ffd23a"}, s:`
+....d..c..d...
+.....dccd.....
+......cc......
+.....kcck.....
+....kaccak....
+....kacabk....
+...kaaacabk...
+..kaaaacaabk..
+..kaaaaaabbk..
+.kaaaaaaaabbk.
+kaaaaaaaaabbbk
+kkkkkkkkkkkkkk`},
+  cosmos:{p:{a:"#a78bfa",b:"#6d28d9",c:"#fde68a"}, s:`
+..............
+.....kkkk.....
+....kaaaak....
+...kaaaaabk..c
+ccckaaaabbbkcc
+.cccccccccccc.
+cc.kaabbbbk...
+...kabbbbbk...
+....kbbbbk....
+.....kkkk.....
+..............
+..............`},
+  gold:{p:{a:"#fbbf24",b:"#b8862a",r:"#e02d4d"}, s:`
+..............
+.k....kk....k.
+kak..kaak..kak
+kaak.kaak.kaak
+kaaakaaaakaaak
+kaaaaaaaaaaaak
+karaaabbaaarak
+kaaaaaaaaaaaak
+kbbbbbbbbbbbbk
+kkkkkkkkkkkkkk
+..............
+..............`},
+  diamond:{p:{a:"#a5f3fc",b:"#67e8f9",c:"#0e7490",w:"#ffffff"}, s:`
+..............
+...kkkkkkkk...
+..kwawabbacck.
+.kwwaawbbaccck
+kkkkkkkkkkkkkk
+.kawaabbbacck.
+..kawabbbcck..
+...kaabbbck...
+....kabbck....
+.....kbck.....
+......kk......
+..............`},
+  empire:{p:{a:"#e9d5ff",b:"#c084fc",c:"#fbbf24"}, s:`
+..cccccccccc..
+.kkkkkkkkkkkk.
+..kaabaabaak..
+...kabaabak...
+...kabaabak...
+...kabaabak...
+...kabaabak...
+...kabaabak...
+...kabaabak...
+..kaaaaaaaak..
+.kkkkkkkkkkkk.
+.cccccccccccc.`},
+  plasma:{p:{a:"#22d3ee",w:"#ffffff"}, s:`
+.......kkkk...
+......kawk....
+.....kawk.....
+....kawk......
+...kawwkkkk...
+..kaaaaaaak...
+...kkkkawk....
+.....kawk.....
+....kawk......
+...kawk.......
+..kak.........
+..kk..........`},
+  abyss:{p:{a:"#14b8a6",b:"#0f3d3a",w:"#99f6e4"}, s:`
+..............
+....kkkkkk....
+..kkbbbbbbkk..
+.kbbbaaaabbbk.
+kbbaaakkaaabbk
+kbaaakwkkaaabk
+kbbaaakkaaabbk
+.kbbbaaaabbbk.
+..kkbbbbbbkk..
+....kkkkkk....
+..............
+..............`},
+  legend:{p:{a:"#e5e7eb",b:"#9ca3af",c:"#f43f5e",d:"#fbbf24",e:"#5a3a2a"}, s:`
+............kk
+...........kak
+..........kabk
+.........kabk.
+........kabk..
+.......kabk...
+..kk..kabk....
+..kdkkabk.....
+...kddck......
+...kedkdk.....
+..kek..kk.....
+.kek..........`},
+  million:{p:{a:"#4a8a3a",b:"#2e6b3a",c:"#fde68a",d:"#8a6a3a"}, s:`
+.....kkkk.....
+......kk......
+.....kddk.....
+....kaaaak....
+...kaacaaak...
+..kaacccaaak..
+..kaacaaaabk..
+..kaaacccabk..
+..kaaaaacabk..
+..kaacccaabk..
+...kaacabbk...
+....kkkkkk....`}
+};
+const CW = 64, CH = 44;
+/* фоновые сцены: (x, y, шум) → цвет */
+const SCENE = {
+  carton:(x,y,N)=>y>34 ? (x%8===0 ? "#5a4026" : "#7a5a36") : (y%9===0 ? "#6b4f2e" : mix(hexRgb("#3a2e22"), hexRgb("#5a4632"), N(x/6,y/6))),
+  chalk:(x,y,N)=>y>36 ? ((x+y)%6===0 ? "#5a3a1a" : "#7a5226") : y<3 ? "#2a1a10" : mix(hexRgb("#1a3326"), hexRgb("#24402f"), N(x/5,y/5)),
+  sand:(x,y,N)=>{ const d = 30 + 4*Math.sin(x/7) + 2*Math.sin(x/3+1); return y>d ? mix(hexRgb("#d9a85a"), hexRgb("#b07a3a"), (y-d)/10) : mix(hexRgb("#7ac8f0"), hexRgb("#ffe0a0"), y/30); },
+  retro:(x,y)=>y%3===0 ? "#2a0f4a" : mix(hexRgb("#3b0a5a"), hexRgb("#ff6ab0"), y/44),
+  ocean:(x,y,N)=>{ const w = 22 + 1.6*Math.sin(x/4 + y/9); if(y<w) return mix(hexRgb("#5ac8f0"), hexRgb("#c8ecff"), y/22); return (y===Math.round(w)+1 && x%5<2) ? "#e6f7ff" : mix(hexRgb("#1a6ab0"), hexRgb("#04223f"), (y-22)/22); },
+  rust:(x,y,N)=>{ if(x%16===3 && y%10===4) return "#9a9a9a"; const f = N.f(x/6,y/5); return f>.62 ? "#a8461d" : f>.55 ? "#7a3a12" : mix(hexRgb("#2e2622"), hexRgb("#4a3a30"), N(x/3,y/3)); },
+  candy:(x,y)=>((x+ (Math.floor(y/6)%2)*3)%6===0 && y%6===2) ? "#ffffff" : mix(hexRgb("#ff9ac8"), hexRgb("#b04a8a"), y/44),
+  jungle:(x,y,N)=>{ const f = N.f(x/5,y/4); return f>.66 ? "#2e8b4a" : f>.55 ? "#1a5a2e" : mix(hexRgb("#0b2a16"), hexRgb("#123d1e"), y/44); },
+  tundra:(x,y,N)=>{ if(N.h(x,y)<.04 && y<34) return "#ffffff"; const g = 33 + 2*Math.sin(x/9); return y>g ? mix(hexRgb("#e8f4ff"), hexRgb("#b8d4ea"), (y-g)/10) : mix(hexRgb("#4a7fb0"), hexRgb("#bfe0f5"), y/33); },
+  city:(x,y,N)=>{ const bh = 14 + Math.floor(N.h(Math.floor(x/6),1)*18); if(y > 44-bh){ return (x%6!==0 && x%2===1 && y%3===1 && N.h(x,y)>.45) ? "#ffd23a" : "#141822"; } return N.h(x,y)<.02 ? "#ffffff" : mix(hexRgb("#05061a"), hexRgb("#2a1e4a"), y/40); },
+  neon:(x,y)=>{ if(y<22){ const dx = x-32, dy = y-20; if(dx*dx + dy*dy*2.5 < 140 && y%3!==1) return mix(hexRgb("#ffd23a"), hexRgb("#ff3ea5"), y/20); return mix(hexRgb("#12002b"), hexRgb("#4a0a5a"), y/22); } const t = (x-32)*2.2/(y-19), hl = [23,25,28,32,37,43].includes(y); return (hl || (Math.abs(t-Math.round(t))<.18/(1+(43-y)/12) && y>22)) ? mix(hexRgb("#ff3ea5"), hexRgb("#7a1a6a"), (43-y)/22) : "#14001f"; },
+  volcano:(x,y,N)=>{ if(y>38) return N.f(x/3,y)>.5 ? "#ff5a1f" : "#a01a05"; if(N.h(x,y)<.03) return "#ffb02e"; return mix(hexRgb("#1a0505"), hexRgb("#5a1206"), y/38); },
+  cosmos:(x,y,N)=>{ const h = N.h(x,y); if(h<.04) return "#ffffff"; const f = N.f(x/8,y/6); return f>.6 ? mix(hexRgb("#3a1a6a"), hexRgb("#ff6ad5"), (f-.6)*2.5) : mix(hexRgb("#03031a"), hexRgb("#0b0b2b"), f); },
+  gold:(x,y,N)=>{ const pile = 34 + 3*Math.sin(x/5) + 2*Math.cos(x/3); if(y>pile) return (x+y)%4===0 ? "#fff3c4" : N.h(x,y)>.5 ? "#f2c94c" : "#c8902a"; return N.h(x,y)<.03 ? "#fff3c4" : mix(hexRgb("#1a1208"), hexRgb("#3a2a10"), y/40); },
+  diamond:(x,y,N)=>{ const cx = Math.floor(x/8), cy = Math.floor(y/8), up = (x%8) > (y%8); const h = N.h(cx*2+(up?1:0), cy); if(N.h(x,y)<.02) return "#ffffff"; return mix(hexRgb("#0e3a4a"), hexRgb("#2a8aa8"), h*.8); },
+  empire:(x,y)=>{ if(y<3) return "#fbbf24"; if(y===3) return "#b8862a"; const fold = Math.sin(x/2.2); return mix(hexRgb("#2e0a4a"), hexRgb("#6b21a8"), .5+.5*fold); },
+  plasma:(x,y,N)=>{ for(let b=0;b<3;b++){ let yy = 6 + b*14; for(let i=0;i<=x;i++) yy += (N.h(i,b+20)-.5)*2.6; const d = Math.abs(y-yy); if(d<.7) return "#e0fbff"; if(d<1.6) return "#22d3ee"; } return mix(hexRgb("#020818"), hexRgb("#0b1a4a"), N.f(x/8,y/6)); },
+  abyss:(x,y,N)=>{ if(N.h(x,y)<.025) return "#5eead4"; return mix(hexRgb("#0a3a3a"), hexRgb("#000608"), y/44 + (N(x/6,y/6)-.5)*.3); },
+  legend:(x,y)=>{ const dx = x-32, dy = y-14, a = Math.atan2(dy,dx); return Math.sin(a*10)>.6 ? mix(hexRgb("#8a5a10"), hexRgb("#2a0505"), Math.min(1,Math.sqrt(dx*dx+dy*dy)/40)) : mix(hexRgb("#3a0a10"), hexRgb("#0a0204"), y/44); },
+  million:(x,y,N)=>{ const dx = x-32, dy = y-16, a = Math.atan2(dy,dx); if(x%10===3 && y%9===4) return "#2e6b3a"; return Math.sin(a*8)>.55 ? mix(hexRgb("#fde68a"), hexRgb("#0c2a14"), Math.min(1,Math.sqrt(dx*dx+dy*dy)/34)) : mix(hexRgb("#0c2a14"), hexRgb("#04140a"), y/44); }
+};
 function caseArt(c){
-  const id = "c"+(uid++); const [a,b] = c.pal[0];
-  return `<svg viewBox="0 0 160 110" aria-hidden="true"><defs><linearGradient id="${id}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${b}"/><stop offset="1" stop-color="${a}"/></linearGradient></defs>
-  <ellipse cx="80" cy="102" rx="64" ry="6" fill="#000" opacity=".45"/>
-  <rect x="62" y="14" width="36" height="14" rx="5" fill="none" stroke="#3a3a3a" stroke-width="5"/>
-  <rect x="14" y="26" width="132" height="72" rx="9" fill="url(#${id})"/>
-  <rect x="14" y="26" width="132" height="22" rx="9" fill="#000" opacity=".28"/>
-  <rect x="14" y="46" width="132" height="3" fill="#000" opacity=".35"/>
-  <rect x="26" y="56" width="8" height="34" rx="2" fill="#000" opacity=".22"/><rect x="126" y="56" width="8" height="34" rx="2" fill="#000" opacity=".22"/>
-  <rect x="66" y="40" width="28" height="20" rx="3" fill="#12161c" stroke="${c.accent}" stroke-width="2"/>
-  <circle cx="80" cy="50" r="3" fill="${c.accent}"/>
-  <text x="80" y="84" text-anchor="middle" font-family="Tiny5 Duo, monospace" font-size="12" fill="#fff" opacity=".85" letter-spacing="1">${c.name.toUpperCase()}</text></svg>`;
+  if(c._art) return c._art;
+  const N = vnoise(hash("case|"+c.id)), scene = SCENE[c.id] || ((x,y)=>mix(hexRgb(c.pal[0][0]), [0,0,0], y/60));
+  const grid = new Array(CW*CH).fill(null);
+  const put = (x,y,col) => { if(x>=0 && x<CW && y>=0 && y<CH && col) grid[y*CW+x] = typeof col==="string" ? col : rgbHex(col); };
+  for(let y=0;y<CH;y++) for(let x=0;x<CW;x++){ const col = scene(x,y,N); put(x,y, mix(typeof col==="string" ? hexRgb(col) : col, [0,0,0], .18)); }
+  // тень и сундук
+  const X0 = 13, X1 = 50, Y0 = 18, YL = 25, Y1 = 40;
+  const body = hexRgb(c.accent), dark = shade(hexRgb(c.pal[0][0]), -.2), metal = [58,62,70], metalL = [128,136,148];
+  for(let x=X0+1;x<=X1+1;x++) put(x, Y1+1, "#000000");
+  for(let y=Y0;y<=Y1;y++) for(let x=X0;x<=X1;x++){
+    const edge = x===X0 || x===X1 || y===Y0 || y===Y1 || y===YL;
+    let col;
+    if(edge) col = "#0b0b0e";
+    else if((x<=X0+2 || x>=X1-2) && (y<=Y0+2 || y>=Y1-2 || (y>=YL-1 && y<=YL+1))) col = (x+y)%2 ? metalL : metal; // уголки
+    else if(y<YL) col = y===Y0+1 ? shade(dark, .25) : mix(dark, body, .25);                                 // крышка
+    else { col = mix(body, dark, (y-YL)/(Y1-YL)*.55); if(x===X0+1) col = shade(col,.18); if(x===X1-1) col = shade(col,-.25); if(y===YL+1) col = shade(col,.2); if((x-X0)%9===0) col = shade(col,-.18); }
+    put(x, y, col);
+  }
+  // ручка
+  for(let x=27;x<=36;x++) put(x, Y0-3, "#0b0b0e"), put(x, Y0-2, x===27||x===36 ? "#0b0b0e" : metalL);
+  for(let y=Y0-3;y<Y0;y++) put(27, y, "#0b0b0e"), put(36, y, "#0b0b0e");
+  // эмблема на передней стенке (с тёмной плашкой под ней)
+  const em = EMB[c.id];
+  if(em){
+    const rows = em.s.trim().split(/\s+/), ex = 25, ey = 26;
+    for(let y=-1;y<=12;y++) for(let x=-1;x<=14;x++) put(ex+x, ey+y-1, mix(hexRgb("#101216"), body, .12));
+    rows.forEach((r,y)=>[...r].forEach((ch,x)=>{ if(ch===".") return; put(ex+x, ey+y-1, ch==="k" ? "#0b0b0e" : em.p[ch]); }));
+  }
+  // искры у дорогих кейсов
+  if(c.defPrice >= 7999){ const r = rng(hash("spark|"+c.id)); for(let k=0;k<(c.elite?14:8);k++){ const x = Math.floor(r()*CW), y = Math.floor(r()*16); put(x,y,"#fff3c4"); put(x+1,y,"#ffd23a"); put(x-1,y,"#ffd23a"); put(x,y+1,"#ffd23a"); put(x,y-1,"#ffd23a"); } }
+  const byCol = {};
+  for(let y=0;y<CH;y++){ let x = 0; while(x<CW){ const col = grid[y*CW+x]; if(!col){ x++; continue; } let w = 1; while(x+w<CW && grid[y*CW+x+w]===col) w++; (byCol[col] = byCol[col] || []).push(`M${x} ${y}h${w}v1h-${w}z`); x += w; } }
+  return c._art = `<svg class="case-art" viewBox="0 0 ${CW} ${CH}" shape-rendering="crispEdges" aria-hidden="true">${Object.entries(byCol).map(([col,d])=>`<path fill="${col}" d="${d.join("")}"/>`).join("")}</svg>`;
 }
 
 /* ---------- Состояние ---------- */
