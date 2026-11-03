@@ -990,6 +990,19 @@ svg.ava rect{rx:4px}
 .dfr{border-radius:0}
 .dfr-fire::before,.dfr-rainbow::before{border-radius:0;clip-path:var(--notch)}
 h1,h2,h3{letter-spacing:.04em}
+/* текст не обрезаем многоточием: блок растёт под текст */
+.cell span,.cell span b,.mini small,.mini b,.me-t b,.me-t small,.row .who b,.drop span,.drop span b,.stake-it span,.d-who span,.cr-t small,.cr-t b,.adm-pl .who b,.bt-pc span,.bt-p b,.bv-head b,.bv-mi small,.mus-name,.adm-case b,nav a .nl,#nav-more .nl,.coll-h .hint,.daily-t span{white-space:normal!important;overflow:visible!important;text-overflow:clip!important;max-width:none!important;overflow-wrap:anywhere}
+.me-t b,.me-t small{white-space:nowrap!important}
+.bt-p{max-width:none}
+.bt-pc{height:auto}
+.mini{height:auto}
+.drop{display:grid!important;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:2px 6px;padding:6px 8px 6px 10px;height:auto!important}
+.drop .art{position:static!important;inset:auto!important;grid-column:2;grid-row:1;width:100%!important;height:28px!important}
+.d-price{position:static!important;grid-column:1;grid-row:1}
+.drop > span{position:static!important;grid-column:1/-1;font-size:10px!important}
+.d-who{position:static!important;grid-column:1/-1;overflow:visible!important}
+.item .meta{flex-wrap:wrap} .item .meta .price{white-space:nowrap}
+.feed-in{align-items:flex-start}
 @media (max-width:760px){ nav a .nl,#nav-more .nl{font-size:9px!important;letter-spacing:0!important;text-overflow:clip} nav a,#nav-more{padding:0 1px!important} }
 /* админка: поля цены и RTP целиком помещают число */
 .adm-cases{grid-template-columns:repeat(auto-fill,minmax(340px,1fr))!important}
@@ -1007,7 +1020,7 @@ h1,h2,h3{letter-spacing:.04em}
 #adm-rtp{min-width:0;overflow:hidden}
 .rtp-table{max-width:100%}
 </style>
-<script>window.APP_BUILD="03.11 15:12";</script>
+<script>window.APP_BUILD="03.11 15:18";</script>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="adapter.js"></script>
 <link rel="icon" href="icon.png">
