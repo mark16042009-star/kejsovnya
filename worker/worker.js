@@ -510,6 +510,13 @@ export default {
 
       if (route === "POST /api/logout") { await st.del("sessions/" + token); return json(200, { ok: true }); }
       if (route === "GET /api/me") return json(200, { id: uid, owner, name: sess.data.login });
+      // выгрузка всей базы для переезда на свой сервер (только администратор)
+      if (route === "GET /api/export") {
+        if (!owner) return json(403, { error: "Только для администратора" });
+        const docs = (await env.DB.prepare("SELECT path, parent, data, ver FROM docs").all()).results || [];
+        const colver = (await env.DB.prepare("SELECT parent, ver FROM colver").all()).results || [];
+        return json(200, { v: 1, at: Date.now(), docs, colver });
+      }
       if (!owner && req.method !== "GET" && await maintOn(st)) return json(503, { error: "Технические работы. Загляните чуть позже." });
 
       if (route === "GET /api/doc") {
