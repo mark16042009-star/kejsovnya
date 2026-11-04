@@ -214,6 +214,15 @@ async function promoActivate(st, uid, b) {
 }
 
 
+/* режим техработ: читаем config/main не чаще раза в 15 секунд */
+let maintCache = { t: 0, on: false };
+async function maintOn(st) {
+  if (Date.now() - maintCache.t < 15000) return maintCache.on;
+  const c = await st.get("config/main");
+  maintCache = { t: Date.now(), on: !!(c && c.data && c.data.maint && c.data.maint.on) };
+  return maintCache.on;
+}
+
 /* ---------------- Реферальная программа ----------------
  * У игрока есть код приглашения (refs/{uid}). Новый игрок, пришедший по ссылке, привязывается к пригласившему
  * (refby/{uid}). Когда приглашённый откроет REF_MIN кейсов, пригласивший получает REF_BONUS через свой почтовый ящик grants. */
@@ -488,6 +497,11 @@ export default {
       }
 
       // кто это
+      // публичный статус: идут ли техработы (нужен и игрокам без входа)
+      if (route === "GET /api/status") {
+        const c = await st.get("config/main"), m = c && c.data && c.data.maint || {};
+        return json(200, { maint: !!m.on, text: String(m.text || "").slice(0, 300) });
+      }
       const auth = req.headers.get("Authorization") || "";
       const token = auth.startsWith("Bearer ") ? auth.slice(7).trim() : "";
       const sess = TOKEN_RE.test(token) ? await st.get("sessions/" + token) : null;
@@ -496,6 +510,7 @@ export default {
 
       if (route === "POST /api/logout") { await st.del("sessions/" + token); return json(200, { ok: true }); }
       if (route === "GET /api/me") return json(200, { id: uid, owner, name: sess.data.login });
+      if (!owner && req.method !== "GET" && await maintOn(st)) return json(503, { error: "Технические работы. Загляните чуть позже." });
 
       if (route === "GET /api/doc") {
         const s = parsePath(url.searchParams.get("path"), true);
