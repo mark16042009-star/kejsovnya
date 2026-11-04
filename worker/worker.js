@@ -658,7 +658,7 @@ export default {
 
     const url = new URL(req.url);
     if (url.pathname === "/" || url.pathname === "/api" || url.pathname === "/api/") {
-      return json(200, { ok: true, name: "ПиксельДроп", hint: "Сервер работает. Игра открывается с GitHub Pages." });
+      return json(200, { ok: true, name: "ПиксельДроп", hint: "Сервер игры работает." });
     }
     if (url.pathname === "/api/tgcheck" && req.method === "POST") {
       let body = {};
