@@ -303,7 +303,7 @@ async function tgNotify(env, st, uid, text, path) {
   const token = String((env && env.BOT_TOKEN) || "").trim(); if (!token) return;
   try {
     const link = await st.get("tglinks/" + uid); const chat = link && link.data && link.data.tg; if (!chat) return;
-    const base = String(env.APP_URL || "https://mark16042009-star.github.io/kejsovnya/").replace(/#.*$/, "");
+    const base = await tgAppUrl(env, st);
     const body = { chat_id: chat, text, disable_web_page_preview: true,
       reply_markup: { inline_keyboard: [[{ text: "Открыть в игре", web_app: { url: base + (path || "") } }]] } };
     await fetch(`https://api.telegram.org/bot${token}/sendMessage`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
@@ -315,6 +315,8 @@ async function tgLink(env, st, uid, b) {
   if (!user || !user.id) return { ok: false };
   const cur = await st.get("tglinks/" + uid);
   if (!cur || !cur.data || cur.data.tg !== user.id) await st.set("tglinks/" + uid, { tg: user.id, ts: Date.now() });
+  const mp = await st.get("tgmap/" + user.id);
+  if (!mp || !mp.data || mp.data.uid !== uid) await st.set("tgmap/" + user.id, { uid, ts: Date.now() });
   return { ok: true };
 }
 async function tradeAction(st, uid, b, env) {
@@ -430,6 +432,163 @@ async function tgSubscription(env, body) {
   }
 }
 
+/* ---------------- Telegram-бот ----------------
+ * Webhook: Telegram присылает сообщения на /api/tg/webhook (с секретом). Бот отвечает на /start и команды,
+ * админ делает рассылки из админки, по расписанию (Cron Trigger) бот напоминает о ежедневном подарке.
+ * tgusers/{tgId} — кто писал боту (chat, имя, notify); tgmap/{tgId} — какой аккаунт игры за ним. */
+const TG_DEFAULT_APP = "https://mark16042009-star.github.io/kejsovnya/";
+const BIG_UNITS = [[1e6, "млн"], [1e9, "млрд"], [1e12, "трлн"], [1e15, "квадрлн"], [1e18, "квинтлн"]];
+function bigCoins(v) {
+  v = Number(v) || 0; const a = Math.abs(v);
+  if (a < 1e6) return Math.round(v).toLocaleString("ru-RU").replace(/ /g, " ") + " монет";
+  let i = BIG_UNITS.length - 1; while (i > 0 && a < BIG_UNITS[i][0]) i--;
+  const x = v / BIG_UNITS[i][0], d = Math.abs(x) < 10 ? 2 : Math.abs(x) < 100 ? 1 : 0;
+  return x.toFixed(d).replace(/\.?0+$/, "").replace(".", ",") + " " + BIG_UNITS[i][1] + " монет";
+}
+const tgToken = env => String((env && env.BOT_TOKEN) || "").trim();
+async function tgSecret(env) { return hex(new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode("pd-webhook:" + tgToken(env))))).slice(0, 48); }
+async function tgApi(env, method, body) {
+  const r = await fetch(`https://api.telegram.org/bot${tgToken(env)}/${method}`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body || {}) });
+  return r.json().catch(() => ({ ok: false }));
+}
+async function tgAppUrl(env, st) {
+  const c = await st.get("tgbot/main");
+  return String((c && c.data && c.data.appUrl) || env.APP_URL || TG_DEFAULT_APP).replace(/#.*$/, "");
+}
+const withQuery = (base, q) => base + (base.includes("?") ? "&" : "?") + q;
+function playKb(app, extra) {
+  const rows = [[{ text: "🎮 Играть", web_app: { url: app } }]];
+  if (extra) rows.push(...extra);
+  return { inline_keyboard: rows };
+}
+async function tgSend(env, chat, text, kb) {
+  const j = await tgApi(env, "sendMessage", Object.assign({ chat_id: chat, text, disable_web_page_preview: true }, kb ? { reply_markup: kb } : {}));
+  return j;
+}
+async function tgPlayerOf(st, tgId) {
+  const m = await st.get("tgmap/" + tgId); const uid = m && m.data && m.data.uid; if (!uid) return null;
+  const p = await st.get("profiles/" + uid);
+  return { uid, prof: (p && p.data) || null };
+}
+const mskDay = (ms = Date.now()) => new Date(ms + 3 * 3600e3).toISOString().slice(0, 10);
+async function dailyReady(st, uid) {
+  const g = await st.get("data/users/" + uid + "/game"); if (!g || !g.data) return null;
+  let s = {}; try { s = JSON.parse(g.data.state || "{}"); } catch (e) {}
+  const last = s.daily && s.daily.last ? String(s.daily.last) : "";
+  // в игре дата хранится как ГГГГ-ММ-ДД по времени игрока; сравниваем с московской
+  return { ready: last !== mskDay(), streak: Number(s.daily && s.daily.streak) || 0 };
+}
+async function tgHandleUpdate(env, st, upd) {
+  const msg = upd && (upd.message || upd.edited_message); if (!msg || !msg.chat || msg.chat.type !== "private") return;
+  const chat = msg.chat.id, from = msg.from || {}, text = String(msg.text || "").trim();
+  const app = await tgAppUrl(env, st);
+  // запоминаем, кто пишет боту
+  const uk = "tgusers/" + from.id, cur = await st.get(uk), u = Object.assign({ notify: true, first: Date.now() }, cur && cur.data || {});
+  u.chat = chat; u.name = String(from.first_name || from.username || "").slice(0, 40); u.last = Date.now(); delete u.blocked;
+  await st.set(uk, u);
+  const [cmdRaw, ...args] = text.split(/\s+/), cmd = cmdRaw.toLowerCase().replace(/@\w+$/, "");
+  const channel = String(env.TG_CHANNEL || "@pixeldropsimulator").replace(/^@/, "");
+  const chBtn = [[{ text: "📢 Канал с новостями", url: "https://t.me/" + channel }]];
+  if (cmd === "/start") {
+    const ref = (args[0] || "").match(/^ref_([a-z0-9]{1,12})$/i);
+    const url = ref ? withQuery(app, "tgref=" + ref[1].toLowerCase()) : app;
+    const hi = from.first_name ? `Привет, ${from.first_name}! 👋` : "Привет! 👋";
+    await tgSend(env, chat, `${hi}\n\nЭто ПиксельДроп — пиксельный симулятор кейсов: открывай кейсы, делай апгрейды, играй в краш, мины и батлы, обменивайся скинами с друзьями.${ref ? "\n\n🎁 Тебя пригласил друг — заходи, регистрируйся и открой первые кейсы!" : ""}\n\nКоманды: /profile /top /daily /help`, playKb(url, chBtn));
+    return;
+  }
+  if (cmd === "/help") {
+    await tgSend(env, chat, "Что я умею:\n/play — открыть игру\n/profile — твой профиль\n/balance — баланс\n/top — топ-10 игроков\n/daily — ежедневный подарок\n/notify — включить или выключить уведомления\n\nУведомления: обмены, напоминание о подарке, новости игры.", playKb(app));
+    return;
+  }
+  if (cmd === "/play") { await tgSend(env, chat, "Погнали! 🎮", playKb(app)); return; }
+  if (cmd === "/notify" || cmd === "/stop") {
+    u.notify = cmd === "/stop" ? false : !u.notify; await st.set(uk, u);
+    await tgSend(env, chat, u.notify ? "🔔 Уведомления включены: напомню о подарке и расскажу о новостях." : "🔕 Уведомления выключены. Включить снова — /notify");
+    return;
+  }
+  const pl = await tgPlayerOf(st, from.id);
+  const needLink = "Сначала зайди в игру через кнопку ниже и войди в аккаунт — тогда я узнаю твой профиль.";
+  if (cmd === "/profile" || cmd === "/balance") {
+    if (!pl || !pl.prof) { await tgSend(env, chat, needLink, playKb(app)); return; }
+    const p = pl.prof;
+    if (cmd === "/balance") { await tgSend(env, chat, `💰 Баланс: ${bigCoins(p.bal)}\n📦 Состояние: ${bigCoins(p.worth)}`, playKb(app)); return; }
+    const best = p.best && p.best.price ? bigCoins(p.best.price) : "—";
+    await tgSend(env, chat, `👤 ${p.nick}\n⭐ Уровень ${Number(p.lvl) || 1}\n💰 Баланс: ${bigCoins(p.bal)}\n📦 Состояние: ${bigCoins(p.worth)}\n🎁 Открыто кейсов: ${Number(p.opened) || 0}\n⬆️ Апгрейды: ${Number(p.upgWin) || 0} / ${Number(p.upg) || 0}\n🏆 Лучший дроп: ${best}`, playKb(app));
+    return;
+  }
+  if (cmd === "/top") {
+    const all = (await st.list("profiles", 1000)).map(x => Object.assign({ id: x.id }, x.data)).filter(p => !p.admin).sort((a, b) => (b.worth || 0) - (a.worth || 0)).slice(0, 10);
+    const medals = ["🥇", "🥈", "🥉"];
+    const lines = all.map((p, i) => `${medals[i] || (i + 1) + "."} ${String(p.nick || "Игрок").slice(0, 20)} — ${bigCoins(p.worth)}`);
+    await tgSend(env, chat, lines.length ? "🏆 Топ игроков по состоянию:\n\n" + lines.join("\n") : "Рейтинг пока пуст.", playKb(app));
+    return;
+  }
+  if (cmd === "/daily") {
+    if (!pl) { await tgSend(env, chat, needLink, playKb(app)); return; }
+    const d = await dailyReady(st, pl.uid);
+    await tgSend(env, chat, d && d.ready ? (d.streak ? `🎁 Подарок ждёт! Серия: ${d.streak} дн. подряд — не прерывай её, награда растёт до ×10.` : "🎁 Подарок ждёт! Забери его и начни серию — каждый день награда больше.") : "✅ Сегодняшний подарок уже забран. Следующий — завтра!", playKb(app));
+    return;
+  }
+  await tgSend(env, chat, "Не понял команду 🤔 Список команд — /help", playKb(app));
+}
+// рассылка порциями: админка вызывает несколько раз, пока next не станет null
+async function tgBroadcast(env, st, b) {
+  if (!tgToken(env)) return { error: "В Cloudflare не задан BOT_TOKEN" };
+  const text = String(b.text || "").trim().slice(0, 3500); if (!text) return { error: "Пустой текст" };
+  const users = (await st.list("tgusers", 5000)).filter(x => x.data && x.data.chat && x.data.notify !== false && !x.data.blocked);
+  const from = Math.max(0, Number(b.cursor) | 0), part = users.slice(from, from + 20), app = await tgAppUrl(env, st);
+  let sent = 0, failed = 0;
+  for (const x of part) {
+    const j = await tgSend(env, x.data.chat, text, b.button === false ? null : playKb(app));
+    if (j.ok) sent++; else { failed++; if (j.error_code === 403) await st.set("tgusers/" + x.id, Object.assign({}, x.data, { blocked: true })); }
+  }
+  const next = from + part.length < users.length ? from + part.length : null;
+  return { sent, failed, next, total: users.length };
+}
+async function tgSetup(env, st, b, origin) {
+  if (!tgToken(env)) return { error: "В Cloudflare не задан BOT_TOKEN" };
+  const appUrl = /^https:\/\//.test(String(b.appUrl || "")) ? String(b.appUrl).replace(/#.*$/, "") : await tgAppUrl(env, st);
+  const cur = await st.get("tgbot/main");
+  await st.set("tgbot/main", Object.assign({ daily: true }, cur && cur.data || {}, { appUrl, setAt: Date.now() }));
+  const hook = await tgApi(env, "setWebhook", { url: origin + "/api/tg/webhook", secret_token: await tgSecret(env), allowed_updates: ["message"], drop_pending_updates: true });
+  const cmds = await tgApi(env, "setMyCommands", { commands: [
+    { command: "play", description: "Открыть игру" }, { command: "profile", description: "Мой профиль" },
+    { command: "balance", description: "Баланс" }, { command: "top", description: "Топ-10 игроков" },
+    { command: "daily", description: "Ежедневный подарок" }, { command: "notify", description: "Вкл/выкл уведомления" },
+    { command: "help", description: "Помощь" }] });
+  const menu = await tgApi(env, "setChatMenuButton", { menu_button: { type: "web_app", text: "Играть", web_app: { url: appUrl } } });
+  const me = await tgApi(env, "getMe", {});
+  const users = (await st.list("tgusers", 5000)).length;
+  return { ok: !!(hook.ok && cmds.ok && menu.ok), hook: hook.description || hook.ok, menu: menu.description || menu.ok, bot: me.result && me.result.username, appUrl, users };
+}
+async function tgInfo(env, st) {
+  const c = await st.get("tgbot/main"), users = await st.list("tgusers", 5000);
+  return { configured: !!tgToken(env), appUrl: await tgAppUrl(env, st), daily: !(c && c.data && c.data.daily === false), setAt: c && c.data && c.data.setAt || 0,
+    users: users.length, notify: users.filter(x => x.data && x.data.notify !== false && !x.data.blocked).length, blocked: users.filter(x => x.data && x.data.blocked).length,
+    cron: c && c.data && c.data.cronAt || 0 };
+}
+// Cron Trigger (раз в 10 минут): после 12:00 МСК напоминаем о ежедневном подарке тем, кто его ещё не забрал — порциями
+async function tgCron(env) {
+  if (!tgToken(env) || !env.DB) return;
+  await ensureTables(env.DB);
+  const st = store(env.DB), c = await st.get("tgbot/main"), cfg = Object.assign({ daily: true }, c && c.data || {});
+  cfg.cronAt = Date.now();
+  const hour = new Date(Date.now() + 3 * 3600e3).getUTCHours(), today = mskDay();
+  if (!cfg.daily || hour < 12) { await st.set("tgbot/main", cfg); return; }
+  if (cfg.remDay !== today) { cfg.remDay = today; cfg.remCursor = 0; }
+  if (cfg.remCursor === -1) { await st.set("tgbot/main", cfg); return; } // на сегодня все обработаны
+  const users = (await st.list("tgusers", 5000)).filter(x => x.data && x.data.chat && x.data.notify !== false && !x.data.blocked);
+  const part = users.slice(cfg.remCursor, cfg.remCursor + 12), app = await tgAppUrl(env, st);
+  for (const x of part) {
+    const pl = await tgPlayerOf(st, x.id); if (!pl) continue;
+    const d = await dailyReady(st, pl.uid); if (!d || !d.ready) continue;
+    const j = await tgSend(env, x.data.chat, `🎁 Ежедневный подарок ждёт тебя!${d.streak ? ` Серия ${d.streak} — не прерывай, награда растёт до ×10.` : " Забери его и начни серию — награда растёт каждый день."}`, playKb(app));
+    if (!j.ok && j.error_code === 403) await st.set("tgusers/" + x.id, Object.assign({}, x.data, { blocked: true }));
+  }
+  cfg.remCursor = cfg.remCursor + part.length >= users.length ? -1 : cfg.remCursor + part.length;
+  await st.set("tgbot/main", cfg);
+}
+
 /* ---------------- HTTP ---------------- */
 function corsHeaders(req, env) {
   const origin = req.headers.get("Origin") || "";
@@ -445,6 +604,7 @@ function corsHeaders(req, env) {
 }
 
 export default {
+  async scheduled(event, env, ctx) { ctx.waitUntil(tgCron(env).catch(e => console.log("cron", e && e.message))); },
   async fetch(req, env) {
     const cors = corsHeaders(req, env);
     const json = (code, obj) => new Response(JSON.stringify(obj), { status: code, headers: Object.assign({ "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" }, cors) });
@@ -460,6 +620,11 @@ export default {
       return json(200, await tgSubscription(env, body));
     }
     if (!env.DB) return json(500, { error: "База D1 не подключена: добавьте привязку с именем DB" });
+    if (url.pathname === "/api/tg/webhook" && req.method === "POST") {
+      if (!tgToken(env) || req.headers.get("X-Telegram-Bot-Api-Secret-Token") !== await tgSecret(env)) return json(403, { ok: false });
+      try { await ensureTables(env.DB); await tgHandleUpdate(env, store(env.DB), JSON.parse((await req.text()).slice(0, 100000) || "{}")); } catch (e) { console.log("tg", e && e.message); }
+      return json(200, { ok: true }); // Telegram ждёт 200, иначе будет повторять
+    }
 
     try {
       await ensureTables(env.DB);
@@ -548,6 +713,15 @@ export default {
       if (route === "POST /api/stock") {
         if (tooMany(writeTries, uid, 30, 10000)) return json(200, { error: "Слишком часто" });
         return json(200, await stockAction(st, uid, await readBody(MAX_BODY)));
+      }
+      if (route === "POST /api/tg") {
+        if (!owner) return json(403, { error: "Только для администратора" });
+        const b = await readBody(MAX_BODY);
+        if (b.action === "setup") return json(200, await tgSetup(env, st, b, url.origin));
+        if (b.action === "broadcast") return json(200, await tgBroadcast(env, st, b));
+        if (b.action === "daily") { const c = await st.get("tgbot/main"); await st.set("tgbot/main", Object.assign({}, c && c.data || {}, { daily: !!b.on })); return json(200, await tgInfo(env, st)); }
+        if (b.action === "test") { const cron = await tgCron(env); return json(200, await tgInfo(env, st)); }
+        return json(200, await tgInfo(env, st));
       }
       if (route === "POST /api/ref") {
         if (tooMany(writeTries, uid, 20, 60000)) return json(200, { error: "Слишком часто" });

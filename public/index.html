@@ -457,6 +457,10 @@ img,svg,canvas{-webkit-user-drag:none;user-drag:none}
 .wheel-lost{font-family:var(--mono);font-size:20px;fill:var(--text)}
 
 .case-result{display:grid;gap:10px}
+.tgb{display:grid;gap:10px}
+.tgb-stats{margin:0}
+.tgb-row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;font-size:13px;color:var(--muted)} .tgb-row b{color:var(--text);word-break:break-all}
+.tgb textarea{width:100%}
 .maint{position:fixed;inset:0;z-index:45;display:grid;place-items:center;padding:20px;background:radial-gradient(circle at 50% 40%,#2a2100 0,#0f0f0f 60%);overflow:auto}
 .maint::before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(135deg,rgba(255,200,0,.06) 0 18px,transparent 18px 36px);pointer-events:none}
 .maint-box{position:relative;display:grid;justify-items:center;gap:12px;max-width:520px;text-align:center;padding:28px 24px;background:var(--panel);border:2px solid var(--accent);box-shadow:8px 8px 0 #000}
@@ -1314,7 +1318,7 @@ body.wide-case main{max-width:none}
 #adm-rtp{min-width:0;overflow:hidden}
 .rtp-table{max-width:100%}
 </style>
-<script>window.APP_BUILD="04.11 18:27";</script>
+<script>window.APP_BUILD="04.11 18:55";</script>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="adapter.js"></script>
 <link rel="icon" href="icon.png">
@@ -4658,6 +4662,55 @@ function saveConfig(patch){
   return cfgBusy;
 }
 const opChains = {};
+
+/* ---------- Админка: Telegram-бот (подключение, рассылка, напоминания) ---------- */
+async function tgAdm(body){ try{ return await CL.db.action("tg", body) || {}; }catch(e){ return {error:"Нет связи с сервером"}; } }
+async function drawTgBot(info, note){
+  if(!document.getElementById("tgb")) return;
+  if(!info) info = await tgAdm({action:"info"});
+  const box = document.getElementById("tgb"); if(!box) return;
+  const $ = id => box.querySelector("#"+id);
+  if(info.error){ box.innerHTML = `<div class="ph"><h2>Telegram-бот</h2></div><p class="hint err">${esc(info.error)}. Обновите Worker в Cloudflare до последней версии.</p>`; return; }
+  const when = t => t ? new Date(t).toLocaleString("ru-RU", {day:"2-digit", month:"2-digit", hour:"2-digit", minute:"2-digit"}) : "—";
+  box.innerHTML = `<div class="ph"><h2>Telegram-бот</h2><span class="hint">${info.configured ? (info.setAt ? "подключён " + when(info.setAt) : "не подключён") : "нет BOT_TOKEN в Cloudflare"}</span></div>
+    <div class="stats tgb-stats">
+      <div class="stat"><small>Писали боту</small><b>${info.users}</b></div>
+      <div class="stat"><small>Получают уведомления</small><b>${info.notify}</b></div>
+      <div class="stat"><small>Заблокировали бота</small><b>${info.blocked}</b></div>
+    </div>
+    <div class="tgb-row"><span>Адрес игры в кнопках бота: <b>${esc(info.appUrl)}</b></span>
+      <button class="btn primary" id="tgb-setup">${info.setAt ? "Обновить настройки бота" : "Подключить бота"}</button></div>
+    <p class="hint">Кнопка настроит ответы бота (/start, /profile, /top, /daily…), меню команд и кнопку «Играть» с адресом этой страницы: <b>${esc(location.origin + location.pathname)}</b></p>
+    <label class="toggle"><input type="checkbox" id="tgb-daily" ${info.daily?'checked':''}> Напоминать о ежедневном подарке (после 12:00 МСК)</label>
+    <p class="hint">Для напоминаний в Cloudflare нужен Cron Trigger «*/10 * * * *». Последний запуск: ${when(info.cron)}</p>
+    <h3 class="adm-sub">Рассылка всем, кто писал боту</h3>
+    <textarea id="tgb-text" maxlength="3500" rows="4" placeholder="Например: 🔥 Новая коллекция «Олимп» — скины до 3 трлн! Заходи 👇"></textarea>
+    <label class="toggle"><input type="checkbox" id="tgb-btn" checked> Добавить кнопку «Играть»</label>
+    <div class="adm-row"><button class="btn primary" id="tgb-send">Отправить ${info.notify} ${plural(info.notify,"игроку","игрокам","игрокам")}</button><span class="hint" id="tgb-msg"></span></div>`;
+  $("tgb-setup").addEventListener("click", async e=>{
+    const b = e.target, m = $("tgb-msg"); b.disabled = true; b.textContent = "Настраиваю…";
+    const r = await tgAdm({action:"setup", appUrl: location.origin + location.pathname});
+    b.disabled = false;
+    if(r.ok) drawTgBot(undefined, [true, `Бот @${r.bot} настроен: команды, кнопка «Играть» и ответы работают`]);
+    else { b.textContent = "Попробовать ещё раз"; flash(m, false, r.error || `Telegram ответил: ${r.hook} / ${r.menu}`); }
+  });
+  $("tgb-daily").addEventListener("change", async e=>{ drawTgBot(await tgAdm({action:"daily", on:e.target.checked})); });
+  $("tgb-send").addEventListener("click", async e=>{
+    const text = $("tgb-text").value.trim(), m = $("tgb-msg"), b = e.target;
+    if(!text){ flash(m, false, "Напишите текст рассылки"); return; }
+    if(!b.dataset.sure){ b.dataset.sure = "1"; b.textContent = "Точно отправить?"; setTimeout(()=>{ if(b.isConnected){ delete b.dataset.sure; b.textContent = `Отправить ${info.notify}`; } }, 4000); return; }
+    b.disabled = true; let cursor = 0, sent = 0, failed = 0, total = 0;
+    while(cursor !== null){
+      const r = await tgAdm({action:"broadcast", text, cursor, button: $("tgb-btn").checked});
+      if(r.error){ flash(m, false, r.error); break; }
+      sent += r.sent; failed += r.failed; total = r.total; cursor = r.next;
+      m.className = "hint"; m.textContent = `Отправлено ${sent} из ${total}…`;
+    }
+    b.disabled = false; delete b.dataset.sure;
+    if(cursor === null) flash(m, true, `Готово: доставлено ${sent}${failed ? `, не доставлено ${failed}` : ""}`);
+  });
+  if(note) flash($("tgb-msg"), note[0], note[1]);
+}
 function sendOp(id, op){
   const run = async ()=>{
     const ref = CL.db.doc("grants/"+id);
@@ -4687,6 +4740,7 @@ function viewAdmin(){
         <label class="toggle" for="m-on"><input type="checkbox" id="m-on" ${CFG.maint.on?'checked':''}> Закрыть сайт для игроков</label>
         <div class="adm-row"><button class="btn primary" id="m-save">Сохранить</button><span class="hint" id="m-msg"></span></div>
       </section>
+      <section class="panel adm-wide tgb" id="tgb"><div class="ph"><h2>Telegram-бот</h2><span class="hint">загрузка…</span></div></section>
       <section class="panel"><div class="ph"><h2>Объявление</h2></div>
         <textarea id="a-text" maxlength="300" rows="3" placeholder="Текст для всех игроков"></textarea>
         <label class="toggle" for="a-on"><input type="checkbox" id="a-on" ${CFG.announce.on?'checked':''}> Показывать всем</label>
@@ -4729,6 +4783,7 @@ function viewAdmin(){
     </div>`;
   app.querySelectorAll("[data-hn]").forEach(el=>{ const h = CFG.hidden[el.dataset.hn]; el.textContent = (h && h.nick) || "Игрок"; });
   document.getElementById("a-text").value = CFG.announce.text;
+  drawTgBot();
   document.getElementById("m-text").value = CFG.maint.text;
   document.getElementById("m-save").addEventListener("click", async ()=>{
     const text = document.getElementById("m-text").value.trim(), on = document.getElementById("m-on").checked, m = document.getElementById("m-msg");
@@ -5745,6 +5800,10 @@ const REF_KEY = "pd-ref", REF_DONE = "pd-ref-done", BOT_NAME = (window.APP_CONFI
   try{
     const w = window.Telegram && window.Telegram.WebApp, sp = w && w.initDataUnsafe && w.initDataUnsafe.start_param;
     let code = sp && /^ref_/.test(sp) ? sp.slice(4) : "";
+    // кнопка «Играть» из бота после /start ref_КОД открывает игру с ?tgref=КОД
+    const u = new URL(location.href), tr = u.searchParams.get("tgref");
+    if(!code && tr && w && w.initData) code = tr;
+    if(tr){ u.searchParams.delete("tgref"); try{ history.replaceState(null, "", u.pathname + u.search + u.hash); }catch(e){} }
     code = String(code).toLowerCase().replace(/[^a-z0-9]/g,"").slice(0,12);
     if(code && !localStorage.getItem(REF_DONE)) localStorage.setItem(REF_KEY, code);
   }catch(e){}
@@ -5760,7 +5819,7 @@ async function refClaimOnce(){
 let refInfo = null;
 // если в BotFather создано отдельное приложение (/newapp) — укажите его короткое имя в config.js как tgApp
 const TG_APP = (window.APP_CONFIG && window.APP_CONFIG.tgApp) || "";
-const refLinks = code => ({tg: TG_APP ? `https://t.me/${BOT_NAME}/${TG_APP}?startapp=ref_${code}` : `https://t.me/${BOT_NAME}?startapp=ref_${code}`});
+const refLinks = code => ({tg: TG_APP ? `https://t.me/${BOT_NAME}/${TG_APP}?startapp=ref_${code}` : `https://t.me/${BOT_NAME}?start=ref_${code}`});
 async function drawRefBox(load){
   let box = document.getElementById("ref-box"); if(!box) return;
   if(!promoOn()){ box.innerHTML = `<div class="ph"><h2>Приглашай друзей</h2></div><p class="hint">Войдите в аккаунт, чтобы получить свою ссылку и по ${money(1e6)} за каждого друга.</p>`; return; }
