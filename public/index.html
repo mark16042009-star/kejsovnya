@@ -1338,7 +1338,7 @@ body.wide-case main{max-width:none}
 #adm-rtp{min-width:0;overflow:hidden}
 .rtp-table{max-width:100%}
 </style>
-<script>window.APP_BUILD="04.11 20:17";</script>
+<script>window.APP_BUILD="04.11 20:23";</script>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script src="adapter.js"></script>
 <link rel="icon" href="icon.png">
@@ -4774,9 +4774,11 @@ function viewSupport(){
     inp.value = ""; supRender(r.thread);
   });
   SUP.unread = 0; supBadge(); supLoad();
-  clearInterval(SUP.timer); SUP.timer = setInterval(()=>{ if(location.hash!=="#support"){ clearInterval(SUP.timer); return; } if(!document.hidden) supLoad(); }, 10000);
+  clearInterval(SUP.timer); SUP.timer = setInterval(()=>{ if(location.hash!=="#support"){ clearInterval(SUP.timer); return; } if(!document.hidden) supLoad(); }, 4000);
 }
-async function supLoad(){ const r = await supAct({action:"get"}); if(r.thread) supRender(r.thread); }
+let supBusy = false;
+async function supLoad(){ if(supBusy) return; supBusy = true; try{ const r = await supAct({action:"get"}); if(r.thread) supRender(r.thread); } finally { supBusy = false; } }
+document.addEventListener("visibilitychange", ()=>{ if(document.hidden) return; if(location.hash==="#support") supLoad(); if(location.hash==="#admin" && SUP.adm.cur) supAdmRefresh(); });
 function supRender(t){
   const box = document.getElementById("sup-log"); if(!box) return;
   const sig = t.msgs.length + ":" + (t.msgs.length ? t.msgs[t.msgs.length-1].ts : 0);
@@ -4796,6 +4798,16 @@ async function drawSupAdmin(){
   list.innerHTML = r.threads.length ? r.threads.map(x=>`<button type="button" class="sup-th${x.unAdmin?' new':''}${SUP.adm.cur===x.id?' on':''}${x.open?'':' closed'}" data-th="${esc(x.id)}"><b></b><small></small>${x.unAdmin ? `<i>${x.unAdmin}</i>` : ""}</button>`).join("") : `<p class="hint">Пока никто не писал.</p>`;
   list.querySelectorAll(".sup-th").forEach((b,i)=>{ const x = r.threads[i]; b.querySelector("b").textContent = x.nick; b.querySelector("small").textContent = (x.last ? (x.last.from==="admin" ? "Вы: " : "") + x.last.text.slice(0,60) : "") + (x.open ? "" : " · закрыт"); b.addEventListener("click", ()=>supAdmOpen(x.id)); });
 }
+async function supAdmRefresh(){
+  const id = SUP.adm.cur, log = document.getElementById("sup-alog"); if(!id || !log || SUP.adm.busy) return;
+  SUP.adm.busy = true;
+  try{
+    const r = await supAct({action:"get", uid:id}); const box = document.getElementById("sup-alog");
+    if(!r.thread || !box || SUP.adm.cur !== id) return;
+    const t = r.thread, sig = t.msgs.length + ":" + (t.msgs.length ? t.msgs[t.msgs.length-1].ts : 0);
+    if(box.dataset.sig !== sig){ box.dataset.sig = sig; box.innerHTML = supMsgs(t.msgs, "admin"); supFill(box, t.msgs); drawSupAdmin(); }
+  } finally { SUP.adm.busy = false; }
+}
 async function supAdmOpen(id){
   SUP.adm.cur = id;
   const pane = document.getElementById("sup-pane"); if(!pane) return;
@@ -4805,7 +4817,7 @@ async function supAdmOpen(id){
     <div class="sup-log" id="sup-alog">${supMsgs(t.msgs, "admin")}</div>
     <form class="sup-form" id="sup-aform"><textarea id="sup-ain" rows="2" maxlength="1000" placeholder="Ответ игроку…"></textarea><button class="btn primary" type="submit">Ответить</button></form>`;
   pane.querySelector(".sup-pane-h b").textContent = t.nick || id;
-  supFill(document.getElementById("sup-alog"), t.msgs);
+  { const lg = document.getElementById("sup-alog"); lg.dataset.sig = t.msgs.length + ":" + (t.msgs.length ? t.msgs[t.msgs.length-1].ts : 0); supFill(lg, t.msgs); }
   const inp = document.getElementById("sup-ain"), form = document.getElementById("sup-aform");
   inp.addEventListener("keydown", e=>{ if(e.key==="Enter" && !e.shiftKey){ e.preventDefault(); form.requestSubmit(); } });
   form.addEventListener("submit", async e=>{ e.preventDefault(); const text = inp.value.trim(); if(!text) return;
@@ -4890,7 +4902,8 @@ function viewAdmin(){
   app.querySelectorAll("[data-hn]").forEach(el=>{ const h = CFG.hidden[el.dataset.hn]; el.textContent = (h && h.nick) || "Игрок"; });
   document.getElementById("a-text").value = CFG.announce.text;
   drawTgBot(); drawSupAdmin(); if(SUP.adm.cur) supAdmOpen(SUP.adm.cur);
-  clearInterval(SUP.adm.timer); SUP.adm.timer = setInterval(()=>{ if(location.hash!=="#admin"){ clearInterval(SUP.adm.timer); return; } if(document.hidden) return; drawSupAdmin(); const f = document.getElementById("sup-ain"); if(SUP.adm.cur && f && !f.value) supAdmOpen(SUP.adm.cur); }, 15000);
+  clearInterval(SUP.adm.timer); let supTick = 0;
+  SUP.adm.timer = setInterval(()=>{ if(location.hash!=="#admin"){ clearInterval(SUP.adm.timer); return; } if(document.hidden) return; supAdmRefresh(); if(++supTick % 4 === 0) drawSupAdmin(); }, 4000);
   document.getElementById("m-text").value = CFG.maint.text;
   document.getElementById("m-save").addEventListener("click", async ()=>{
     const text = document.getElementById("m-text").value.trim(), on = document.getElementById("m-on").checked, m = document.getElementById("m-msg");

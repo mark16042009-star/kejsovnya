@@ -385,7 +385,7 @@ function canWrite(s, uid, owner) {
 }
 
 /* ---------------- Ограничители ---------------- */
-const loginTries = new Map(), writeTries = new Map();
+const loginTries = new Map(), writeTries = new Map(), supReads = new Map(), supWrites = new Map();
 function tooMany(map, key, limit, windowMs) {
   const now = Date.now(), b = map.get(key) || { n: 0, t: now };
   if (now - b.t > windowMs) { b.n = 0; b.t = now; }
@@ -761,8 +761,10 @@ export default {
         return json(200, await stockAction(st, uid, await readBody(MAX_BODY)));
       }
       if (route === "POST /api/support") {
-        if (tooMany(writeTries, uid, 30, 60000)) return json(200, { error: "Слишком часто, подождите немного" });
-        return json(200, await supportAction(env, st, uid, owner, sess.data.login, await readBody(MAX_BODY)));
+        const b = await readBody(MAX_BODY), reading = b && (b.action === "get" || b.action === "list");
+        // чтение (опрос чата) и отправка считаются отдельно и не мешают сохранению игры
+        if (reading ? tooMany(supReads, uid, 200, 60000) : tooMany(supWrites, uid, 20, 60000)) return json(200, { error: "Слишком часто, подождите немного", retry: true });
+        return json(200, await supportAction(env, st, uid, owner, sess.data.login, b));
       }
       if (route === "POST /api/tg") {
         if (!owner) return json(403, { error: "Только для администратора" });
