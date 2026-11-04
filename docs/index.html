@@ -457,6 +457,26 @@ img,svg,canvas{-webkit-user-drag:none;user-drag:none}
 .wheel-lost{font-family:var(--mono);font-size:20px;fill:var(--text)}
 
 .case-result{display:grid;gap:10px}
+.sup-panel{display:grid;gap:10px;max-width:860px}
+.sup-log{display:flex;flex-direction:column;gap:8px;min-height:260px;max-height:min(60vh,560px);overflow:auto;padding:10px;background:var(--bg2);border:1px solid var(--line)}
+.sup-empty{margin:auto;max-width:420px;text-align:center;color:var(--muted);font-size:14px;line-height:1.5}
+.sup-m{max-width:78%;padding:8px 11px;background:var(--panel2);border:1px solid var(--line);border-left:3px solid #555}
+.sup-m.mine{align-self:flex-end;background:color-mix(in srgb,var(--accent) 12%,var(--panel2));border-left-color:var(--accent)}
+.sup-m.their{align-self:flex-start;border-left-color:#22d3ee}
+.sup-m small{display:block;font-size:10px;color:var(--muted);margin-bottom:4px}
+.sup-m p{margin:0;font-size:14px;line-height:1.45;white-space:pre-wrap;overflow-wrap:anywhere}
+.sup-form{display:flex;gap:8px;align-items:stretch}
+.sup-form textarea{flex:1;min-width:0;resize:vertical;background:var(--panel2);border:1px solid var(--line);color:var(--text);font:inherit;font-size:14px;padding:9px 10px}
+.sup-adm-grid{display:grid;grid-template-columns:minmax(220px,300px) minmax(0,1fr);gap:12px}
+.sup-list{display:grid;gap:6px;align-content:start;max-height:520px;overflow:auto}
+.sup-th{position:relative;display:grid;gap:3px;text-align:left;padding:9px 34px 9px 11px;background:var(--panel2);border:1px solid var(--line);border-left:3px solid #555;color:var(--text);font:inherit;cursor:pointer}
+.sup-th.new{border-left-color:var(--accent)} .sup-th.on{border-color:var(--accent)} .sup-th.closed{opacity:.55}
+.sup-th small{font-size:11px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sup-th i{position:absolute;right:8px;top:9px;font-style:normal;font-size:11px;padding:1px 6px;background:var(--accent);color:#111}
+.sup-pane{display:grid;gap:8px;align-content:start;min-width:0}
+.sup-pane-h{display:flex;gap:10px;align-items:center;flex-wrap:wrap} .sup-pane-h b{font-size:16px;margin-right:auto}
+.foot-sup{border-left-color:var(--accent)} .foot-sup svg{fill:none;stroke:var(--accent);stroke-width:2.2} .foot-sup b{color:var(--accent)}
+@media (max-width:760px){ .sup-adm-grid{grid-template-columns:1fr} .sup-m{max-width:92%} .sup-form{flex-direction:column} }
 .tgb{display:grid;gap:10px}
 .tgb-stats{margin:0}
 .tgb-row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;font-size:13px;color:var(--muted)} .tgb-row b{color:var(--text);word-break:break-all}
@@ -1318,10 +1338,10 @@ body.wide-case main{max-width:none}
 #adm-rtp{min-width:0;overflow:hidden}
 .rtp-table{max-width:100%}
 </style>
-<script>window.APP_BUILD="04.11 18:55";</script>
+<script>window.APP_BUILD="04.11 20:17";</script>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
-<script src="config.js?v=202611041655"></script>
-<script src="adapter.js?v=202611041655"></script>
+<script src="config.js?v=202611041817"></script>
+<script src="adapter.js?v=202611041817"></script>
 <link rel="icon" href="icon.png">
 </head>
 <body>
@@ -1338,6 +1358,7 @@ body.wide-case main{max-width:none}
       <a href="#battles" id="nav-bt"><svg class="ni" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4l9 9M4 4h4M4 4v4M20 4l-9 9M20 4h-4M20 4v4M7 14l3 3-3 3-3-3zM17 14l-3 3 3 3 3-3z"/></svg><span class="nl">Батлы</span></a>
       <a href="#crash" id="nav-crash"><svg class="ni" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 20h18M4 18c6 0 10-4 15-13"/><path d="M15 5h4v4"/></svg><span class="nl">Краш</span></a>
       <a href="#quests" id="nav-qs" class="nav-x"><svg class="ni" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v18l-6-4-6 4z"/><path d="M9 9l2 2 4-4"/></svg><span class="nl">Задания</span><i class="nav-dot" id="nav-qs-dot" hidden></i></a>
+      <a href="#support" id="nav-sup" class="nav-x"><svg class="ni" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v11H9l-5 4z"/><path d="M9 10h6"/></svg><span class="nl">Поддержка</span><i class="nav-dot" id="nav-sup-dot" hidden></i></a>
       <a href="#trades" id="nav-tr" class="nav-x"><svg class="ni" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h14l-4-4M20 16H6l4 4"/></svg><span class="nl">Трейды</span><i class="nav-dot" id="nav-tr-dot" hidden></i></a>
       <a href="#mines" id="nav-mines" class="nav-x"><svg class="ni" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="14" r="6"/><path d="M15 9l3-3M18 3v2M21 6h-2"/></svg><span class="nl">Мины</span></a>
       <a href="#runner" id="nav-run" class="nav-x"><svg class="ni" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 7v10M9.5 9.5h4a1.5 1.5 0 010 3h-3a1.5 1.5 0 000 3h4"/></svg><span class="nl">Заработать</span></a>
@@ -1364,7 +1385,7 @@ body.wide-case main{max-width:none}
 <div class="col">
 <div class="announce" id="announce" hidden></div>
 <main id="app"></main>
-<footer><a class="foot-tg" id="foot-tg" href="https://t.me/pixeldropsimulator" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21.5 4.2 2.9 11.4c-1 .4-1 1.6.1 1.9l4.7 1.5 1.8 5.6c.2.7 1.1.9 1.6.4l2.6-2.4 4.8 3.5c.6.4 1.4.1 1.6-.6l3.3-15.6c.2-1-.8-1.8-1.9-1.5zM9.4 14.6l8.4-7.4-6.6 8.3-.3 3.1z"/></svg><span>Наш Telegram-канал <b>@pixeldropsimulator</b></span></a><p>Все монеты и предметы виртуальные.</p></footer>
+<footer><a class="foot-tg" id="foot-tg" href="https://t.me/pixeldropsimulator" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21.5 4.2 2.9 11.4c-1 .4-1 1.6.1 1.9l4.7 1.5 1.8 5.6c.2.7 1.1.9 1.6.4l2.6-2.4 4.8 3.5c.6.4 1.4.1 1.6-.6l3.3-15.6c.2-1-.8-1.8-1.9-1.5zM9.4 14.6l8.4-7.4-6.6 8.3-.3 3.1z"/></svg><span>Наш Telegram-канал <b>@pixeldropsimulator</b></span></a> <a class="foot-tg foot-sup" href="#support"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v11H9l-5 4z"/></svg><span>Написать в <b>поддержку</b></span></a><p>Все монеты и предметы виртуальные.</p></footer>
 </div>
 </div>
 
@@ -4144,7 +4165,7 @@ async function initCloud(){
     subscribeConfig();
     subscribeTop();
     subscribeFeed();
-    subscribeStock();
+    subscribeStock(); subscribeSupport();
     tgLinkOnce(); refClaimOnce();
     btInitSettle();
     trStart();
@@ -4712,6 +4733,88 @@ async function drawTgBot(info, note){
   });
   if(note) flash($("tgb-msg"), note[0], note[1]);
 }
+
+/* ---------- Техподдержка: чат игрока с админом ---------- */
+const SUP = {unread:0, thread:null, timer:0, adm:{list:[], cur:null, timer:0}};
+const supOn = () => !LOCAL_ONLY && !!CL.id && !!CL.db && typeof CL.db.action==="function";
+async function supAct(body){ try{ return await CL.db.action("support", body) || {}; }catch(e){ return {error:"Нет связи с сервером"}; } }
+function subscribeSupport(){
+  CL.db.doc("support/"+CL.id).onSnapshot(snap=>{
+    const d = snap.exists ? snap.data() : {}, n = Math.max(0, Number(d.unUser)||0);
+    if(n > SUP.unread && location.hash!=="#support") toast("💬 Поддержка ответила — откройте «Поддержку»");
+    SUP.unread = location.hash==="#support" ? 0 : n; supBadge();
+    if(location.hash==="#support" && n) supLoad();
+  }, ()=>{});
+}
+function supBadge(){
+  const d = document.getElementById("nav-sup-dot"); if(d) d.hidden = !SUP.unread;
+  const m = document.getElementById("nav-more-dot");
+  if(m){ let other = false; try{ other = (CL.id && trIncoming().length) || qsClaimable(); }catch(e){} m.hidden = !(SUP.unread || other); }
+}
+const supTime = ts => { const d = new Date(ts), now = new Date(); return d.toDateString()===now.toDateString() ? d.toLocaleTimeString("ru-RU",{hour:"2-digit",minute:"2-digit"}) : d.toLocaleString("ru-RU",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"}); };
+function supMsgs(msgs, me){
+  if(!msgs.length) return `<p class="sup-empty">Напишите, что случилось: пропали предметы, не работает режим, есть идея — ответим здесь же.</p>`;
+  return msgs.map(m=>`<div class="sup-m ${m.from===me?'mine':'their'}"><small>${m.from==="admin" ? "Поддержка" : (me==="admin" ? "Игрок" : "Вы")} · ${supTime(m.ts)}</small><p></p></div>`).join("");
+}
+function supFill(box, msgs){ box.querySelectorAll(".sup-m p").forEach((el,i)=>{ el.textContent = msgs[i].text; }); box.scrollTop = box.scrollHeight; }
+function viewSupport(){
+  const app = document.getElementById("app");
+  app.innerHTML = `<div class="view-head"><div><h1>Поддержка</h1><p class="sub">Чат с администрацией ПиксельДропа. Обычно отвечаем в течение дня.</p></div></div>
+    <section class="panel sup-panel">${supOn() ? `<div class="sup-log" id="sup-log"><p class="hint">Загружаем переписку…</p></div>
+      <form class="sup-form" id="sup-form"><textarea id="sup-in" rows="2" maxlength="1000" placeholder="Ваше сообщение…" aria-label="Сообщение в поддержку"></textarea><button class="btn primary" id="sup-go" type="submit">Отправить</button></form>
+      <span class="hint" id="sup-msg"></span>` : `<p class="hint">Чтобы написать в поддержку, войдите в аккаунт.</p>`}</section>`;
+  if(!supOn()) return;
+  const form = document.getElementById("sup-form"), inp = document.getElementById("sup-in");
+  inp.addEventListener("keydown", e=>{ if(e.key==="Enter" && !e.shiftKey){ e.preventDefault(); form.requestSubmit(); } });
+  form.addEventListener("submit", async e=>{
+    e.preventDefault(); const text = inp.value.trim(); if(!text) return;
+    const go = document.getElementById("sup-go"); go.disabled = true;
+    const r = await supAct({action:"send", text, nick:S.profile.nick});
+    go.disabled = false;
+    if(r.error){ flash(document.getElementById("sup-msg"), false, r.error); return; }
+    inp.value = ""; supRender(r.thread);
+  });
+  SUP.unread = 0; supBadge(); supLoad();
+  clearInterval(SUP.timer); SUP.timer = setInterval(()=>{ if(location.hash!=="#support"){ clearInterval(SUP.timer); return; } if(!document.hidden) supLoad(); }, 10000);
+}
+async function supLoad(){ const r = await supAct({action:"get"}); if(r.thread) supRender(r.thread); }
+function supRender(t){
+  const box = document.getElementById("sup-log"); if(!box) return;
+  const sig = t.msgs.length + ":" + (t.msgs.length ? t.msgs[t.msgs.length-1].ts : 0);
+  if(box.dataset.sig === sig) return; box.dataset.sig = sig;
+  box.innerHTML = supMsgs(t.msgs, "user"); supFill(box, t.msgs);
+}
+/* админка */
+async function drawSupAdmin(){
+  const box = document.getElementById("sup-adm"); if(!box) return;
+  const r = await supAct({action:"list"});
+  const el = document.getElementById("sup-adm"); if(!el) return;
+  if(r.error){ el.querySelector(".sup-list").innerHTML = `<p class="hint err">${esc(r.error)}. Обновите Worker в Cloudflare.</p>`; return; }
+  SUP.adm.list = r.threads;
+  const un = r.threads.reduce((a,x)=>a+(x.unAdmin||0),0);
+  el.querySelector(".ph .hint").textContent = un ? `непрочитанных: ${un}` : `диалогов: ${r.threads.length}`;
+  const list = el.querySelector(".sup-list");
+  list.innerHTML = r.threads.length ? r.threads.map(x=>`<button type="button" class="sup-th${x.unAdmin?' new':''}${SUP.adm.cur===x.id?' on':''}${x.open?'':' closed'}" data-th="${esc(x.id)}"><b></b><small></small>${x.unAdmin ? `<i>${x.unAdmin}</i>` : ""}</button>`).join("") : `<p class="hint">Пока никто не писал.</p>`;
+  list.querySelectorAll(".sup-th").forEach((b,i)=>{ const x = r.threads[i]; b.querySelector("b").textContent = x.nick; b.querySelector("small").textContent = (x.last ? (x.last.from==="admin" ? "Вы: " : "") + x.last.text.slice(0,60) : "") + (x.open ? "" : " · закрыт"); b.addEventListener("click", ()=>supAdmOpen(x.id)); });
+}
+async function supAdmOpen(id){
+  SUP.adm.cur = id;
+  const pane = document.getElementById("sup-pane"); if(!pane) return;
+  const r = await supAct({action:"get", uid:id}); if(!r.thread || !document.getElementById("sup-pane")) return;
+  const t = r.thread;
+  pane.innerHTML = `<div class="sup-pane-h"><b></b><a class="hint" href="${playerHref(id)}">профиль</a><button class="btn" id="sup-close">${t.open ? "Закрыть диалог" : "Открыть снова"}</button></div>
+    <div class="sup-log" id="sup-alog">${supMsgs(t.msgs, "admin")}</div>
+    <form class="sup-form" id="sup-aform"><textarea id="sup-ain" rows="2" maxlength="1000" placeholder="Ответ игроку…"></textarea><button class="btn primary" type="submit">Ответить</button></form>`;
+  pane.querySelector(".sup-pane-h b").textContent = t.nick || id;
+  supFill(document.getElementById("sup-alog"), t.msgs);
+  const inp = document.getElementById("sup-ain"), form = document.getElementById("sup-aform");
+  inp.addEventListener("keydown", e=>{ if(e.key==="Enter" && !e.shiftKey){ e.preventDefault(); form.requestSubmit(); } });
+  form.addEventListener("submit", async e=>{ e.preventDefault(); const text = inp.value.trim(); if(!text) return;
+    const rr = await supAct({action:"send", uid:id, text}); if(rr.error){ toast(rr.error); return; } inp.value = ""; supAdmOpen(id); drawSupAdmin(); });
+  document.getElementById("sup-close").addEventListener("click", async ()=>{ await supAct({action: t.open ? "close" : "reopen", uid:id}); supAdmOpen(id); drawSupAdmin(); });
+  drawSupAdmin();
+  inp.focus();
+}
 function sendOp(id, op){
   const run = async ()=>{
     const ref = CL.db.doc("grants/"+id);
@@ -4740,6 +4843,9 @@ function viewAdmin(){
         <textarea id="m-text" maxlength="300" rows="2" placeholder="Что происходит (необязательно). Например: Переезжаем на новый сервер, вернёмся в 20:00"></textarea>
         <label class="toggle" for="m-on"><input type="checkbox" id="m-on" ${CFG.maint.on?'checked':''}> Закрыть сайт для игроков</label>
         <div class="adm-row"><button class="btn primary" id="m-save">Сохранить</button><span class="hint" id="m-msg"></span></div>
+      </section>
+      <section class="panel adm-wide sup-adm" id="sup-adm"><div class="ph"><h2>Поддержка</h2><span class="hint">загрузка…</span></div>
+        <div class="sup-adm-grid"><div class="sup-list"></div><div class="sup-pane" id="sup-pane"><p class="hint">Выберите диалог слева.</p></div></div>
       </section>
       <section class="panel adm-wide tgb" id="tgb"><div class="ph"><h2>Telegram-бот</h2><span class="hint">загрузка…</span></div></section>
       <section class="panel"><div class="ph"><h2>Объявление</h2></div>
@@ -4784,7 +4890,8 @@ function viewAdmin(){
     </div>`;
   app.querySelectorAll("[data-hn]").forEach(el=>{ const h = CFG.hidden[el.dataset.hn]; el.textContent = (h && h.nick) || "Игрок"; });
   document.getElementById("a-text").value = CFG.announce.text;
-  drawTgBot();
+  drawTgBot(); drawSupAdmin(); if(SUP.adm.cur) supAdmOpen(SUP.adm.cur);
+  clearInterval(SUP.adm.timer); SUP.adm.timer = setInterval(()=>{ if(location.hash!=="#admin"){ clearInterval(SUP.adm.timer); return; } if(document.hidden) return; drawSupAdmin(); const f = document.getElementById("sup-ain"); if(SUP.adm.cur && f && !f.value) supAdmOpen(SUP.adm.cur); }, 15000);
   document.getElementById("m-text").value = CFG.maint.text;
   document.getElementById("m-save").addEventListener("click", async ()=>{
     const text = document.getElementById("m-text").value.trim(), on = document.getElementById("m-on").checked, m = document.getElementById("m-msg");
@@ -5275,7 +5382,7 @@ function qsReroll(i){
 function qsBadge(){
   const n = qsClaimable(), dot = document.getElementById("nav-qs-dot");
   if(dot) dot.hidden = !n;
-  const md = document.getElementById("nav-more-dot"); if(md) md.hidden = !(n || (()=>{ try{ return CL.id ? trIncoming().length : 0; }catch(e){ return 0; } })());
+  const md = document.getElementById("nav-more-dot"); if(md) md.hidden = !(n || (typeof SUP!=="undefined" && SUP.unread) || (()=>{ try{ return CL.id ? trIncoming().length : 0; }catch(e){ return 0; } })());
   navMoreState && navMoreState();
   const w = document.getElementById("qs-mini"); if(w) drawQsMini();
 }
@@ -6165,7 +6272,7 @@ async function trAct(body){ return await CL.db.action("trade", body) || {}; }
 const trIncoming = () => TR.list.filter(t=>t.to===CL.id && t.state==="pending");
 function trBadge(){
   const n = trIncoming().length, d = document.getElementById("nav-tr-dot"), m = document.getElementById("nav-more-dot");
-  if(d) d.hidden = !n; if(m) m.hidden = !(n || qsClaimable());
+  if(d) d.hidden = !n; if(m) m.hidden = !(n || qsClaimable() || SUP.unread);
 }
 function trSettle(){
   const mine = trMine(); let ch = false;
@@ -6408,6 +6515,7 @@ function route(){
   document.getElementById("nav-ct").classList.toggle("on", h==="contract");
   document.getElementById("nav-mines").classList.toggle("on", h==="mines");
   document.getElementById("nav-qs").classList.toggle("on", h==="quests");
+  document.getElementById("nav-sup").classList.toggle("on", h==="support");
   document.getElementById("nav-tr").classList.toggle("on", h==="trades" || h.startsWith("trade-"));
   document.getElementById("nav-bt").classList.toggle("on", h==="battles" || h.startsWith("battle-"));
   document.getElementById("nav-top").classList.toggle("on", h==="top" || h.startsWith("player-"));
@@ -6422,6 +6530,7 @@ function route(){
   if(h==="battles") return viewBattles();
   if(h==="mines") return viewMines();
   if(h==="quests") return viewQuests();
+  if(h==="support") return viewSupport();
   if(h.startsWith("player-")) return viewPlayer(decodeURIComponent(h.slice(7)));
   if(h==="trades") return viewTrades();
   if(h.startsWith("trade-new-")) return viewTradeNew(h.slice(10));

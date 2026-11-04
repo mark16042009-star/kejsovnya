@@ -374,6 +374,7 @@ function canRead(s, uid, owner) {
   if (s[0] === "profiles" || s[0] === "config" || s[0] === "feed" || s[0] === "battles" || s[0] === "stock") return true;
   if (s[0] === "grants") return owner || (s.length > 1 && s[1] === uid);
   if (s[0] === "promos") return owner;
+  if (s[0] === "support") return owner || (s.length > 1 && s[1] === uid);
   return false;
 }
 function canWrite(s, uid, owner) {
@@ -430,6 +431,51 @@ async function tgSubscription(env, body) {
   } catch (e) {
     return { enabled: true, ok: true, link, channel: chat, warn: "Telegram недоступен" }; // не блокируем игру из-за сбоя связи
   }
+}
+
+/* ---------------- Техподдержка ----------------
+ * support/{uid}: переписка игрока с админом. Пишут только через /api/support (сервер следит за форматом). */
+const SUP_MAX = 200;
+async function supportAction(env, st, uid, owner, login, b) {
+  b = b && typeof b === "object" ? b : {};
+  const clean = s => String(s || "").replace(/\r/g, "").trim().slice(0, 1000);
+  const load = async id => { const c = await st.get("support/" + id); return Object.assign({ msgs: [], unAdmin: 0, unUser: 0, open: true }, c && c.data || {}); };
+  if (b.action === "list") {
+    if (!owner) return { error: "Нет прав" };
+    const all = await st.list("support", 1000);
+    return { threads: all.map(x => ({ id: x.id, nick: x.data.nick || x.id, last: (x.data.msgs || []).slice(-1)[0] || null, unAdmin: x.data.unAdmin || 0, open: x.data.open !== false, updated: x.data.updated || 0 }))
+      .sort((a, c) => (c.unAdmin > 0) - (a.unAdmin > 0) || c.updated - a.updated).slice(0, 200) };
+  }
+  const target = owner && b.uid ? String(b.uid).slice(0, 80) : uid;
+  if (b.action === "get") {
+    const d = await load(target);
+    if (owner && b.uid) { if (d.unAdmin) { d.unAdmin = 0; await st.set("support/" + target, d); } }
+    else if (d.unUser) { d.unUser = 0; await st.set("support/" + target, d); }
+    return { thread: { id: target, nick: d.nick || "", msgs: d.msgs, open: d.open !== false, unUser: 0 } };
+  }
+  if (b.action === "send") {
+    const text = clean(b.text); if (!text) return { error: "Напишите сообщение" };
+    const d = await load(target), asAdmin = owner && !!b.uid;
+    d.msgs.push({ from: asAdmin ? "admin" : "user", text, ts: Date.now() });
+    if (d.msgs.length > SUP_MAX) d.msgs = d.msgs.slice(-SUP_MAX);
+    d.updated = Date.now(); d.open = true;
+    if (asAdmin) { d.unUser = (d.unUser || 0) + 1; d.unAdmin = 0; }
+    else { d.unAdmin = (d.unAdmin || 0) + 1; d.unUser = 0; d.nick = String(b.nick || login || "Игрок").slice(0, 20); }
+    await st.set("support/" + target, d);
+    // уведомления в Telegram
+    if (asAdmin) await tgNotify(env, st, target, `💬 Поддержка ответила:\n\n${text.slice(0, 500)}`, "#support");
+    else {
+      const admins = String(env.ADMIN_LOGINS || "").split(/[\s,]+/).filter(x => LOGIN_RE.test(x)).map(uidOf);
+      for (const a of admins.slice(0, 3)) await tgNotify(env, st, a, `🆘 Новое сообщение в поддержку от ${d.nick}:\n\n${text.slice(0, 500)}`, "#admin");
+    }
+    return { thread: { id: target, nick: d.nick || "", msgs: d.msgs, open: true } };
+  }
+  if (b.action === "close" || b.action === "reopen") {
+    if (!owner) return { error: "Нет прав" };
+    const d = await load(target); d.open = b.action === "reopen"; d.unAdmin = 0; await st.set("support/" + target, d);
+    return { ok: true };
+  }
+  return { error: "Неизвестное действие" };
 }
 
 /* ---------------- Telegram-бот ----------------
@@ -682,7 +728,7 @@ export default {
         const colver = (await env.DB.prepare("SELECT parent, ver FROM colver").all()).results || [];
         return json(200, { v: 1, at: Date.now(), docs, colver });
       }
-      if (!owner && req.method !== "GET" && await maintOn(st)) return json(503, { error: "Технические работы. Загляните чуть позже." });
+      if (!owner && req.method !== "GET" && route !== "POST /api/support" && await maintOn(st)) return json(503, { error: "Технические работы. Загляните чуть позже." });
 
       if (route === "GET /api/doc") {
         const s = parsePath(url.searchParams.get("path"), true);
@@ -713,6 +759,10 @@ export default {
       if (route === "POST /api/stock") {
         if (tooMany(writeTries, uid, 30, 10000)) return json(200, { error: "Слишком часто" });
         return json(200, await stockAction(st, uid, await readBody(MAX_BODY)));
+      }
+      if (route === "POST /api/support") {
+        if (tooMany(writeTries, uid, 30, 60000)) return json(200, { error: "Слишком часто, подождите немного" });
+        return json(200, await supportAction(env, st, uid, owner, sess.data.login, await readBody(MAX_BODY)));
       }
       if (route === "POST /api/tg") {
         if (!owner) return json(403, { error: "Только для администратора" });
