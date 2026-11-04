@@ -1302,10 +1302,10 @@ body.wide-case main{max-width:none}
 #adm-rtp{min-width:0;overflow:hidden}
 .rtp-table{max-width:100%}
 </style>
-<script>window.APP_BUILD="04.11 13:00";</script>
+<script>window.APP_BUILD="04.11 13:07";</script>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
-<script src="config.js?v=202611041100"></script>
-<script src="adapter.js?v=202611041100"></script>
+<script src="config.js?v=202611041107"></script>
+<script src="adapter.js?v=202611041107"></script>
 <link rel="icon" href="icon.png">
 </head>
 <body>
@@ -5689,7 +5689,9 @@ async function refClaimOnce(){
   if(r.ok) toast(`Вы пришли по приглашению ${r.inviterNick}. Откройте ${r.need} кейсов — и другу придёт бонус!`);
 }
 let refInfo = null;
-const refLinks = code => ({tg: `https://t.me/${BOT_NAME}?startapp=ref_${code}`});
+// если в BotFather создано отдельное приложение (/newapp) — укажите его короткое имя в config.js как tgApp
+const TG_APP = (window.APP_CONFIG && window.APP_CONFIG.tgApp) || "";
+const refLinks = code => ({tg: TG_APP ? `https://t.me/${BOT_NAME}/${TG_APP}?startapp=ref_${code}` : `https://t.me/${BOT_NAME}?startapp=ref_${code}`});
 async function drawRefBox(load){
   let box = document.getElementById("ref-box"); if(!box) return;
   if(!promoOn()){ box.innerHTML = `<div class="ph"><h2>Приглашай друзей</h2></div><p class="hint">Войдите в аккаунт, чтобы получить свою ссылку и по ${money(1e6)} за каждого друга.</p>`; return; }
