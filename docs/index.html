@@ -512,7 +512,13 @@ img,svg,canvas{-webkit-user-drag:none;user-drag:none}
 .qs-bar{display:block;height:8px;background:var(--bg2);border:1px solid var(--line);position:relative;overflow:hidden}
 .qs-bar.big{height:12px}
 .qs-bar > i{position:absolute;inset:0 auto 0 0;background:repeating-linear-gradient(90deg,var(--accent) 0 8px,#e0b000 8px 10px);transition:width .5s}
-.qs-track{display:flex;gap:6px;overflow-x:auto;padding:4px 2px 8px;scroll-behavior:smooth}
+.qs-trackwrap{position:relative;min-width:0;max-width:100%} .qs-season{grid-template-columns:minmax(0,1fr);min-width:0} .qs-track{max-width:100%}
+.qs-track{display:flex;gap:6px;overflow-x:auto;padding:4px 2px 8px;scroll-behavior:smooth;-webkit-overflow-scrolling:touch;touch-action:pan-x pan-y;overscroll-behavior-x:contain;cursor:grab;user-select:none}
+.qs-track.drag{cursor:grabbing}
+.qs-arr{position:absolute;top:50%;z-index:3;transform:translateY(-60%);width:36px;height:56px;border:2px solid var(--accent);background:rgba(18,18,18,.92);color:var(--accent);font-size:28px;line-height:1;cursor:pointer;box-shadow:4px 4px 0 #000}
+.qs-arr.l{left:-6px} .qs-arr.r{right:-6px}
+.qs-arr[hidden]{display:none}
+.qs-arr:hover{background:var(--accent);color:#111}
 .qs-track{align-items:flex-start}
 .qs-tier{position:relative;flex:0 0 92px;min-height:104px;display:grid;justify-items:center;align-content:start;gap:4px;padding:6px 4px 8px;background:var(--bg2);border:1px solid var(--line);border-bottom:3px solid #333;opacity:.55}
 .qs-tier.ready{opacity:1;border-color:var(--accent);border-bottom-color:var(--accent);background:color-mix(in srgb,var(--accent) 10%,var(--bg2));animation:qsPulse 1.2s steps(2) infinite}
@@ -1296,10 +1302,10 @@ body.wide-case main{max-width:none}
 #adm-rtp{min-width:0;overflow:hidden}
 .rtp-table{max-width:100%}
 </style>
-<script>window.APP_BUILD="04.11 00:35";</script>
+<script>window.APP_BUILD="04.11 13:00";</script>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
-<script src="config.js?v=202611032235"></script>
-<script src="adapter.js?v=202611032235"></script>
+<script src="config.js?v=202611041100"></script>
+<script src="adapter.js?v=202611041100"></script>
 <link rel="icon" href="icon.png">
 </head>
 <body>
@@ -5166,6 +5172,20 @@ function qsCard(x, kind, i, q){
       ${x.got ? `<span class="hint">Получено</span>` : x.ok ? `<button class="btn primary" data-qc="${kind}:${i}">Забрать</button>` : kind==="d" && !q.rr ? `<button class="btn qs-rr" data-qr="${i}" title="Один раз в день можно заменить задание">Заменить</button>` : ``}</div>
   </div>`;
 }
+/* горизонтальная лента: стрелки, колесо мыши и перетаскивание (полосы прокрутки на сайте скрыты) */
+function hScroll(el, bl, br){
+  const step = () => Math.max(200, el.clientWidth*0.8);
+  const upd = () => { if(bl) bl.hidden = el.scrollLeft <= 2; if(br) br.hidden = el.scrollLeft >= el.scrollWidth - el.clientWidth - 2; };
+  if(bl) bl.onclick = () => el.scrollBy({left:-step(), behavior:"smooth"});
+  if(br) br.onclick = () => el.scrollBy({left:step(), behavior:"smooth"});
+  el.addEventListener("scroll", upd, {passive:true}); upd(); setTimeout(upd, 300);
+  el.addEventListener("wheel", e=>{ if(Math.abs(e.deltaY) > Math.abs(e.deltaX) && el.scrollWidth > el.clientWidth){ const max = el.scrollWidth - el.clientWidth;
+    if((e.deltaY > 0 && el.scrollLeft < max) || (e.deltaY < 0 && el.scrollLeft > 0)){ e.preventDefault(); el.scrollLeft += e.deltaY; } } }, {passive:false});
+  let down = null;
+  el.addEventListener("pointerdown", e=>{ if(e.pointerType !== "mouse") return; down = {x:e.clientX, l:el.scrollLeft, moved:false}; });
+  window.addEventListener("pointermove", e=>{ if(!down) return; const dx = e.clientX - down.x; if(Math.abs(dx) > 4) down.moved = true; if(down.moved){ el.scrollLeft = down.l - dx; el.classList.add("drag"); } });
+  window.addEventListener("pointerup", ()=>{ if(down && down.moved) setTimeout(()=>el.classList.remove("drag"), 0); down = null; });
+}
 function viewQuests(){
   document.getElementById("app").innerHTML = `<div class="view-head"><div><h1>Задания</h1><p class="sub">Выполняйте задания — получайте монеты и опыт сезонного пропуска</p></div></div><div id="qs"></div>`;
   drawQuests();
@@ -5182,9 +5202,10 @@ function drawQuests(){
           <div class="qs-bar big"><i style="width:${(lv.cur/QS_LVL_XP*100).toFixed(1)}%"></i></div></div>
         ${ready.length ? `<button class="btn primary" id="qs-claim">Забрать ${ready.length} ${plural(ready.length,"награду","награды","наград")}</button>` : ``}
       </div>
+      <div class="qs-trackwrap"><button type="button" class="qs-arr l" id="qs-l" aria-label="Листать назад">‹</button><button type="button" class="qs-arr r" id="qs-r" aria-label="Листать вперёд">›</button>
       <div class="qs-track" id="qs-track">${QS_REWARDS.map((r,i)=>{ const L = i+1, got = q.got.includes(L), open = L<=lv.lvl;
         return `<div class="qs-tier${got?' got':open?' ready':''}${r.deco?' qs-epic':''}" title="${esc(qsRewardLabel(r))}">
-          <span class="qs-tl">${L}</span><span class="qs-ti">${qsRewardIcon(r)}</span><small>${esc(r.coins ? shortNum(r.coins) : r.n)}</small>${got?'<i class="qs-check">✓</i>':''}</div>`; }).join("")}</div>
+          <span class="qs-tl">${L}</span><span class="qs-ti">${qsRewardIcon(r)}</span><small>${esc(r.coins ? shortNum(r.coins) : r.n)}</small>${got?'<i class="qs-check">✓</i>':''}</div>`; }).join("")}</div></div>
       <p class="hint">Опыт пропуска дают задания и ежедневный подарок (+${QS_GIFT_XP} XP). В начале месяца стартует новый сезон: уровень обнуляется, а полученное оформление остаётся навсегда.</p>
     </section>
     <div class="qs-cols">
@@ -5195,7 +5216,8 @@ function drawQuests(){
   box.querySelectorAll("[data-qc]").forEach(b=>b.addEventListener("click",()=>{ const [k,i] = b.dataset.qc.split(":"); qsClaimQuest(k, +i); }));
   box.querySelectorAll("[data-qr]").forEach(b=>b.addEventListener("click",()=>qsReroll(+b.dataset.qr)));
   const tr = document.getElementById("qs-track"), cur = tr && tr.children[Math.max(0, lv.lvl-2)];
-  if(tr && cur) tr.scrollLeft = cur.offsetLeft - 8;
+  if(tr && cur){ tr.style.scrollBehavior = "auto"; tr.scrollLeft = cur.offsetLeft - 8; tr.style.scrollBehavior = ""; }
+  if(tr) hScroll(tr, document.getElementById("qs-l"), document.getElementById("qs-r"));
 }
 /* мини-блок на главной */
 function drawQsMini(){
